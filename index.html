@@ -2228,18 +2228,26 @@ body.kid-locked #manageChores{ display:none !important; }
 @keyframes fhdayPrev{from{opacity:.3;transform:translateX(-28px);}to{opacity:1;transform:none;}}
 @media (prefers-reduced-motion: reduce){.fhday-in-next,.fhday-in-prev{animation:none;}}
 /* moved notice (old address only) */
-.fhm-wrap{position:fixed;inset:0;z-index:9000;background:rgba(30,20,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));overflow:auto;}
-.fhm-wrap > .fhm-sheet{margin:auto 0;}
-.fhm-sheet{background:var(--card,#fff);color:var(--ink,#2b2233);border-radius:18px;max-width:520px;width:100%;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px;}
-.fhm-sheet h2{margin:0;font-size:20px;}
-.fhm-lead{margin:0;line-height:1.5;}
-.fhm-steps{margin:0;padding-left:20px;line-height:1.5;display:flex;flex-direction:column;gap:6px;font-size:14px;}
-.fhm-go{text-align:center;text-decoration:none;background:#6C4F8A;color:#fff !important;border-color:#6C4F8A;}
-.fhm-row{display:flex;gap:8px;flex-wrap:wrap;}
-.fhm-row .ob-btn{flex:1 1 140px;}
-.fhm-msg{margin:0;font-size:13px;font-weight:600;color:#6C4F8A;}
-.fhm-msg:empty{display:none;}
-.fhm-bar{position:fixed;left:0;right:0;bottom:0;z-index:8999;border:0;background:#8A5A00;color:#fff;font:inherit;font-weight:700;font-size:14px;padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));cursor:pointer;}
+.fhmv-wrap{position:fixed;inset:0;z-index:9000;background:rgba(30,20,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));overflow:auto;}
+.fhmv-wrap > .fhmv-sheet{margin:auto 0;}
+.fhmv-sheet{background:var(--card,#fff);color:var(--ink,#2b2233);border-radius:18px;max-width:520px;width:100%;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px;}
+.fhmv-sheet h2{margin:0;font-size:20px;}
+.fhmv-lead{margin:0;line-height:1.5;}
+.fhmv-steps{margin:0;padding-left:20px;line-height:1.5;display:flex;flex-direction:column;gap:6px;font-size:14px;}
+.fhmv-go{text-align:center;text-decoration:none;background:#6C4F8A;color:#fff !important;border-color:#6C4F8A;}
+.fhmv-row{display:flex;gap:8px;flex-wrap:wrap;}
+.fhmv-row .ob-btn{flex:1 1 140px;}
+.fhmv-msg{margin:0;font-size:13px;font-weight:600;color:#6C4F8A;}
+.fhmv-msg:empty{display:none;}
+.fhmv-bar{position:fixed;left:0;right:0;bottom:0;z-index:8999;border:0;background:#8A5A00;color:#fff;font:inherit;font-weight:700;font-size:14px;padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));cursor:pointer;}
+/* bin day settings */
+.fhbin-names{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;}
+.fhbin-names .ob-input{width:100%;box-sizing:border-box;}
+/* essentials suggested by children's ages */
+.fhes-sug{ border:1.5px dashed var(--accent,#6C4F8A); border-radius:14px; padding:10px 12px; margin:0 0 14px; }
+.fhes-sug-h{ font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+.fhes-sug-row{ display:flex; align-items:center; gap:8px; padding:4px 0; flex-wrap:wrap; }
+.fhes-sug-name{ flex:1 1 140px; min-width:0; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -4506,6 +4514,8 @@ async function persistMeatExpiry(){ try{ await storage.set(MEAT_EXPIRY_KEY, JSON
 async function loadSetupExtras(){
   try{ const r = await storage.get('family-hub-starter-plan-v1'); if(r && r.value){ const p = JSON.parse(r.value); if(p && p[1] && p[2] && p[3] && p[4]) STARTER_PLAN = p; } }catch(e){}
   try{ const r = await storage.get('family-hub-hidden-meals-v1'); if(r && r.value){ const ids = JSON.parse(r.value); if(Array.isArray(ids) && ids.length){ for(let i=MEALS.length-1;i>=0;i--){ if(ids.indexOf(MEALS[i].id) >= 0) MEALS.splice(i,1); } } } }catch(e){}
+  try{ const r = await storage.get('family-hub-diets-v1'); const diets = r && r.value ? JSON.parse(r.value) : null;
+    if(Array.isArray(diets) && diets.length && typeof obDietBlocks === 'function'){ for(let i=MEALS.length-1;i>=0;i--){ if(obDietBlocks(MEALS[i], diets)) MEALS.splice(i,1); } } }catch(e){}
   try{ const r = await storage.get('family-hub-meal-rules-v1'); if(r && r.value){ const a = JSON.parse(r.value); if(Array.isArray(a)) mealRules = a; } }catch(e){}
 }
 async function init(){
@@ -6324,6 +6334,8 @@ function renderShoppingListPage(container){
 
 
 function getCatalog(){ return Object.keys(mealsById).map(function(k){ return mealsById[k]; }); }
+/* food preferences changed in Settings: rebuild the visible list from every built-in meal */
+function applyDiets(diets){ MEALS.length = 0; getCatalog().forEach(function(m){ if(!obDietBlocks(m, diets)) MEALS.push(m); }); render(); renderMealLibrary(); }
 function upcomingShopAnchor(){
   const today = shStartOfDayLocalMeal(new Date());
   const diff = (shopDay - ((today.getDay()+6)%7) + 7) % 7;
@@ -6505,7 +6517,7 @@ function renderRulesPanel(anchorEl){
 const __ready = init();
 
   return {
-    ready: __ready, getCatalog: getCatalog, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
+    ready: __ready, getCatalog: getCatalog, applyDiets: applyDiets, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
     getPlannedCount: getPlannedCount, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
     getDayDisplay: getDayDisplay,
@@ -6783,10 +6795,11 @@ function assigneeHue(id){
 function rotateGroupName(token){
   return { [ROTATE_CHILDREN]:'children', [ROTATE_PARENTS]:'parents', [ROTATE_ALL]:'all' }[token];
 }
-function rosterForRotateToken(token){
-  if(token===ROTATE_ALL) return people.slice();
+function rosterForRotateToken(token, chore){
+  const able = p => fhChoreAgeOk(p, chore);
+  if(token===ROTATE_ALL) return people.filter(able);
   const role = token===ROTATE_CHILDREN ? 'child' : 'parent';
-  return people.filter(p=>p.role===role);
+  return people.filter(p=>p.role===role && able(p));
 }
 const ROTATION_EPOCH = new Date(2024,0,1); // a fixed Monday reference point
 function rotationIndex(freq, date){
@@ -6808,7 +6821,7 @@ function rotationIndex(freq, date){
 function resolveAssignee(chore, date){
   const raw = chore.assignedTo;
   if(!isRotateToken(raw)) return raw;
-  const roster = rosterForRotateToken(raw);
+  const roster = rosterForRotateToken(raw, chore);
   if(!roster.length) return 'anyone';
   const idx = rotationIndex(chore.freq, date);
   return roster[((idx % roster.length) + roster.length) % roster.length].id;
@@ -8142,6 +8155,66 @@ const FHExtras = (function(){
   return { essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
+/* ==================== BIN DAY: which day, and which bins if they alternate ====================
+   Household setting (synced): { on, day:0..6 (Mon=0), alt:false|true, a:'General waste', b:'Recycling', aWeek:'YYYY-MM-DD' }
+   aWeek is the Monday of a week the "a" bins go out. Shows as an all-day plan on the day (Today, calendar, morning
+   summary) and in the evening heads-up the night before, through FHEvents.forDay. */
+const FHBins = (function(){
+  const KEY = 'family-hub-bins-v1';
+  const DEF = { on:false, day:3, alt:false, a:'General waste', b:'Recycling', aWeek:'' };
+  function get(){ let v = null; try{ v = JSON.parse(fhRawGet(KEY) || 'null'); }catch(e){} return Object.assign({}, DEF, v || {}); }
+  function set(p){ fhSaveJSON(KEY, Object.assign(get(), p)); try{ refreshCurrentPage(); }catch(e){} try{ FHPush.upload(); }catch(e){} }
+  function monday(d){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
+  function isoOf(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  /* which bins go out on that date, or null */
+  function forDate(date){
+    const c = get(); if(!c.on || (date.getDay() + 6) % 7 !== c.day) return null;
+    if(!c.alt) return { label:'Bin day', bins:'' };
+    const a = parse(c.aWeek) || monday(new Date());
+    const weeks = Math.round((monday(date) - monday(a)) / (7 * 864e5));
+    return { label:'Bin day', bins: (((weeks % 2) + 2) % 2 === 0) ? c.a : c.b };
+  }
+  function title(date){ const b = forDate(date); return b ? '🗑️ ' + b.label + (b.bins ? ': ' + b.bins : '') : ''; }
+  /* a read-only all-day "event" for FHEvents.forDay */
+  function event(date){
+    const t = title(date); if(!t) return null;
+    return { id:'bins:' + isoOf(date), title:t, allDay:true, ro:true, bin:true, color:'#5E8C3A', who:'' };
+  }
+  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  function settingsCard(rr){
+    const c = get();
+    const chip = (label, on, fn) => h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', text:label, onClick:fn });
+    const card = h('div', { class:'st-card', id:'stBins' }, h('h3', { text:'Bin day' }),
+      h('label', { class:'ob-feature' }, h('span', { class:'ob-fe-ico', text:'🗑️' }),
+        h('span', { class:'ob-fe-txt' }, h('b', { text:'Show bin day' }), h('small', { text:'On the day’s plans, with a heads-up the evening before' })),
+        h('input', { type:'checkbox', id:'stBinsOn', checked:c.on, onChange:e => { set({ on:e.target.checked }); rr(); } })));
+    if(!c.on) return card;
+    const thisMon = isoOf(monday(new Date()));
+    const thisWeekA = (forDate(new Date(monday(new Date()).getTime() + c.day * 864e5)) || {}).bins === c.a;
+    card.appendChild(h('p', { class:'ob-label', text:'Collection day' }));
+    card.appendChild(h('div', { class:'ob-chips' }, DAYS.map((d, i) => chip(d, c.day === i, () => { set({ day:i }); rr(); }))));
+    card.appendChild(h('p', { class:'ob-label', text:'Which bins' }));
+    card.appendChild(h('div', { class:'ob-chips' },
+      chip('Same every week', !c.alt, () => { set({ alt:false }); rr(); }),
+      chip('Alternate weeks', c.alt, () => { set({ alt:true, aWeek:c.aWeek || thisMon }); rr(); })));
+    if(c.alt){
+      const inp = (k, ph) => h('input', { class:'ob-input', id:'stBins' + k.toUpperCase(), value:c[k], placeholder:ph, maxLength:40, 'aria-label':ph,
+        onChange:e => { set({ [k]:e.target.value.trim() || DEF[k] }); rr(); } });
+      card.appendChild(h('p', { class:'ob-hint', text:'What goes out each week (you can rename them):' }));
+      card.appendChild(h('div', { class:'fhbin-names' }, inp('a', 'First bins, e.g. General waste'), inp('b', 'Other bins, e.g. Recycling')));
+      card.appendChild(h('p', { class:'ob-label', text:'This week' }));
+      card.appendChild(h('div', { class:'ob-chips' },
+        chip(c.a, thisWeekA, () => { set({ aWeek:thisMon }); rr(); }),
+        chip(c.b, !thisWeekA, () => { const d = monday(new Date()); d.setDate(d.getDate() - 7); set({ aWeek:isoOf(d) }); rr(); })));
+    }
+    const next = (() => { for(let i = 0; i < 14; i++){ const d = new Date(); d.setDate(d.getDate() + i); const t = title(d); if(t) return d.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'short' }) + ': ' + t.replace(/^🗑️ /, ''); } return ''; })();
+    if(next) card.appendChild(h('p', { class:'ob-hint', id:'stBinsNext', text:'Next: ' + next }));
+    return card;
+  }
+  return { KEY, get, set, forDate, title, event, settingsCard };
+})();
+
 /* Imported calendars (Google / Outlook / iCloud "secret iCal link"). Read-only.
    The link is stored privately on the server; the server fetches the file for household members.
    We parse it here, expand repeats, and cache the result on this device (never synced, never in backups). */
@@ -8512,6 +8585,7 @@ const FHEvents = (function(){
     const own = load().filter(function(ev){ return occursOn(ev, date) && isFor(ev, person); });
     let all = own;
     if(typeof FHCal !== 'undefined' && FHCal.forDay){ all = own.concat(FHCal.forDay(date).filter(function(ev){ return isFor(ev, person); })); }
+    if(typeof FHBins !== 'undefined'){ const bin = FHBins.event(date); if(bin) all = all.concat([bin]); }
     return all.sort(function(a, b){ return (a.allDay ? 0 : 1) - (b.allDay ? 0 : 1) || sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)); });
   }
   function refresh(){ try{ refreshCurrentPage(); }catch(e){} }
@@ -8618,7 +8692,7 @@ const FHEvents = (function(){
     const m = h('div', { id:'fhEventSheet', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog' },
         h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:ev.title || 'Busy' }), h('div', { class:'fhm-sub', text:timeText(ev) + (ev.who ? ' · ' + ev.who + '’s calendar' : '') })), h('button', { type:'button', class:'fhm-x', text:'✕', 'aria-label':'Close', onClick:close })),
-        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:'Imported from a connected calendar. Edit it there.' }))));
+        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:ev.bin ? 'Change the day or bins in Settings › Bin day.' : 'Imported from a connected calendar. Edit it there.' }))));
     document.body.appendChild(m);
   }
   return { KEY:KEY, load:load, save:save, forDay:forDay, isFor:isFor, dayBlock:dayBlock, row:row, monthMarks:monthMarks, kitchenCard:kitchenCard, openEditor:openEditor, colorOf:colorOf, iso:iso, occursOn:occursOn };
@@ -8632,7 +8706,7 @@ const FHEss = (function(){
     { id:'paper', label:'Paper goods' }, { id:'waste', label:'Bin bags & waste' }, { id:'dish', label:'Dishwashing' },
     { id:'laundry', label:'Laundry' }, { id:'bath', label:'Bathroom & personal' }, { id:'tools', label:'Cleaning tools' },
     { id:'clean', label:'Cleaning products' }, { id:'maint', label:'Maintenance' }, { id:'hard', label:'Batteries, bulbs & hardware' },
-    { id:'kitchen', label:'Kitchen extras' }, { id:'firstaid', label:'First aid' }, { id:'pets', label:'Pets' }, { id:'other', label:'Your own' } ];
+    { id:'kitchen', label:'Kitchen extras' }, { id:'firstaid', label:'First aid' }, { id:'kids', label:'Baby & children' }, { id:'pets', label:'Pets' }, { id:'other', label:'Your own' } ];
   // [id, group, emoji, UK name, US name (if different), on by default]
   const C = [
     ['toilet-roll','paper','🧻','Toilet roll','Toilet paper',1], ['kitchen-roll','paper','🧻','Kitchen roll','Paper towels',1], ['tissues','paper','🤧','Tissues','',1],
@@ -8647,15 +8721,41 @@ const FHEss = (function(){
     ['aa-batteries','hard','🔋','AA batteries','',0], ['aaa-batteries','hard','🔋','AAA batteries','',0], ['light-bulbs','hard','💡','Light bulbs','',1], ['vacuum-bags','hard','🌀','Vacuum cleaner bags or filters','',0],
     ['foil','kitchen','✨','Foil','Aluminum foil',0], ['cling-film','kitchen','🎞️','Cling film','Plastic wrap',0], ['baking-paper','kitchen','📜','Baking paper','Parchment paper',0],
     ['plasters','firstaid','🩹','Plasters','Band-aids',0],
+    ['nappies','kids','👶','Nappies','Diapers',1], ['baby-wipes','kids','🧻','Baby wipes','',1], ['nappy-cream','kids','🧴','Nappy cream','Diaper cream',1], ['nappy-bags','kids','🛍️','Nappy bags','Diaper bags',0],
+    ['formula','kids','🍼','Baby formula','Infant formula',0], ['baby-food','kids','🥣','Baby food pouches','',0], ['pull-ups','kids','🩲','Pull-ups','Training pants',1],
+    ['kids-toothpaste','kids','🪥','Children’s toothpaste','Kids’ toothpaste',1], ['kids-paracetamol','kids','💊','Children’s paracetamol','Children’s pain reliever',0],
+    ['lunchbox-snacks','kids','🍎','Lunchbox snacks','',0], ['kids-shampoo','kids','🫧','Children’s shampoo','Kids’ shampoo',0],
     ['dog-food','pets','🐕','Dog food','',1], ['cat-food','pets','🐈','Cat food','',1], ['cat-litter','pets','🐈','Cat litter','',1], ['pet-food','pets','🐾','Pet food','',1] ];
+  // Baby & children items: suggested while a child is within [fromMonths, toMonths) of age
+  const KID_AGES = { 'nappies':[0,36], 'baby-wipes':[0,48], 'nappy-cream':[0,36], 'nappy-bags':[0,36], 'formula':[0,12], 'baby-food':[5,24],
+    'pull-ups':[24,60], 'kids-toothpaste':[0,96], 'kids-paracetamol':[2,144], 'lunchbox-snacks':[48,192], 'kids-shampoo':[0,120] };
+  function monthsOf(p, now){
+    now = now || new Date();
+    const b = FHPeople.parse(p && p.born);
+    if(b) return (now.getFullYear() - b.y) * 12 + (now.getMonth() + 1 - b.m);
+    return p && p.age > 0 ? p.age * 12 : null;
+  }
+  function kidMonths(people){ return (people || []).filter(function(p){ return p && p.role === 'child'; }).map(function(p){ return monthsOf(p); }).filter(function(m){ return m != null && m >= 0; }); }
+  function fitsKids(id, people){ const r = KID_AGES[id]; return !!r && kidMonths(people).some(function(m){ return m >= r[0] && m < r[1]; }); }
+  function householdPeople(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
+  /* everyday baby/children items worth adding at the children's current ages, minus anything chosen or dismissed */
+  function suggestions(){
+    const st = load(); if(!st) return [];
+    const ppl = householdPeople(), have = {}, gone = {};
+    st.ids.forEach(function(id){ have[id] = 1; }); (st.dismissed || []).forEach(function(id){ gone[id] = 1; });
+    return C.filter(function(r){ return r[1] === 'kids' && r[5] && !have[r[0]] && !gone[r[0]] && fitsKids(r[0], ppl); }).map(mk);
+  }
+  function addSuggested(id){ const st = load() || { ids:[], custom:[] }; if(st.ids.indexOf(id) < 0) st.ids.push(id); save(st); }
+  function dismiss(id){ const st = load() || { ids:[], custom:[] }; st.dismissed = (st.dismissed || []).concat([id]); save(st); }
   function us(){ try{ return FHLocale.get().naming === 'us'; }catch(e){ return false; } }
   function mk(r){ return { id:r[0], group:r[1], emoji:r[2], name:(us() && r[4]) ? r[4] : r[3], on:!!r[5] }; }
   function petsOf(p){ const out = {}; if(p){ if(p.dog) out['dog-food'] = 1; if(p.cat){ out['cat-food'] = 1; out['cat-litter'] = 1; } if(p.other) out['pet-food'] = 1; } return out; }
-  function catalog(pets){ const pp = petsOf(pets); return C.filter(function(r){ return r[1] !== 'pets' || pp[r[0]]; }).map(mk); }
-  function groups(pets){ return GROUPS.filter(function(g){ return g.id !== 'other' && (g.id !== 'pets' || Object.keys(petsOf(pets)).length); }); }
-  function defaults(pets){ return catalog(pets).filter(function(i){ return i.on; }).map(function(i){ return i.id; }); }
+  // setup: pets and the children's ages decide which pet and baby/children items are offered
+  function catalog(pets, people){ const pp = petsOf(pets); return C.filter(function(r){ return r[1] === 'pets' ? !!pp[r[0]] : r[1] === 'kids' ? fitsKids(r[0], people) : true; }).map(mk); }
+  function groups(pets, people){ return GROUPS.filter(function(g){ return g.id !== 'other' && (g.id !== 'pets' || Object.keys(petsOf(pets)).length) && (g.id !== 'kids' || catalog(pets, people).some(function(i){ return i.group === 'kids'; })); }); }
+  function defaults(pets, people){ return catalog(pets, people).filter(function(i){ return i.on; }).map(function(i){ return i.id; }); }
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || 'null'); return v && Array.isArray(v.ids) ? v : null; }catch(e){ return null; } }
-  function save(v){ fhSaveJSON(KEY, { v:1, ids:v.ids || [], custom:v.custom || [] }); }
+  function save(v){ fhSaveJSON(KEY, { v:1, ids:v.ids || [], custom:v.custom || [], dismissed:v.dismissed || [] }); }
   // everything the household has chosen, resolved to {id,name,emoji,group}
   function mine(){
     const st = load(); if(!st) return [];
@@ -8675,6 +8775,13 @@ const FHEss = (function(){
       container.appendChild(h('div', { class:'empty-note', text:'Choose the things you keep stocked, like toilet roll and bin bags.' }));
       container.appendChild(h('button', { type:'button', class:'btn', text:'Choose my essentials', onClick:function(){ openEditor(function(){ render(container); }); } }));
       return;
+    }
+    const sug = suggestions();
+    if(sug.length){
+      container.appendChild(h('div', { class:'fhes-sug', id:'fhesSug' }, h('div', { class:'fhes-sug-h', text:'Suggested for your children' }),
+        ...sug.map(function(it){ return h('div', { class:'fhes-sug-row' }, h('span', { class:'fhes-sug-name', text:it.emoji + ' ' + it.name }),
+          h('button', { type:'button', class:'btn small', text:'Add', 'aria-label':'Add ' + it.name, onClick:function(){ addSuggested(it.id); render(container); } }),
+          h('button', { type:'button', class:'btn small secondary', text:'No thanks', 'aria-label':'No thanks to ' + it.name, onClick:function(){ dismiss(it.id); render(container); } })); })));
     }
     const low = FHExtras.essLowCount();
     if(low) container.appendChild(h('div', { class:'fhes-count', text:low + (low === 1 ? ' item' : ' items') + ' on your next shop' }));
@@ -8734,7 +8841,7 @@ const FHEss = (function(){
         h('div', { class:'fhes-donebar' }, h('button', { type:'button', class:'btn', text:'Done', onClick:close }))));
     document.body.appendChild(m); document.addEventListener('keydown', onKey); draw();
   }
-  return { KEY:KEY, catalog:catalog, groups:groups, defaults:defaults, load:load, save:save, mine:mine, render:render, openEditor:openEditor };
+  return { KEY:KEY, catalog:catalog, groups:groups, defaults:defaults, load:load, save:save, mine:mine, render:render, openEditor:openEditor, suggestions:suggestions, fitsKids:fitsKids };
 })();
 
 /* One-off family tasks: add, assign to a person, optional due date (and time) that shows on the calendar.
@@ -9484,6 +9591,13 @@ function obGuessCat(proteins){ return proteins.indexOf('chicken')>=0 ? 'chicken'
 function obCatalogInfo(){
   return MealApp.getCatalog().map(obMealInfo).concat(OB_EXTRA_MEALS.map(m=>Object.assign(obMealInfo(m), { custom:true })));
 }
+/* Built-in meals a household's food choices leave out. Saved choices (family-hub-diets-v1) are checked on every load,
+   so meals added in later releases are left out too, not just the ones hidden on the day of setup. */
+function obDietBlocks(meal, diets){
+  if(!diets || !diets.length) return false;
+  const p = obMealInfo(meal);
+  return OB_DIETS.concat([OB_VEGETARIAN]).some(d=>diets.indexOf(d.id)>=0 && d.test(p));
+}
 function obAllowedMeals(diets){
   const tests = OB_DIETS.concat([OB_VEGETARIAN]).filter(d=>diets.indexOf(d.id)>=0);
   // the family's own meals are never filtered out — they were added on purpose
@@ -9525,10 +9639,18 @@ function obRoomsDefault(people, pets){
 }
 
 /* ---------- chores ---------- */
+// Babies and toddlers never get chores; older children only get the ones they're old enough for (chore.minAge).
+const FH_MIN_CHORE_AGE = 3;
+function fhChoreAgeOk(person, chore){
+  if(!person || person.role !== 'child') return true;
+  const a = FHPeople.ageOf(person);
+  return a == null || a >= Math.max(3, (chore && chore.minAge) || 0);   // 3 = FH_MIN_CHORE_AGE; literal because the chore app can call this before this file's consts exist
+}
 function obGenerateChores(S){
   const people = S.people, level = S.level, style = S.style, rewards = S.features.rewards && S.features.chores;
   const parents = people.filter(obIsParent), kids = people.filter(p=>!obIsParent(p));
-  const kidAge = k=> FHPeople.ageOf(k) || 8;
+  const kidAge = k=>{ const a = FHPeople.ageOf(k); return a == null ? 8 : a; };   // a baby is 0, not unknown
+  const oldEnough = (k, minAge)=> kidAge(k) >= Math.max(FH_MIN_CHORE_AGE, minAge||0);
   let parentRR = 0;
   const out = [];
   const adultAssignee = ()=>{
@@ -9537,7 +9659,7 @@ function obGenerateChores(S){
     return parents[(parentRR++) % parents.length].id;
   };
   const kidAssignee = (minAge)=>{
-    const ok = kids.filter(k=>kidAge(k)>=(minAge||0));
+    const ok = kids.filter(k=>oldEnough(k, minAge));
     if(ok.length === 1) return ok[0].id;
     if(ok.length > 1) return 'rotate:children';
     return adultAssignee();
@@ -9553,7 +9675,7 @@ function obGenerateChores(S){
       case 'owner': {
         if(room.owner && room.owner !== 'parents'){
           const k = people.find(p=>p.id===room.owner);
-          if(k && (obIsParent(k) || kidAge(k) >= (t.minAge||0))) return k.id;
+          if(k && (obIsParent(k) || oldEnough(k, t.minAge))) return k.id;
           return adultAssignee();
         }
         if(room.owner === 'parents') return parents.length>1 ? 'rotate:parents' : adultAssignee();
@@ -9565,6 +9687,7 @@ function obGenerateChores(S){
   const cats = [];
   const addChore = (room, t)=>{
     const c = { id:'c'+out.length.toString(36)+Math.random().toString(36).slice(2,5), name:FHLocale.name(t.name), cat:room.id, freq:t.freq, assignedTo:pick(t, room) };
+    if(t.minAge) c.minAge = t.minAge;   // rotations skip children younger than this (and every child under FH_MIN_CHORE_AGE)
     if(t.freq==='weekly' || t.freq==='fortnightly') c.weekday = (t.wd!=null ? t.wd : 5);
     if(t.freq==='fortnightly') c.parity = t.par || 'A';
     if(t.times && t.times>1) c.timesPerDay = t.times;
@@ -9600,8 +9723,9 @@ function obChoreLoad(chores, people){
     let w = 0;
     if(c.freq==='daily') w = 1; else if(c.freq==='weekly') w = 1/7; else if(c.freq==='fortnightly') w = 1/14; else w = 1/30;
     daily += w; if(c.freq==='daily') dailyTicks++;
-    const targets = (c.assignedTo==='rotate:all') ? people.map(p=>p.id)
-      : (c.assignedTo==='rotate:children') ? people.filter(p=>!obIsParent(p)).map(p=>p.id)
+    const canDo = p=> obIsParent(p) || fhChoreAgeOk(p, c);
+    const targets = (c.assignedTo==='rotate:all') ? people.filter(canDo).map(p=>p.id)
+      : (c.assignedTo==='rotate:children') ? people.filter(p=>!obIsParent(p) && canDo(p)).map(p=>p.id)
       : (c.assignedTo==='rotate:parents') ? people.filter(obIsParent).map(p=>p.id)
       : (c.assignedTo==='anyone') ? ['anyone'] : [c.assignedTo];
     targets.forEach(t=>{ per[t] = (per[t]||0) + w/(targets.length||1); });
@@ -9640,7 +9764,7 @@ function obGeneratePlan(S, seed){
   const info = {}; obCatalogInfo().forEach(p=>info[p.id]=p);
   const allowedSet = {}; obAllowedMeals(S.diets).forEach(p=>allowedSet[p.id]=true);
   const pins = (S.pins || []).filter(r=> info[r.mealId] && allowedSet[r.mealId]);
-  const pool = S.selectedMeals.filter(id=>info[id]);
+  const pool = S.selectedMeals.filter(id=>info[id] && (allowedSet[id] || info[id].custom));
   pins.forEach(r=>{ if(r.every>0 && pool.indexOf(r.mealId)<0) pool.push(r.mealId); });
   let N = [1,2,4].indexOf(S.weeks) >= 0 ? S.weeks : 4;
   const needW = pins.reduce((m,r)=>Math.max(m, obPinNeedsWeeks(r)), 1);
@@ -9743,6 +9867,7 @@ function obApply(S){
   const starter = {}; [1,2,3,4].forEach(w=>{ starter[w] = planObj[w].map(d=>d.meal); });
   fhSaveJSON('family-hub-starter-plan-v1', starter);
   fhSaveJSON('family-hub-hidden-meals-v1', hidden);
+  fhSaveJSON('family-hub-diets-v1', F.meals ? (S.diets||[]).slice() : []);
   fhSaveJSON('family-hub-meal-rules-v1', F.meals ? (S.pins||[]).filter(r=> planIds && r.mealId && !hidden.includes(r.mealId)).map(r=>({ id:r.id, mealId:r.mealId, day:r.day, every:r.every, start:r.start||1 })) : []);
   fhSaveJSON('brick-bites-custom-meals-v1', (F.meals ? (S.customMeals||[]) : []).map(m=>Object.assign({ isCustom:true, cuisine:'' }, m, { cat: obGuessCat(obMealInfo(m).proteins) })));
   fhSaveJSON('brick-bites-saved-plans-v1', {});
@@ -9762,7 +9887,7 @@ function obApply(S){
   fhSaveJSON('brick-bites-meat-expiry-v1', {});
   fhSaveJSON('brick-bites-global-portions-v1', (F.meals && S.portionOn && S.portionG>0) ? Object.keys(portionNames).sort().map(n=>({name:n, qty:S.portionG, unit:'g'})) : []);
 
-  if(F.meals && F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets), custom: S.essCustom || [] }); }
+  if(F.meals && F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
   Feature.markSetUp({ chores:!!F.chores, meals:!!F.meals, shopping:!!(F.meals && F.shopping), essentials:!!(F.meals && F.shopping && F.essentials), tasks:F.tasks !== false, rewards:!!(F.chores && F.rewards) });
   try{ fhRawSet('family-hub-calview-v1', (S.calView === 'shopweek' && !(F.meals && F.shopping)) ? 'week' : (S.calView || 'week')); }catch(e){}
   fhRawRemove(FH_DRAFT_KEY);
@@ -9805,6 +9930,7 @@ function obApplyAddon(S, which){
     const starter = {}; [1,2,3,4].forEach(w=>{ starter[w] = planObj[w].map(d=>d.meal); });
     fhSaveJSON('family-hub-starter-plan-v1', starter);
     fhSaveJSON('family-hub-hidden-meals-v1', hidden);
+    fhSaveJSON('family-hub-diets-v1', (S.diets||[]).slice());
     fhSaveJSON('family-hub-meal-rules-v1', (S.pins||[]).filter(r=> r.mealId && !hidden.includes(r.mealId)).map(r=>({ id:r.id, mealId:r.mealId, day:r.day, every:r.every, start:r.start||1 })));
     fhSaveJSON('brick-bites-custom-meals-v1', (S.customMeals||[]).map(m=>Object.assign({ isCustom:true, cuisine:'' }, m, { cat: obGuessCat(obMealInfo(m).proteins) })));
     fhSaveJSON('brick-bites-meal-overrides-v1', overrides);
@@ -9813,7 +9939,7 @@ function obApplyAddon(S, which){
     fhRawSet('brick-bites-shop-day-v1', String(S.shopDay));
     fhRawSet('brick-bites-expiry-enabled-v1', String(!!S.expiryOn));
     fhSaveJSON('brick-bites-global-portions-v1', (S.portionOn && S.portionG>0) ? Object.keys(portionNames).sort().map(n=>({name:n, qty:S.portionG, unit:'g'})) : []);
-    if(F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets), custom: S.essCustom || [] }); }
+    if(F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
     Feature.markProvisioned('meals');
   }
   fhRawRemove(FH_DRAFT_KEY);
@@ -10288,12 +10414,12 @@ const OBW = (function(){
   }
 
   function stepEssentials(){
-    if(!S.essIds) S.essIds = FHEss.defaults(S.pets);
+    if(!S.essIds) S.essIds = FHEss.defaults(S.pets, S.people);
     if(!S.essCustom) S.essCustom = [];
     const on = {}; S.essIds.forEach(id=>{ on[id] = 1; });
     const out = [ ...title('Household essentials','Tick what you want to keep an eye on. Later, one tap on “running low” puts it on your next shop. Change this any time.') ];
-    FHEss.groups(S.pets).forEach(g=>{
-      const items = FHEss.catalog(S.pets).filter(i=>i.group===g.id); if(!items.length) return;
+    FHEss.groups(S.pets, S.people).forEach(g=>{
+      const items = FHEss.catalog(S.pets, S.people).filter(i=>i.group===g.id); if(!items.length) return;
       out.push(h('p',{class:'ob-label',text:g.label}));
       out.push(h('div',{class:'ob-chips'}, items.map(i=>chip(i.emoji+' '+i.name, !!on[i.id], ()=>{ S.essIds = on[i.id] ? S.essIds.filter(x=>x!==i.id) : S.essIds.concat([i.id]); render(); }))));
     });
@@ -10378,7 +10504,7 @@ const OBW = (function(){
       lines.push(['🍽️', S.selectedMeals.length+' meals'+(S.customMeals.length?' (incl. '+S.customMeals.length+' of your own)':'')+' · '+S.cookNights.filter(Boolean).length+' cook nights a week · '+S.weeks+'-week rotation']);
       if((S.pins||[]).length) lines.push(['📌', (S.pins||[]).length+' fixed night'+((S.pins||[]).length===1?'':'s')+' set']);
       if(F.shopping) lines.push(['🛒', 'Shopping on '+OB_DAY_LONG[S.shopDay]+' for '+(S.householdSize||nm.length)]);
-      if(F.shopping && F.essentials) lines.push(['🧻', ((S.essIds||FHEss.defaults(S.pets)).length + (S.essCustom||[]).length)+' household essentials to keep stocked']);
+      if(F.shopping && F.essentials) lines.push(['🧻', ((S.essIds||FHEss.defaults(S.pets, S.people)).length + (S.essCustom||[]).length)+' household essentials to keep stocked']);
     }
     const prev = [];
     if(F.meals){
@@ -10576,6 +10702,8 @@ function renderSettingsPage(){
     h('p',{class:'ob-label',text:'Mode'}),
     h('div',{class:'ob-chips'}, modeChip('Light','light'), modeChip('Dark','dark'), modeChip('Auto (follow device)','auto'))));
   root.appendChild(fhCalViewCard(rr));
+  root.appendChild(FHBins.settingsCard(rr));
+  if(Feature.on('meals')) root.appendChild(fhFoodPrefsCard(rr));
   if(Feature.on('chores')) root.appendChild(FHPeople.settingsCard(rr));
   root.appendChild(FHLock.settingsCard(rr));
   const lp = FHLocale.get();
@@ -10708,6 +10836,40 @@ function fhCalViewCard(rr){
     h('p',{class:'ob-label',text:'Opens as'}),
     h('div',{class:'ob-chips'}, FH_CAL_VIEWS.filter(o=>o[0]!=='shopweek' || Feature.on('shopping')).map(o=>h('button',{type:'button',class:'ob-chip'+(cur===o[0]?' on':''),'data-cv':o[0],text:o[1],onClick:()=>{ try{ fhRawSet('family-hub-calview-v1', o[0]); }catch(e){} rr(); }}))),
     h('p',{class:'ob-hint',text:'Saved on this device only, so a kitchen tablet and a phone can differ.'}));
+}
+
+/* Food preferences after setup. Saved choices hide matching built-in meals everywhere (chooser, suggestions, new
+   recipes in later releases). Households set up before this was saved get their choices worked out from the old
+   hidden list. */
+function fhFoodPrefs(){
+  try{ const d = JSON.parse(fhRawGet('family-hub-diets-v1') || 'null'); if(Array.isArray(d)) return d; }catch(e){}
+  let hidden = []; try{ hidden = JSON.parse(fhRawGet('family-hub-hidden-meals-v1') || '[]') || []; }catch(e){}
+  const all = MealApp.getCatalog();
+  return OB_DIETS.concat([OB_VEGETARIAN]).filter(d=>{ const hit = all.filter(m=>d.test(obMealInfo(m))); return hit.length && hit.every(m=>hidden.indexOf(m.id)>=0); }).map(d=>d.id);
+}
+function fhApplyFoodPrefs(diets){
+  fhSaveJSON('family-hub-diets-v1', diets);
+  fhSaveJSON('family-hub-hidden-meals-v1', []);
+  MealApp.applyDiets(diets);
+  try{ refreshCurrentPage(); }catch(e){}
+}
+function fhPlannedBlocked(diets){
+  let plan = null; try{ plan = JSON.parse(fhRawGet('brick-bites-plan-v1') || 'null'); }catch(e){}
+  const names = {}; if(!plan) return [];
+  [1,2,3,4].forEach(w=>(plan[w]||[]).forEach(d=>{ const id = d && d.meal; const m = id && MealApp.getCatalog().find(x=>x.id===id); if(m && obDietBlocks(m, diets)) names[m.name] = 1; }));
+  return Object.keys(names);
+}
+function fhFoodPrefsCard(rr){
+  const diets = fhFoodPrefs();
+  const toggle = id=>{ const d = diets.slice(), i = d.indexOf(id); if(i>=0) d.splice(i,1); else d.push(id); fhApplyFoodPrefs(d); rr(); };
+  const chip = d=> h('button',{type:'button',class:'ob-chip'+(diets.indexOf(d.id)>=0?' on':''),'aria-pressed':diets.indexOf(d.id)>=0?'true':'false',text:d.label,onClick:()=>toggle(d.id)});
+  const clash = fhPlannedBlocked(diets);
+  return h('div',{class:'st-card',id:'stFood'}, h('h3',{text:'Food preferences'}),
+    h('p',{class:'ob-hint',text:'Tap anything your household doesn’t eat. Those meals are left out of the meal chooser and suggestions.'}),
+    h('div',{class:'ob-chips'}, OB_DIETS.map(chip)),
+    h('div',{class:'ob-chips',style:'margin-top:8px'}, chip(OB_VEGETARIAN)),
+    clash.length ? h('p',{class:'ob-hint',id:'stFoodClash',text:'Already in your plan: '+clash.join(', ')+'. Change '+(clash.length===1?'it':'them')+' from the Meal plan page.'}) : null,
+    h('p',{class:'ob-hint',text:'Meals you added yourself are never left out.'}));
 }
 
 /* ==================== KITCHEN DISPLAY (tablet / wall screen) ==================== */
@@ -11039,7 +11201,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -11474,7 +11636,7 @@ const FHPush = (function(){
     const tasks = (typeof FHTasks !== 'undefined' && Feature.on('tasks')) ? FHTasks.load() : [];
     for(let d = 0; d < DAYS; d++){
       const day = new Date(from.getFullYear(), from.getMonth(), from.getDate() + d), iso = FHEvents.iso(day);
-      const evs = FHEvents.forDay(day).filter(function(ev){ return !ev.ro; });   // household events only
+      const evs = FHEvents.forDay(day).filter(function(ev){ return !ev.ro || ev.bin; });   // household events and bin day, not imported calendars
       const tks = tasks.filter(function(t){ return !t.done && t.due === iso; });
       const lines = [], eve = [];
       evs.forEach(function(ev){
