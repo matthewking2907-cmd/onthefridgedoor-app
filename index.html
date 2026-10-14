@@ -2248,6 +2248,8 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhes-sug-h{ font-weight:700; font-size:0.9rem; margin-bottom:6px; }
 .fhes-sug-row{ display:flex; align-items:center; gap:8px; padding:4px 0; flex-wrap:wrap; }
 .fhes-sug-name{ flex:1 1 140px; min-width:0; }
+.fhx-shopday{ display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:0.92rem; color:var(--muted,#777); }
+.fhx-shopday .fhx-sel{ flex:0 0 auto; width:auto; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2492,7 +2494,7 @@ var FHTheme = (function(){
 
     <section class="page" id="page-shopping">
       <div class="app">
-        <p class="hint" style="margin-top:0;">Everything you need for the week from your shop day, consolidated and grouped by aisle. Set your household size and shop day from the Meal Plan tab.</p>
+        <p class="hint" style="margin-top:0;">Everything for the week from your shop day, grouped by aisle. Add anything by hand below.</p>
         <div id="shoppingListContent"></div>
       </div>
     </section>
@@ -2719,8 +2721,8 @@ const Feature = (function(){
   function on(name){
     if(!cfg) return true;
     const f = cfg.features || {};
-    if(name === 'shopping') return f.meals !== false && f.shopping !== false;
-    if(name === 'essentials') return f.meals !== false && f.shopping !== false && f.essentials !== false;
+    // the shopping list works without the meal planner (then it's filled by hand and from essentials)
+    if(name === 'essentials') return f.shopping !== false && f.essentials !== false;
     return f[name] !== false;
   }
   function set(name, value){
@@ -6032,7 +6034,7 @@ function buildShoppingList(anchor){
   FHScratch.beginBuild();
   const lineMap = {}; // key: name|unit -> { key, name, unit, section, qty, shelfLifeDays, uses:[{mealName,date}] }
   days.forEach(d=>{
-    if(!d.meal || !Array.isArray(d.meal.ingredients)) return;
+    if(!d.meal || !Array.isArray(d.meal.ingredients) || !Feature.on('meals')) return;
     FHScratch.expand(d.meal.ingredients, d).forEach(line=>{
       const key = line.name.trim().toLowerCase() + '|' + (line.unit||'').trim().toLowerCase();
       if(!lineMap[key]){
@@ -6202,18 +6204,19 @@ function renderShoppingListPage(container){
   thisWeekBtn.textContent = 'Jump to current shop';
   thisWeekBtn.addEventListener('click', ()=>{ resetShopCycleToToday(); renderShoppingListPage(container); });
   container.appendChild(thisWeekBtn);
+  container.appendChild(FHExtras.shopDayRow(()=>renderShoppingListPage(container)));
   container.appendChild(FHExtras.block(()=>renderShoppingListPage(container), anchor));
 
   const bySection = buildShoppingList();
 
-  const fhEmpty = []; shopCycleDays(anchor).forEach(function(d){ if(d.meal && !(d.meal.ingredients || []).length && fhEmpty.indexOf(d.meal.name) < 0) fhEmpty.push(d.meal.name); });
+  const fhEmpty = []; shopCycleDays(anchor).forEach(function(d){ if(d.meal && Feature.on('meals') && !(d.meal.ingredients || []).length && fhEmpty.indexOf(d.meal.name) < 0) fhEmpty.push(d.meal.name); });
   if(fhEmpty.length){
     const box = document.createElement('div'); box.className = 'noing-panel';
     box.textContent = '⚠️ Not on this list — no ingredients added yet: ' + fhEmpty.join(', ') + '. Add them from Meal Plan → your meal → Ingredients.';
     container.appendChild(box);
   }
 
-  if(expiryEnabled){
+  if(expiryEnabled && Feature.on('meals')){
     const conflicts = buildFreshnessConflicts();
     const freshWrap = document.createElement('div');
     freshWrap.className = 'freshness-panel';
@@ -6264,7 +6267,7 @@ function renderShoppingListPage(container){
   if(!anyItems){
     const empty = document.createElement('div');
     empty.className = 'empty-note';
-    empty.textContent = 'No ingredients yet for this week — add ingredients to your meals (in the Meal Plan tab) to build a shopping list.';
+    empty.textContent = Feature.on('meals') ? 'No ingredients yet for this week — add ingredients to your meals (in the Meal Plan tab) to build a shopping list.' : 'Nothing on the list yet. Add something above, or tap what’s running low on the Essentials page.';
     container.appendChild(empty);
     return;
   }
@@ -6334,6 +6337,9 @@ function renderShoppingListPage(container){
 
 
 function getCatalog(){ return Object.keys(mealsById).map(function(k){ return mealsById[k]; }); }
+/* the shopping list's shop day, for the picker on the shopping page (the Meal plan page has its own) */
+function getShopDay(){ return shopDay; }
+function setShopDay(d){ shopDay = d; persistShopDay(); resetShopCycleToToday(); const s = document.getElementById('shopDaySelect'); if(s) s.value = String(d); if(typeof __onChange === 'function') __onChange(); }
 /* food preferences changed in Settings: rebuild the visible list from every built-in meal */
 function applyDiets(diets){ MEALS.length = 0; getCatalog().forEach(function(m){ if(!obDietBlocks(m, diets)) MEALS.push(m); }); render(); renderMealLibrary(); }
 function upcomingShopAnchor(){
@@ -6517,7 +6523,7 @@ function renderRulesPanel(anchorEl){
 const __ready = init();
 
   return {
-    ready: __ready, getCatalog: getCatalog, applyDiets: applyDiets, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
+    ready: __ready, getCatalog: getCatalog, applyDiets: applyDiets, getShopDay: getShopDay, setShopDay: setShopDay, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
     getPlannedCount: getPlannedCount, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
     getDayDisplay: getDayDisplay,
@@ -8082,6 +8088,24 @@ const FHExtras = (function(){
     save(list); return true;
   }
   // The add form that sits at the top of the shopping list.
+  /* Changing the shop day changes which week every item is filed under. Items for this shop or a later one move to
+     the new week that ends nearest the old one, so nothing you added disappears. */
+  function moveToShopDay(day){
+    const list = load(), cur = ck(MealApp.mostRecentShopDay(new Date())), ends = {};
+    list.forEach(function(x){ if(x.scope === 'once' && x.cycle >= cur){ const p = x.cycle.split('-'); ends[x.id] = new Date(+p[0], +p[1] - 1, +p[2] + 6); } });
+    MealApp.setShopDay(day);
+    let moved = false;
+    list.forEach(function(x){ if(ends[x.id]){ const k = ck(MealApp.mostRecentShopDay(ends[x.id])); if(k !== x.cycle){ x.cycle = k; moved = true; } } });
+    if(moved) save(list);
+  }
+  /* shop day picker on the shopping page (needed when there's no meal planner to set it on) */
+  function shopDayRow(rerender){
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const sel = h('select', { class:'fhx-sel', id:'fhxShopDay', 'aria-label':'Shop day', onChange:function(){ moveToShopDay(parseInt(sel.value, 10)); rerender(); } },
+      days.map(function(d, i){ return h('option', { value:i, text:d }); }));
+    sel.value = String(MealApp.getShopDay());
+    return h('label', { class:'fhx-shopday' }, h('span', { text:'I shop on' }), sel);
+  }
   function block(rerender, anchor){
     const cyc = ck(anchor);
     const sections = MealApp.getSections();
@@ -8152,7 +8176,7 @@ const FHExtras = (function(){
           save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } }));
     });
   }
-  return { essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
+  return { shopDayRow:shopDayRow, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
 /* ==================== BIN DAY: which day, and which bins if they alternate ====================
@@ -9887,9 +9911,9 @@ function obApply(S){
   fhSaveJSON('brick-bites-meat-expiry-v1', {});
   fhSaveJSON('brick-bites-global-portions-v1', (F.meals && S.portionOn && S.portionG>0) ? Object.keys(portionNames).sort().map(n=>({name:n, qty:S.portionG, unit:'g'})) : []);
 
-  if(F.meals && F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
-  Feature.markSetUp({ chores:!!F.chores, meals:!!F.meals, shopping:!!(F.meals && F.shopping), essentials:!!(F.meals && F.shopping && F.essentials), tasks:F.tasks !== false, rewards:!!(F.chores && F.rewards) });
-  try{ fhRawSet('family-hub-calview-v1', (S.calView === 'shopweek' && !(F.meals && F.shopping)) ? 'week' : (S.calView || 'week')); }catch(e){}
+  if(F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
+  Feature.markSetUp({ chores:!!F.chores, meals:!!F.meals, shopping:!!F.shopping, essentials:!!(F.shopping && F.essentials), tasks:F.tasks !== false, rewards:!!(F.chores && F.rewards) });
+  try{ fhRawSet('family-hub-calview-v1', (S.calView === 'shopweek' && !F.shopping) ? 'week' : (S.calView || 'week')); }catch(e){}
   fhRawRemove(FH_DRAFT_KEY);
   try{ sessionStorage.setItem(FH_JUST_KEY, '1'); }catch(e){}
   location.reload();
@@ -9984,8 +10008,8 @@ const OBW = (function(){
     const st = ['welcome','region','features','people'];
     if(F.chores){ st.push('rooms'); st.push('chores'); }
     if(F.meals){ st.push('meals'); st.push('ownmeals'); }
-    if(F.meals && F.shopping) st.push('shopping');
-    if(F.meals && F.shopping && F.essentials) st.push('essentials');
+    if(F.shopping) st.push('shopping');
+    if(F.shopping && F.essentials) st.push('essentials');
     st.push('review');
     return st;
   }
@@ -10123,11 +10147,11 @@ const OBW = (function(){
       row('chores','🧹','Chore chart','Daily, weekly and monthly jobs shared between everyone.'),
       row('rewards','⭐','Rewards','Stars (or anything you like) earned for chores, with prizes at milestones.', !F.chores, !F.chores?'Needs the chore chart':''),
       row('meals','🍽️','Meal planner','A 4-week rolling plan with a library of family meals.'),
-      row('shopping','🛒','Shopping list','Built automatically from your meal plan, scaled to your household.', !F.meals, !F.meals?'Needs the meal planner':''),
-      row('essentials','🧻','Household essentials','Tap when you run low on toilet roll, bin bags and the like. It goes on your next shop.', !(F.meals && F.shopping), !(F.meals && F.shopping)?'Needs the shopping list':''),
+      row('shopping','🛒','Shopping list', F.meals ? 'Built automatically from your meal plan, scaled to your household. Add anything else by hand.' : 'A shopping list you fill yourself. Switch on the meal planner too and it fills itself from your meals.'),
+      row('essentials','🧻','Household essentials','Tap when you run low on toilet roll, bin bags and the like. It goes on your next shop.', !F.shopping, !F.shopping?'Needs the shopping list':''),
       row('tasks','☑️','Tasks','One-off jobs like “return parcel”, with who and by when. Dated tasks show on the calendar.'),
       h('p',{class:'ob-label',text:'When you open the calendar, show'}),
-      h('div',{class:'ob-chips'}, [['3day','3 day'],['shopweek','Shop week'],['week','Week'],['month','Month']].filter(o=>o[0]!=='shopweek' || (F.meals && F.shopping)).map(o=>chip(o[1], (S.calView||'week')===o[0], ()=>{ S.calView=o[0]; render(); }))),
+      h('div',{class:'ob-chips'}, [['3day','3 day'],['shopweek','Shop week'],['week','Week'],['month','Month']].filter(o=>o[0]!=='shopweek' || F.shopping).map(o=>chip(o[1], (S.calView||'week')===o[0], ()=>{ S.calView=o[0]; render(); }))),
       h('p',{class:'ob-hint',text:'You can change this any time in Settings, per device.'})
     ];
   }
@@ -10401,6 +10425,7 @@ const OBW = (function(){
     return [ ...title('Shopping','Your shopping list covers the seven days from each shop day.'),
       h('p',{class:'ob-label',text:'Which day do you shop?'}),
       h('div',{class:'ob-chips'}, sh.map(d=>chip(d[1].slice(0,3), S.shopDay===d[0], ()=>{ S.shopDay=d[0]; render(); }))),
+      ...(!S.features.meals ? [] : [
       h('p',{class:'ob-label',text:'How many people do you cook for?'}),
       h('div',{class:'ob-row'}, stepper(S.householdSize,1,12,v=>{ S.householdSize=v; render(); }), h('small',{class:'ob-hint',text:'Recipes are written for 4 and scale to this.'})),
       h('p',{class:'ob-label',text:'Meat portions'}),
@@ -10410,6 +10435,7 @@ const OBW = (function(){
         : h('div',{class:'ob-row'}, h('input',{class:'ob-input ob-num',type:'number',min:50,max:400,step:5,value:S.portionG,onInput:e=>{ S.portionG=parseInt(e.target.value,10)||0; saveDraft(); }}), h('span',{text:'g per person per meal'}))) : h('p',{class:'ob-hint',text:'Off = recipe amounts scale with household size. 125g per person is a common starting point.'}),
       h('p',{class:'ob-label',text:'Freshness'}),
       h('label',{class:'ob-check'}, h('input',{type:'checkbox',checked:S.expiryOn,onChange:e=>{ S.expiryOn=e.target.checked; render(); }}), h('span',{text:'Warn me when meat or fish might go off before I cook it'}))
+      ])
     ];
   }
 
@@ -10503,7 +10529,7 @@ const OBW = (function(){
     if(F.meals){
       lines.push(['🍽️', S.selectedMeals.length+' meals'+(S.customMeals.length?' (incl. '+S.customMeals.length+' of your own)':'')+' · '+S.cookNights.filter(Boolean).length+' cook nights a week · '+S.weeks+'-week rotation']);
       if((S.pins||[]).length) lines.push(['📌', (S.pins||[]).length+' fixed night'+((S.pins||[]).length===1?'':'s')+' set']);
-      if(F.shopping) lines.push(['🛒', 'Shopping on '+OB_DAY_LONG[S.shopDay]+' for '+(S.householdSize||nm.length)]);
+      if(F.shopping) lines.push(['🛒', 'Shopping on '+OB_DAY_LONG[S.shopDay]+(F.meals ? ' for '+(S.householdSize||nm.length) : '')]);
       if(F.shopping && F.essentials) lines.push(['🧻', ((S.essIds||FHEss.defaults(S.pets, S.people)).length + (S.essCustom||[]).length)+' household essentials to keep stocked']);
     }
     const prev = [];
@@ -10686,7 +10712,7 @@ function renderSettingsPage(){
     toggle('chores','🧹','Chore chart','Chores, upcoming chores and calendar chores'),
     toggle('rewards','⭐','Rewards','Stars and prizes', !F.on('chores')),
     toggle('meals','🍽️','Meal planner','Meal plan and calendar meals'),
-    toggle('shopping','🛒','Shopping list','Needs the meal planner', !F.on('meals')),
+    toggle('shopping','🛒','Shopping list', F.on('meals') ? 'Fills itself from your meal plan; add anything else by hand' : 'Add things by hand; essentials you run low on go on it too'),
     toggle('tasks','☑️','Tasks','One-off jobs with a person and a due date, shown on the calendar'),
     toggle('essentials','🧻','Household essentials','Tap what is running low and it goes on your next shop. Needs the shopping list', !F.on('shopping')),
     h('p',{class:'ob-hint',text:'Turning something off only hides it — your data is kept and comes back if you turn it on again.'})));
@@ -10809,7 +10835,7 @@ function feedbackCard(){
 
 // Offered on a page whose feature was switched on after setup and has no starter data yet.
 function fhSetupBanner(pageId){
-  const feat = { chores:'chores', tasklists:'chores', mealplan:'meals', shopping:'meals' }[pageId];
+  const feat = { chores:'chores', tasklists:'chores', mealplan:'meals', shopping: Feature.on('meals') ? 'meals' : null }[pageId];
   document.querySelectorAll('.fh-setupbanner').forEach(n=>n.remove());
   if(!feat || !Feature.needsSetup(feat)) return;
   const sec = document.getElementById('page-' + pageId); if(!sec) return;
