@@ -1,7 +1,7 @@
 // Minimal offline cache for On the FridgeDoor — caches the app shell on install so
 // it still opens (with whatever data localStorage already has) with no
 // signal, and always tries the network first for a fresh copy when online.
-const CACHE_NAME = 'family-hub-onboarding-v46';
+const CACHE_NAME = 'family-hub-onboarding-v47';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -22,6 +22,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // only the app's own files: never keep copies of sync, calendar or font replies on the device
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
     fetch(event.request)
       .then((res) => {
