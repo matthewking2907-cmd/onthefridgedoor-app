@@ -2858,6 +2858,39 @@ Feature.load();
 // Decided once, before any module initialises: a brand-new install (no config, no old data) gets the wizard.
 const FH_NEEDS_SETUP = !Feature.isSetUp() && !fhLegacyDataExists();
 
+/* Put the cursor in a pop-up's first box only where there's a mouse: on a phone it would throw the keyboard up
+   before you've decided what to do. */
+function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMedia('(pointer: fine)').matches) el.focus(); }catch(e){} }
+
+/* Phone back button closes the open pop-up instead of leaving the app. Each pop-up (fhm-back sheets, the recipe
+   viewer, the "all set" screen) adds a history entry while it's open; Back closes it through its own close button so
+   any tidy-up still runs. A pop-up closed on screen takes its entry back off. */
+(function(){
+  const SEL = '.fhm-back, .fhr-overlay, #obDone';
+  let depth = 0, ignore = 0;
+  function count(){ return document.querySelectorAll(SEL).length; }
+  function closeTop(){
+    const all = document.querySelectorAll(SEL), el = all[all.length - 1]; if(!el) return;
+    const btn = el.querySelector('.fhm-head .fhm-x, .fhr-close');
+    if(btn){ btn.click(); return; }
+    el.dispatchEvent(new MouseEvent('click', { bubbles:true }));   // backdrop tap closes most sheets
+    if(document.body.contains(el)) el.remove();
+  }
+  function start(){
+    if(!document.body || !window.history || !history.pushState) return;
+    new MutationObserver(function(){
+      const n = count();
+      while(depth < n){ depth++; try{ history.pushState({ fhModal:depth }, ''); }catch(e){} }
+      while(depth > n){ depth--; ignore++; try{ history.back(); }catch(e){ ignore--; } }
+    }).observe(document.body, { childList:true });
+    window.addEventListener('popstate', function(){
+      if(ignore){ ignore--; return; }
+      if(depth > 0){ depth--; closeTop(); }
+    });
+  }
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+
 /* ==================== PEOPLE: birth month/year, age and UK school year ==================== */
 /* Children store born:'YYYY-MM' (month and year only, never a full date). Age and school year are worked out
    when needed, so they never go out of date. Older data stored a fixed age; migrate() turns that into an
@@ -8574,7 +8607,7 @@ const FHOcc = (function(){
           h('div', { class:'fhe-actions' },
             orig ? h('button', { type:'button', class:'btn secondary', text:isFest ? 'Stop tracking' : 'Delete', onClick:() => { if(!confirm((isFest ? 'Stop tracking “' : 'Delete “') + fullTitle(orig) + '”?')) return; save(load().filter(x => x.id !== orig.id)); close(); } }) : null,
             h('button', { type:'button', class:'btn', id:'fhoSave', text:'Save', onClick:doSave })))));
-    document.body.appendChild(m); setTimeout(() => { (title || document.getElementById('fhoIdea')).focus(); }, 50);
+    document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(title || document.getElementById('fhoIdea')), 50);
   }
   return { KEY, FESTIVALS, load, next, open, events, todayCard, pushLines, render, editor, tick, setFest, festDate, easter };
 })();
@@ -9108,7 +9141,7 @@ const FHEvents = (function(){
           h('div', { class:'fhe-actions' }, saveBtn, h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }), delBtn))));
     document.body.appendChild(m);
     document.addEventListener('keydown', onKey);
-    if(!editing) title.focus();
+    if(!editing) fhFocusIfDesktop(title);
   }
   /* read-only detail for imported calendar events */
   function openInfo(ev){
@@ -9407,7 +9440,7 @@ const FHTasks = (function(){
         h('div', { class:'fhe-form' }, field('What needs doing', title), h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Who' }), chips),
           field('Done by (optional)', due), quick, timeField, notes, err,
           h('div', { class:'fhe-actions' }, saveBtn, h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }), delBtn))));
-    document.body.appendChild(m); document.addEventListener('keydown', onKey); if(!editing) title.focus();
+    document.body.appendChild(m); document.addEventListener('keydown', onKey); if(!editing) fhFocusIfDesktop(title);
   }
 
   function render(container){
