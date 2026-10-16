@@ -2297,6 +2297,12 @@ body.kid-locked #manageChores{ display:none !important; }
 .fho-idea .fho-for{ flex:0 1 130px; width:auto; font-size:0.85rem; padding:4px 6px; }
 .fho-loose{ margin-bottom:8px; }
 .fho-ideas-hint{ margin:-4px 0 8px; font-size:0.85rem; }
+.fho-group{ margin:0 0 18px; }
+.fho-group-h{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
+.fho-group-h h3{ margin:0; font-size:1.05rem; }
+.fho-empty{ margin:0; }
+.fho-daterow.two{ grid-template-columns:1fr 2fr; }
+.fho-emojis .ob-chip{ padding:6px 10px; font-size:18px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -8289,7 +8295,15 @@ const FHOcc = (function(){
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
   function save(list){ fhSaveJSON(KEY, list); try{ refreshCurrentPage(); }catch(e){} try{ FHPush.upload(); }catch(e){} }
   function prefs(){ try{ return JSON.parse(fhRawGet(PREFS) || '{}') || {}; }catch(e){ return {}; } }
-  function emoji(o){ if(o.kind === 'festival') return (fest(o.fid) || {}).emoji || '⭐'; return (KINDS.find(k => k[0] === o.kind) || KINDS[2])[1]; }
+  function emoji(o){ if(o.kind === 'festival') return (fest(o.fid) || {}).emoji || '⭐'; if(o.kind === 'other' && o.emoji) return o.emoji; return (KINDS.find(k => k[0] === o.kind) || KINDS[2])[1]; }
+  /* birthdays and anniversaries are stored by name ("Grandma") and read as "Grandma’s birthday"; older entries may already say it */
+  function fullTitle(o){
+    if(o.kind === 'birthday' && !/birthday/i.test(o.title)) return o.title + '’s birthday';
+    if(o.kind === 'anniversary' && !/anniversary/i.test(o.title)) return o.title + '’s anniversary';
+    return o.title;
+  }
+  function shortTitle(o){ return o.kind === 'birthday' || o.kind === 'anniversary' ? o.title.replace(/[’']s (birthday|anniversary)$/i, '').replace(/ (birthday|anniversary)$/i, '') : o.title; }
+  const CUSTOM_EMOJI = ['⭐', '🎉', '🎊', '🎁', '🕯️', '🎆', '🌸', '🏆', '🎓', '🏡', '✈️', '❤️'];
   function day0(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
   function isoOf(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   /* the date in a given year, or null when it isn't known (29 Feb falls on 28 Feb in other years) */
@@ -8313,7 +8327,7 @@ const FHOcc = (function(){
     const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th';
     return n + s;
   }
-  function label(o, when){ const c = count(o, when); return emoji(o) + ' ' + o.title + (c ? ' (' + c + ')' : ''); }
+  function label(o, when){ const c = count(o, when); return emoji(o) + ' ' + fullTitle(o) + (c ? ' (' + c + ')' : ''); }
   function shortDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }); }
   function parents(){ try{ return JSON.parse(fhRawGet('chore-chart-people-v1') || '[]').filter(p => p.role !== 'child').map(p => p.id); }catch(e){ return []; } }
 
@@ -8353,13 +8367,13 @@ const FHOcc = (function(){
     return h('section', { class:'fhd-sec fho-coming' },
       h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Coming up' })),
       h('div', { class:'fho-list' }, list.map(x => h('div', { class:'fho-todo' },
-        h('button', { type:'button', class:'fho-tick', 'aria-label':'Done: ' + x.r.label + ' for ' + x.o.title, onClick:() => tick(x.o.id, x.r.id, x.y, true) }, ''),
-        h('span', { class:'fho-todo-t' }, h('b', { text:x.r.label }), ' · ' + emoji(x.o) + ' ' + x.o.title + ', ' + shortDate(x.when) + ' (' + inDays(x.when, date) + ')')))));
+        h('button', { type:'button', class:'fho-tick', 'aria-label':'Done: ' + x.r.label + ' for ' + fullTitle(x.o), onClick:() => tick(x.o.id, x.r.id, x.y, true) }, ''),
+        h('span', { class:'fho-todo-t' }, h('b', { text:x.r.label }), ' · ' + emoji(x.o) + ' ' + fullTitle(x.o) + ', ' + shortDate(x.when) + ' (' + inDays(x.when, date) + ')')))));
   }
   /* reminder schedule lines for FHPush (parents only) */
   function pushLines(date){
     const who = parents();
-    return starting(date).map(x => ({ t:'🎁 ' + x.r.label + ': ' + x.o.title + ' ' + shortDate(x.when), who }));
+    return starting(date).map(x => ({ t:'🎁 ' + x.r.label + ': ' + fullTitle(x.o) + ' ' + shortDate(x.when), who }));
   }
 
   /* ---- gift ideas, optionally per person ---- */
@@ -8394,43 +8408,51 @@ const FHOcc = (function(){
       compact ? null : h('div', { class:'fho-pick-row' }, h('button', { type:'button', class:Object.keys(chosen).length ? 'btn' : 'btn secondary', id:'fhoPickSkip', text:Object.keys(chosen).length ? 'Done' : 'Not now', onClick:() => { fhSaveJSON(PREFS, Object.assign(prefs(), { picked:true })); try{ refreshCurrentPage(); }catch(e){} } })));
   }
 
-  /* ---- page ---- */
+  /* ---- page: Birthdays, Anniversaries, Celebrations ---- */
   let showPick = false;
+  function card(o, when){
+    const y = String(when.getFullYear()), c = count(o, when), sm = summary(o);
+    const chips = (o.remind || []).map(r => { const done = !!(r.done || {})[y];
+      return h('button', { type:'button', class:'fho-chip' + (done ? ' on' : ''), 'aria-pressed':done ? 'true' : 'false', onClick:() => tick(o.id, r.id, y, !done),
+        text:(done ? '✓ ' : '') + r.label }); });
+    return h('div', { class:'fho-card' },
+      h('button', { type:'button', class:'fho-card-main', onClick:() => editor(o) },
+        h('span', { class:'fho-emoji', text:emoji(o) }),
+        h('span', { class:'fho-card-txt' }, h('b', { text:o.kind === 'festival' || o.kind === 'other' ? o.title : shortTitle(o) }),
+          h('small', { text:shortDate(when) + ' · ' + inDays(when) + (c ? ' · ' + c : '') + (sm ? ' · ' + sm : '') }))),
+      chips.length ? h('div', { class:'fho-chips' }, ...chips) : null);
+  }
   function render(root){
     if(!root) return; root.innerHTML = '';
     const all = load().map(o => ({ o, when:next(o) }));
-    const list = all.filter(x => x.when).sort((a, b) => a.when - b.when);
+    const known = all.filter(x => x.when).sort((a, b) => a.when - b.when);
     root.appendChild(h('div', { class:'fho-headrow' },
-      h('div', {}, h('h2', { class:'fho-h', text:'Birthdays & occasions' }), h('p', { class:'fho-sub', text:'Add a date once and get reminded to buy a present or send a card in good time. Keep gift ideas here too.' })),
-      h('div', { class:'fho-head-btns' },
-        h('button', { type:'button', class:'btn', id:'fhoAdd', text:'＋ Add', onClick:() => editor(null) }),
-        h('button', { type:'button', class:'btn secondary', id:'fhoCelebrations', text:'Celebrations', 'aria-expanded':showPick ? 'true' : 'false', onClick:() => { showPick = !showPick; render(root); } }))));
-    if(!prefs().picked) root.appendChild(festPicker(false));
-    else if(showPick) root.appendChild(festPicker(true));
-    if(!list.length){ root.appendChild(h('div', { class:'empty-note', text:'No occasions yet. Add birthdays and anniversaries for family and friends.' })); return; }
-    const grid = h('div', { class:'fho-cards' });
-    list.forEach(({ o, when }) => {
-      const y = String(when.getFullYear()), c = count(o, when), sm = summary(o);
-      const chips = (o.remind || []).map(r => { const done = !!(r.done || {})[y];
-        return h('button', { type:'button', class:'fho-chip' + (done ? ' on' : ''), 'aria-pressed':done ? 'true' : 'false', onClick:() => tick(o.id, r.id, y, !done),
-          text:(done ? '✓ ' : '') + r.label }); });
-      grid.appendChild(h('div', { class:'fho-card' },
-        h('button', { type:'button', class:'fho-card-main', onClick:() => editor(o) },
-          h('span', { class:'fho-emoji', text:emoji(o) }),
-          h('span', { class:'fho-card-txt' }, h('b', { text:o.title }),
-            h('small', { text:shortDate(when) + ' · ' + inDays(when) + (c ? ' · ' + c : '') + (sm ? ' · ' + sm : '') }))),
-        chips.length ? h('div', { class:'fho-chips' }, ...chips) : null));
-    });
-    root.appendChild(grid);
+      h('div', {}, h('h2', { class:'fho-h', text:'Birthdays & occasions' }), h('p', { class:'fho-sub', text:'Add a date once and get reminded to buy a present or send a card in good time. Keep gift ideas here too.' }))));
+    const group = (id, icon, name, kinds, addId, addText, kind, empty, extra) => {
+      const items = known.filter(x => kinds.indexOf(x.o.kind) >= 0);
+      const sec = h('section', { class:'fho-group', id:id },
+        h('div', { class:'fho-group-h' }, h('h3', { text:icon + ' ' + name }),
+          h('div', { class:'fho-head-btns' }, ...(extra || []), h('button', { type:'button', class:'btn small', id:addId, text:addText, onClick:() => editor(null, kind) }))));
+      if(id === 'fhoCelebs'){ if(!prefs().picked) sec.appendChild(festPicker(false)); else if(showPick) sec.appendChild(festPicker(true)); }
+      if(items.length){ const grid = h('div', { class:'fho-cards' }); items.forEach(x => grid.appendChild(card(x.o, x.when))); sec.appendChild(grid); }
+      else if(empty) sec.appendChild(h('p', { class:'fho-sub fho-empty', text:empty }));
+      root.appendChild(sec);
+    };
+    group('fhoBirthdays', '🎂', 'Birthdays', ['birthday'], 'fhoAddBirthday', '＋ Add a birthday', 'birthday', 'No birthdays yet. Add family and friends so you never miss one.');
+    group('fhoAnnivs', '💍', 'Anniversaries', ['anniversary'], 'fhoAddAnniv', '＋ Add an anniversary', 'anniversary', 'None yet.');
+    group('fhoCelebs', '🎉', 'Celebrations', ['festival', 'other'], 'fhoAddOwn', '＋ Add your own', 'other', 'Choose the celebrations your family marks, or add your own.',
+      [h('button', { type:'button', class:'btn small secondary', id:'fhoCelebrations', text:'Choose celebrations', 'aria-expanded':showPick ? 'true' : 'false', onClick:() => { showPick = !showPick; render(root); } })]);
     const unknown = all.filter(x => !x.when).map(x => x.o.title);
     if(unknown.length) root.appendChild(h('p', { class:'fho-sub', text:'Dates not known yet for: ' + unknown.join(', ') + '. Update the app to get them.' }));
   }
 
-  function editor(orig){
+  function editor(orig, newKind){
     if(document.getElementById('fhOccSheet')) return;
     const isFest = !!(orig && orig.kind === 'festival'), f = isFest ? fest(orig.fid) : null;
-    const o = JSON.parse(JSON.stringify(orig || { id:uid(), title:'', kind:'birthday', date:'', year:'', remind:null, ideas:[], names:[] }));
-    if(!o.remind) o.remind = [{ id:uid('r'), label:'Buy a present', days:28, done:{} }, { id:uid('r'), label:'Send a card', days:7, done:{} }];
+    const o = JSON.parse(JSON.stringify(orig || { id:uid(), title:'', kind:newKind || 'birthday', date:'', year:'', remind:null, ideas:[], names:[] }));
+    if(!o.remind) o.remind = o.kind === 'other' ? [{ id:uid('r'), label:'Buy presents', days:14, done:{} }]
+      : [{ id:uid('r'), label:'Buy a present', days:28, done:{} }, { id:uid('r'), label:'Send a card', days:7, done:{} }];
+    const K = o.kind, NOUN = { birthday:'birthday', anniversary:'anniversary', other:'celebration' }[K];
     o.names = o.names || []; o.ideas = o.ideas || [];
     const close = () => { const m = document.getElementById('fhOccSheet'); if(m) m.remove(); };
     const err = h('div', { class:'fhe-err' });
@@ -8438,14 +8460,18 @@ const FHOcc = (function(){
     // name, kind and date (birthdays etc.) or this year's date (celebrations)
     let title = null, kinds = null, dd = null, mm = null, year = null, moveIn = null;
     if(!isFest){
-      title = h('input', { class:'fhe-in', id:'fhoTitle', value:o.title, maxlength:'60', placeholder:'e.g. Grandma’s birthday', 'aria-label':'Name' });
-      kinds = h('div', { class:'ob-chips' });
-      const drawKinds = () => { kinds.innerHTML = ''; KINDS.forEach(k => kinds.appendChild(h('button', { type:'button', class:'ob-chip' + (o.kind === k[0] ? ' on' : ''), text:k[1] + ' ' + k[2], onClick:() => { o.kind = k[0]; drawKinds(); } }))); };
-      drawKinds();
+      title = h('input', { class:'fhe-in', id:'fhoTitle', value:K === 'other' ? o.title : shortTitle(o), maxlength:'60',
+        placeholder:K === 'birthday' ? 'e.g. Grandma' : K === 'anniversary' ? 'e.g. Mum & Dad' : 'e.g. Nana’s retirement', 'aria-label':K === 'other' ? 'Name of the celebration' : 'Whose ' + NOUN });
+      if(K === 'other'){
+        o.emoji = o.emoji || CUSTOM_EMOJI[0];
+        kinds = h('div', { class:'ob-chips fho-emojis' });
+        const drawKinds = () => { kinds.innerHTML = ''; CUSTOM_EMOJI.forEach(e => kinds.appendChild(h('button', { type:'button', class:'ob-chip' + (o.emoji === e ? ' on' : ''), 'aria-label':'Icon ' + e, 'aria-pressed':o.emoji === e ? 'true' : 'false', text:e, onClick:() => { o.emoji = e; drawKinds(); } }))); };
+        drawKinds();
+      }
       dd = h('select', { class:'fhe-in', id:'fhoDay', 'aria-label':'Day' }); for(let i = 1; i <= 31; i++) dd.appendChild(h('option', { value:i, text:i }));
       mm = h('select', { class:'fhe-in', id:'fhoMonth', 'aria-label':'Month' }); MONTHS.forEach((m, i) => mm.appendChild(h('option', { value:i + 1, text:m })));
       if(o.date){ dd.value = String(+o.date.slice(3, 5)); mm.value = String(+o.date.slice(0, 2)); } else { const t = new Date(); dd.value = String(t.getDate()); mm.value = String(t.getMonth() + 1); }
-      year = h('input', { class:'fhe-in', id:'fhoYear', type:'number', inputmode:'numeric', min:'1900', max:String(new Date().getFullYear()), value:o.year || '', placeholder:'Year (optional)', 'aria-label':'Year born or married (optional)' });
+      if(K !== 'other') year = h('input', { class:'fhe-in', id:'fhoYear', type:'number', inputmode:'numeric', min:'1900', max:String(new Date().getFullYear()), value:o.year || '', placeholder:'Optional', 'aria-label':K === 'birthday' ? 'Year born (optional)' : 'Year married (optional)' });
     } else {
       const when = next(o);
       if(when && f.table) moveIn = h('input', { class:'fhe-in', id:'fhoMove', type:'date', value:isoOf(when), 'aria-label':'Date this year' });
@@ -8517,9 +8543,9 @@ const FHOcc = (function(){
     drawIdeas();
     const doSave = () => {
       if(!isFest){
-        o.title = title.value.trim(); if(!o.title){ err.textContent = 'Give it a name, e.g. Grandma’s birthday.'; return; }
+        o.title = title.value.trim(); if(!o.title){ err.textContent = K === 'other' ? 'Give it a name, e.g. Nana’s retirement.' : 'Whose ' + NOUN + ' is it?'; return; }
         const m = +mm.value, d = +dd.value; if(d > new Date(2024, m, 0).getDate()){ err.textContent = MONTHS[m - 1] + ' doesn’t have ' + d + ' days.'; return; }
-        const yv = year.value.trim(); if(yv && !(/^\d{4}$/.test(yv) && +yv >= 1900 && +yv <= new Date().getFullYear())){ err.textContent = 'The year should look like 1960, or leave it blank.'; return; }
+        const yv = year ? year.value.trim() : ''; if(yv && !(/^\d{4}$/.test(yv) && +yv >= 1900 && +yv <= new Date().getFullYear())){ err.textContent = 'The year should look like 1960, or leave it blank.'; return; }
         o.date = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); o.year = yv;
       } else if(moveIn && moveIn.value){
         const when = next(orig), y = String(when.getFullYear()), worked = festDate(f, +y);
@@ -8534,18 +8560,19 @@ const FHOcc = (function(){
       save(list); close();
     };
     const m = h('div', { id:'fhOccSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
-      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':isFest ? o.title : orig ? 'Edit occasion' : 'Add an occasion' },
-        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:isFest ? f.emoji + ' ' + o.title : orig ? 'Edit occasion' : 'Add an occasion' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':isFest ? o.title : (orig ? 'Edit ' : 'Add ') + (K === 'anniversary' ? 'an anniversary' : K === 'other' ? 'your own celebration' : 'a birthday') },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:isFest ? f.emoji + ' ' + o.title : orig ? emoji(o) + ' ' + fullTitle(o) : 'Add ' + (K === 'anniversary' ? 'an anniversary' : K === 'other' ? 'your own celebration' : 'a birthday') }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhe-form' },
           ...(isFest ? [
             moveIn ? field('Date this year', moveIn) : h('p', { class:'fho-sub', text:(next(o) ? shortDate(next(o)) : 'Date not known yet') }),
             moveIn && f.moon ? h('p', { class:'fho-sub', text:'Eid depends on the moon sighting, so it can be a day either side. Change it here if your community marks a different day.' })
               : moveIn ? h('p', { class:'fho-sub', text:'Lunar calendar dates can differ by a day locally. Change it here if yours is different.' }) : null
-          ] : [ field('Name', title), kinds, h('div', { class:'fho-daterow' }, field('Day', dd), field('Month', mm), field('Year', year)) ]),
+          ] : [ field(K === 'birthday' ? 'Whose birthday' : K === 'anniversary' ? 'Whose anniversary' : 'Name', title), kinds ? field('Icon', kinds) : null,
+            h('div', { class:'fho-daterow' + (year ? '' : ' two') }, field('Day', dd), field('Month', mm), year ? field(K === 'birthday' ? 'Year born' : 'Year married', year) : null) ]),
           h('p', { class:'fhe-lab', text:'Remind me' }), rem,
           h('p', { class:'fhe-lab', text:'Gift ideas' }), h('p', { class:'fho-sub fho-ideas-hint', text:'Add an idea and choose who it’s for, or leave it as not decided and pick later.' }), ideas, err,
           h('div', { class:'fhe-actions' },
-            orig ? h('button', { type:'button', class:'btn secondary', text:isFest ? 'Stop tracking' : 'Delete', onClick:() => { if(!confirm((isFest ? 'Stop tracking “' : 'Delete “') + orig.title + '”?')) return; save(load().filter(x => x.id !== orig.id)); close(); } }) : null,
+            orig ? h('button', { type:'button', class:'btn secondary', text:isFest ? 'Stop tracking' : 'Delete', onClick:() => { if(!confirm((isFest ? 'Stop tracking “' : 'Delete “') + fullTitle(orig) + '”?')) return; save(load().filter(x => x.id !== orig.id)); close(); } }) : null,
             h('button', { type:'button', class:'btn', id:'fhoSave', text:'Save', onClick:doSave })))));
     document.body.appendChild(m); setTimeout(() => { (title || document.getElementById('fhoIdea')).focus(); }, 50);
   }
