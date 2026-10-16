@@ -2288,6 +2288,15 @@ body.kid-locked #manageChores{ display:none !important; }
 .fho-person-h b{ flex:1 1 auto; }
 .fho-person-s{ font-size:0.82rem; color:var(--muted,#777); }
 .fho-person-add{ margin-top:4px; }
+.fho-addidea{ border:1.5px solid var(--panel-line,#ddd); border-radius:12px; padding:8px 10px; margin-bottom:10px; display:flex; flex-direction:column; gap:6px; }
+.fho-addidea-row{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.fho-addidea-row > .fhe-in:first-child{ flex:1 1 auto; min-width:0; }
+.fho-for-lab{ font-size:0.85rem; font-weight:700; color:var(--muted,#777); }
+.fho-addidea .fho-for{ flex:1 1 140px; width:auto; }
+#fhoNewPerson{ flex:1 1 140px; min-width:0; }
+.fho-idea .fho-for{ flex:0 1 130px; width:auto; font-size:0.85rem; padding:4px 6px; }
+.fho-loose{ margin-bottom:8px; }
+.fho-ideas-hint{ margin:-4px 0 8px; font-size:0.85rem; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -8454,33 +8463,56 @@ const FHOcc = (function(){
       rem.appendChild(h('button', { type:'button', class:'fhe-add', text:'＋ Reminder', onClick:() => { o.remind.push({ id:uid('r'), label:'', days:7, done:{} }); drawRem(); } }));
     };
     drawRem();
-    // gift ideas: one list, or one per person (always offered; the default for celebrations like Christmas)
+    // gift ideas: each idea can be for someone or "not decided"; one add row pairs an idea with a person on purpose
     const ideas = h('div', { class:'fho-ideas' });
-    const ideaBox = (who) => {
-      const inp = h('input', { class:'fhe-in fho-idea-in', id:who ? null : 'fhoIdea', maxlength:'80', placeholder:who ? 'Idea for ' + who : 'Add a gift idea', 'aria-label':who ? 'Gift idea for ' + who : 'Gift idea' });
-      const add = () => { const v = inp.value.trim(); if(!v) return; o.ideas.push({ id:uid('i'), text:v, got:false, for:who }); drawIdeas(); const again = ideas.querySelector('[data-for="' + CSS.escape(who) + '"] .fho-idea-in'); if(again) again.focus(); };
-      inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); add(); } });
-      return h('div', { class:'fho-idea-add' }, inp, h('button', { type:'button', class:'btn small', text:'Add', onClick:add }));
+    let addFor = '', newOpen = false;
+    const forOptions = (sel, cur, withNew) => {
+      sel.appendChild(h('option', { value:'', text:'Not decided' }));
+      people(o).forEach(p => sel.appendChild(h('option', { value:p, text:p })));
+      if(withNew) sel.appendChild(h('option', { value:'__new', text:'＋ New person…' }));
+      sel.value = cur;
     };
-    const ideaRow = i => h('div', { class:'fho-idea' + (i.got ? ' got' : '') },
-      h('label', {}, h('input', { type:'checkbox', checked:i.got, 'aria-label':'Got it: ' + i.text, onChange:e => { i.got = e.target.checked; drawIdeas(); } }), h('span', { text:i.text })),
-      h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove idea', text:'✕', onClick:() => { o.ideas = o.ideas.filter(x => x !== i); drawIdeas(); } }));
-    const personIn = h('input', { class:'fhe-in', id:'fhoPerson', maxlength:'40', placeholder:'Name, e.g. Nana', 'aria-label':'Person you’re buying for' });
-    const addPerson = () => { const v = personIn.value.trim(); if(!v) return; if(people(o).indexOf(v) < 0) o.names.push(v); personIn.value = ''; drawIdeas(); };
-    personIn.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addPerson(); } });
+    const ideaRow = i => {
+      const who = h('select', { class:'fhe-in fho-for', 'aria-label':'Who “' + i.text + '” is for', onChange:e => { i.for = e.target.value; drawIdeas(); } });
+      forOptions(who, i.for || '', false);
+      return h('div', { class:'fho-idea' + (i.got ? ' got' : '') },
+        h('label', {}, h('input', { type:'checkbox', checked:i.got, 'aria-label':'Got it: ' + i.text, onChange:e => { i.got = e.target.checked; drawIdeas(); } }), h('span', { text:i.text })),
+        people(o).length ? who : null,
+        h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove idea', text:'✕', onClick:() => { o.ideas = o.ideas.filter(x => x !== i); drawIdeas(); } }));
+    };
     const drawIdeas = () => {
       ideas.innerHTML = '';
+      // the add row: idea + who it's for
+      const ideaIn = h('input', { class:'fhe-in', id:'fhoIdea', maxlength:'80', placeholder:'Gift idea, e.g. Slippers', 'aria-label':'Gift idea' });
+      const forSel = h('select', { class:'fhe-in fho-for', id:'fhoIdeaFor', 'aria-label':'Who it’s for', onChange:e => { newOpen = e.target.value === '__new'; addFor = newOpen ? '' : e.target.value; drawIdeas(); } });
+      forOptions(forSel, newOpen ? '__new' : addFor, true);
+      const newName = h('input', { class:'fhe-in', id:'fhoNewPerson', maxlength:'40', placeholder:'Their name, e.g. Nana', 'aria-label':'New person’s name' });
+      const add = () => {
+        const text = ideaIn.value.trim();
+        let who = addFor;
+        if(newOpen){ who = newName.value.trim(); if(!who){ newName.focus(); return; } if(people(o).indexOf(who) < 0) o.names.push(who); }
+        if(!text){ if(newOpen){ newOpen = false; addFor = who; drawIdeas(); } else ideaIn.focus(); return; }
+        o.ideas.push({ id:uid('i'), text, got:false, for:who });
+        addFor = who; newOpen = false; drawIdeas();
+        const again = document.getElementById('fhoIdea'); if(again) again.focus();
+      };
+      [ideaIn, newName].forEach(el => el.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); add(); } }));
+      ideas.appendChild(h('div', { class:'fho-addidea' },
+        h('div', { class:'fho-addidea-row' }, ideaIn),
+        h('div', { class:'fho-addidea-row' }, h('span', { class:'fho-for-lab', text:'For' }), forSel, newOpen ? newName : null, h('button', { type:'button', class:'btn small', id:'fhoIdeaAdd', text:'Add', onClick:add }))));
+      // the list, grouped by person
       const ps = people(o);
-      const general = o.ideas.filter(i => !i.for);
-      if(!ps.length || general.length){ general.forEach(i => ideas.appendChild(ideaRow(i))); if(!ps.length) ideas.appendChild(ideaBox('')); }
       ps.forEach(p => {
         const mine = o.ideas.filter(i => i.for === p), sorted = mine.some(i => i.got);
         ideas.appendChild(h('div', { class:'fho-person' + (sorted ? ' sorted' : ''), 'data-for':p },
-          h('div', { class:'fho-person-h' }, h('b', { text:p }), h('span', { class:'fho-person-s', text:sorted ? '✓ sorted' : mine.length ? mine.length + (mine.length === 1 ? ' idea' : ' ideas') : '' }),
-            h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove ' + p, text:'✕', onClick:() => { if(mine.length && !confirm('Remove ' + p + ' and their ideas?')) return; o.ideas = o.ideas.filter(i => i.for !== p); o.names = o.names.filter(n => n !== p); drawIdeas(); } })),
-          ...mine.map(ideaRow), ideaBox(p)));
+          h('div', { class:'fho-person-h' }, h('b', { text:p }), h('span', { class:'fho-person-s', text:sorted ? '✓ sorted' : mine.length ? mine.length + (mine.length === 1 ? ' idea' : ' ideas') : 'no ideas yet' }),
+            h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove ' + p, text:'✕', onClick:() => {
+              if(mine.length && !confirm('Remove ' + p + '? Their ideas stay, as not decided.')) return;
+              o.ideas.forEach(i => { if(i.for === p) i.for = ''; }); o.names = o.names.filter(n => n !== p); if(addFor === p) addFor = ''; drawIdeas(); } })),
+          ...mine.map(ideaRow)));
       });
-      ideas.appendChild(h('div', { class:'fho-idea-add fho-person-add' }, personIn, h('button', { type:'button', class:'btn small secondary', id:'fhoAddPerson', text:'＋ Person', onClick:addPerson })));
+      const loose = o.ideas.filter(i => !i.for || ps.indexOf(i.for) < 0);
+      if(loose.length) ideas.appendChild(h('div', { class:'fho-loose', 'data-for':'' }, ps.length ? h('div', { class:'fho-person-h' }, h('b', { text:'Not decided yet' })) : null, ...loose.map(ideaRow)));
     };
     drawIdeas();
     const doSave = () => {
@@ -8511,11 +8543,11 @@ const FHOcc = (function(){
               : moveIn ? h('p', { class:'fho-sub', text:'Lunar calendar dates can differ by a day locally. Change it here if yours is different.' }) : null
           ] : [ field('Name', title), kinds, h('div', { class:'fho-daterow' }, field('Day', dd), field('Month', mm), field('Year', year)) ]),
           h('p', { class:'fhe-lab', text:'Remind me' }), rem,
-          h('p', { class:'fhe-lab', text:isFest || people(o).length ? 'Who you’re buying for' : 'Gift ideas' }), ideas, err,
+          h('p', { class:'fhe-lab', text:'Gift ideas' }), h('p', { class:'fho-sub fho-ideas-hint', text:'Add an idea and choose who it’s for, or leave it as not decided and pick later.' }), ideas, err,
           h('div', { class:'fhe-actions' },
             orig ? h('button', { type:'button', class:'btn secondary', text:isFest ? 'Stop tracking' : 'Delete', onClick:() => { if(!confirm((isFest ? 'Stop tracking “' : 'Delete “') + orig.title + '”?')) return; save(load().filter(x => x.id !== orig.id)); close(); } }) : null,
             h('button', { type:'button', class:'btn', id:'fhoSave', text:'Save', onClick:doSave })))));
-    document.body.appendChild(m); setTimeout(() => { (title || personIn).focus(); }, 50);
+    document.body.appendChild(m); setTimeout(() => { (title || document.getElementById('fhoIdea')).focus(); }, 50);
   }
   return { KEY, FESTIVALS, load, next, open, events, todayCard, pushLines, render, editor, tick, setFest, festDate, easter };
 })();
