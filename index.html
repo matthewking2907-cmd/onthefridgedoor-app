@@ -2250,6 +2250,32 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhes-sug-name{ flex:1 1 140px; min-width:0; }
 .fhx-shopday{ display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:0.92rem; color:var(--muted,#777); }
 .fhx-shopday .fhx-sel{ flex:0 0 auto; width:auto; }
+/* occasions */
+.fho-headrow{ display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px; }
+.fho-h{ margin:0 0 4px; font-size:1.3rem; }
+.fho-sub{ margin:0; color:var(--muted,#777); font-size:0.92rem; max-width:560px; }
+.fho-cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+.fho-card{ background:var(--white,#fff); border:1.5px solid var(--panel-line,#ddd); border-radius:14px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+.fho-card-main{ display:flex; gap:10px; align-items:center; text-align:left; background:none; border:0; padding:0; font:inherit; color:inherit; cursor:pointer; }
+.fho-emoji{ font-size:26px; }
+.fho-card-txt{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.fho-card-txt small{ color:var(--muted,#777); }
+.fho-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.fho-chip{ font:inherit; font-size:0.82rem; font-weight:600; padding:5px 10px; border-radius:16px; border:1.5px solid var(--panel-line,#ddd); background:transparent; color:inherit; cursor:pointer; }
+.fho-chip.on{ background:var(--accent,#6C4F8A); border-color:var(--accent,#6C4F8A); color:#fff; }
+.fho-list{ display:flex; flex-direction:column; gap:6px; }
+.fho-todo{ display:flex; gap:10px; align-items:center; }
+.fho-tick{ flex:0 0 auto; width:24px; height:24px; border-radius:7px; border:2px solid var(--accent,#6C4F8A); background:transparent; cursor:pointer; }
+.fho-todo-t{ min-width:0; overflow-wrap:anywhere; }
+.fho-daterow{ display:grid; grid-template-columns:1fr 2fr 1.4fr; gap:8px; }
+.fho-rem, .fho-idea, .fho-idea-add{ display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+.fho-rem{ flex-wrap:wrap; }
+.fho-rem .fhe-in:first-child{ flex:1 1 180px; min-width:0; }
+.fho-idea-add .fhe-in{ flex:1 1 auto; min-width:0; }
+.fho-rem .fho-days{ flex:1 1 auto; }
+.fho-days{ flex:0 0 auto; width:auto; }
+.fho-idea label{ flex:1 1 auto; display:flex; gap:8px; align-items:center; min-width:0; }
+.fho-idea.got span{ text-decoration:line-through; color:var(--muted,#777); }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2319,6 +2345,7 @@ var FHTheme = (function(){
     <button class="nav-item active" data-page="today"><span class="nav-icon">☀️</span><span class="nav-label">Today</span></button>
     <button class="nav-item" data-page="tomorrow"><span class="nav-icon">⏭️</span><span class="nav-label">Tomorrow</span></button>
     <button class="nav-item" data-page="calendar"><span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span></button>
+    <button class="nav-item" data-page="occasions"><span class="nav-icon">🎂</span><span class="nav-label">Occasions</span></button>
     <div class="nav-label-grp">Meals &amp; shopping</div>
     <button class="nav-item" data-page="mealplan"><span class="nav-icon">🍽️</span><span class="nav-label">Meal plan</span></button>
     <button class="nav-item" data-page="shopping"><span class="nav-icon">🛒</span><span class="nav-label">Shopping list</span></button>
@@ -2653,6 +2680,10 @@ var FHTheme = (function(){
 
     <section class="page" id="page-tasks">
       <div class="app"><div id="tasksContent"></div></div>
+    </section>
+
+    <section class="page" id="page-occasions">
+      <div class="app"><div id="occasionsContent"></div></div>
     </section>
 
     <section class="page" id="page-calendar">
@@ -8179,6 +8210,177 @@ const FHExtras = (function(){
   return { shopDayRow:shopDayRow, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
+/* ==================== OCCASIONS: birthdays, anniversaries and other yearly dates ====================
+   Synced key family-hub-occasions-v1: [{ id, title, kind:'birthday'|'anniversary'|'other', date:'MM-DD', year:'YYYY'|'',
+     remind:[{ id, label, days, done:{ 'YYYY':1 } }], ideas:[{ id, text, got }] }]
+   The day itself shows as an all-day plan (FHEvents.forDay), so it's in the morning summary and the evening heads-up.
+   Each reminder ("Buy a present, 4 weeks before") opens on its day, sits in Today's "Coming up" until ticked for that
+   year, and goes to parents' devices in the morning summary when it opens. The page is behind the parent lock so gift
+   ideas stay a surprise. */
+const FHOcc = (function(){
+  const KEY = 'family-hub-occasions-v1';
+  const KINDS = [['birthday', '🎂', 'Birthday'], ['anniversary', '💍', 'Anniversary'], ['other', '⭐', 'Other']];
+  const DAYS = [[1, '1 day'], [3, '3 days'], [7, '1 week'], [14, '2 weeks'], [21, '3 weeks'], [28, '4 weeks'], [42, '6 weeks']];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function uid(p){ return (p || 'o') + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
+  function save(list){ fhSaveJSON(KEY, list); try{ refreshCurrentPage(); }catch(e){} try{ FHPush.upload(); }catch(e){} }
+  function emoji(o){ return (KINDS.find(k => k[0] === o.kind) || KINDS[2])[1]; }
+  function day0(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  /* the date in a given year (29 Feb falls on 28 Feb in other years) */
+  function inYear(o, y){
+    const m = +o.date.slice(0, 2) - 1, d = +o.date.slice(3, 5);
+    const last = new Date(y, m + 1, 0).getDate();
+    return new Date(y, m, Math.min(d, last));
+  }
+  /* next time it happens on or after `from` */
+  function next(o, from){ from = day0(from || new Date()); const t = inYear(o, from.getFullYear()); return t < from ? inYear(o, from.getFullYear() + 1) : t; }
+  function daysBetween(a, b){ return Math.round((day0(b) - day0(a)) / 864e5); }
+  function count(o, when){   // "turning 80" / "40th"
+    if(!o.year) return '';
+    const n = when.getFullYear() - +o.year; if(n <= 0) return '';
+    if(o.kind === 'birthday') return 'turns ' + n;
+    const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th';
+    return n + s;
+  }
+  function label(o, when){ const c = count(o, when); return emoji(o) + ' ' + o.title + (c ? ' (' + c + ')' : ''); }
+  function shortDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }); }
+  function parents(){ try{ return JSON.parse(fhRawGet('chore-chart-people-v1') || '[]').filter(p => p.role !== 'child').map(p => p.id); }catch(e){ return []; } }
+
+  /* read-only all-day "events" for FHEvents.forDay */
+  function events(date){
+    const iso = FHEvents.iso(date);
+    return load().filter(o => FHEvents.iso(next(o, date)) === iso).map(o => ({ id:'occ:' + o.id + ':' + iso, title:label(o, date), allDay:true, ro:true, occ:true, color:'#C2457A', who:'' }));
+  }
+  /* reminders that are open on `date`: started (occasion date minus days) and not ticked for that year */
+  function open(date){
+    date = day0(date || new Date()); const out = [];
+    load().forEach(o => {
+      const when = next(o, date), y = String(when.getFullYear());
+      (o.remind || []).forEach(r => {
+        const from = new Date(when.getFullYear(), when.getMonth(), when.getDate() - r.days);
+        if(date >= from && !(r.done || {})[y]) out.push({ o, r, when, from, y });
+      });
+    });
+    return out.sort((a, b) => a.when - b.when || b.r.days - a.r.days);
+  }
+  /* reminders that start on `date` (for the morning summary) */
+  function starting(date){ return open(date).filter(x => FHEvents.iso(x.from) === FHEvents.iso(date)); }
+  function tick(oid, rid, y, on){
+    const list = load(), o = list.find(x => x.id === oid); if(!o) return;
+    const r = (o.remind || []).find(x => x.id === rid); if(!r) return;
+    r.done = r.done || {}; if(on) r.done[y] = 1; else delete r.done[y];
+    save(list);
+  }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+
+  /* Today: "Coming up" card with open reminders */
+  function todayCard(date){
+    if(locked()) return null;
+    const list = open(date); if(!list.length) return null;
+    return h('section', { class:'fhd-sec fho-coming' },
+      h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Coming up' })),
+      h('div', { class:'fho-list' }, list.map(x => h('div', { class:'fho-todo' },
+        h('button', { type:'button', class:'fho-tick', 'aria-label':'Done: ' + x.r.label + ' for ' + x.o.title, onClick:() => tick(x.o.id, x.r.id, x.y, true) }, ''),
+        h('span', { class:'fho-todo-t' }, h('b', { text:x.r.label }), ' · ' + emoji(x.o) + ' ' + x.o.title + ', ' + shortDate(x.when) + ' (' + inDays(x.when, date) + ')')))));
+  }
+  function inDays(when, from){ const n = daysBetween(from || new Date(), when); return n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + ' days'; }
+
+  /* reminder schedule lines for FHPush (parents only) */
+  function pushLines(date){
+    const who = parents();
+    return starting(date).map(x => ({ t:'🎁 ' + x.r.label + ': ' + x.o.title + ' ' + shortDate(x.when), who }));
+  }
+
+  /* ---- page ---- */
+  function render(root){
+    if(!root) return; root.innerHTML = '';
+    const list = load().map(o => ({ o, when:next(o) })).sort((a, b) => a.when - b.when);
+    root.appendChild(h('div', { class:'fho-headrow' },
+      h('div', {}, h('h2', { class:'fho-h', text:'Birthdays & occasions' }), h('p', { class:'fho-sub', text:'Add a date once and get reminded to buy a present or send a card in good time. Keep gift ideas here too.' })),
+      h('button', { type:'button', class:'btn', id:'fhoAdd', text:'＋ Add', onClick:() => editor(null) })));
+    if(!list.length){ root.appendChild(h('div', { class:'empty-note', text:'No occasions yet. Add birthdays and anniversaries for family and friends.' })); return; }
+    const grid = h('div', { class:'fho-cards' });
+    list.forEach(({ o, when }) => {
+      const y = String(when.getFullYear()), c = count(o, when);
+      const chips = (o.remind || []).map(r => { const done = !!(r.done || {})[y];
+        return h('button', { type:'button', class:'fho-chip' + (done ? ' on' : ''), 'aria-pressed':done ? 'true' : 'false', onClick:() => tick(o.id, r.id, y, !done),
+          text:(done ? '✓ ' : '') + r.label }); });
+      const ideas = (o.ideas || []).filter(i => !i.got).length;
+      grid.appendChild(h('div', { class:'fho-card' },
+        h('button', { type:'button', class:'fho-card-main', onClick:() => editor(o) },
+          h('span', { class:'fho-emoji', text:emoji(o) }),
+          h('span', { class:'fho-card-txt' }, h('b', { text:o.title }),
+            h('small', { text:shortDate(when) + ' · ' + inDays(when) + (c ? ' · ' + c : '') + (ideas ? ' · ' + ideas + (ideas === 1 ? ' gift idea' : ' gift ideas') : '') }))),
+        chips.length ? h('div', { class:'fho-chips' }, ...chips) : null));
+    });
+    root.appendChild(grid);
+  }
+
+  function editor(orig){
+    if(document.getElementById('fhOccSheet')) return;
+    const o = JSON.parse(JSON.stringify(orig || { id:uid(), title:'', kind:'birthday', date:'', year:'', remind:null, ideas:[] }));
+    if(!o.remind) o.remind = [{ id:uid('r'), label:'Buy a present', days:28, done:{} }, { id:uid('r'), label:'Send a card', days:7, done:{} }];
+    const close = () => { const m = document.getElementById('fhOccSheet'); if(m) m.remove(); };
+    const err = h('div', { class:'fhe-err' });
+    const title = h('input', { class:'fhe-in', id:'fhoTitle', value:o.title, maxlength:'60', placeholder:'e.g. Grandma’s birthday', 'aria-label':'Name' });
+    const kinds = h('div', { class:'ob-chips' });
+    const drawKinds = () => { kinds.innerHTML = ''; KINDS.forEach(k => kinds.appendChild(h('button', { type:'button', class:'ob-chip' + (o.kind === k[0] ? ' on' : ''), text:k[1] + ' ' + k[2], onClick:() => { o.kind = k[0]; drawKinds(); } }))); };
+    drawKinds();
+    const dd = h('select', { class:'fhe-in', id:'fhoDay', 'aria-label':'Day' }); for(let i = 1; i <= 31; i++) dd.appendChild(h('option', { value:i, text:i }));
+    const mm = h('select', { class:'fhe-in', id:'fhoMonth', 'aria-label':'Month' }); MONTHS.forEach((m, i) => mm.appendChild(h('option', { value:i + 1, text:m })));
+    if(o.date){ dd.value = String(+o.date.slice(3, 5)); mm.value = String(+o.date.slice(0, 2)); } else { const t = new Date(); dd.value = String(t.getDate()); mm.value = String(t.getMonth() + 1); }
+    const year = h('input', { class:'fhe-in', id:'fhoYear', type:'number', inputmode:'numeric', min:'1900', max:String(new Date().getFullYear()), value:o.year || '', placeholder:'Year (optional)', 'aria-label':'Year born or married (optional)' });
+    const rem = h('div', { class:'fho-rems' });
+    const drawRem = () => { rem.innerHTML = '';
+      o.remind.forEach(r => {
+        const sel = h('select', { class:'fhe-in fho-days', 'aria-label':'How long before', onChange:e => { r.days = +e.target.value; } });
+        DAYS.forEach(d => sel.appendChild(h('option', { value:d[0], text:d[1] + ' before' }))); sel.value = String(r.days);
+        rem.appendChild(h('div', { class:'fho-rem' },
+          h('input', { class:'fhe-in', value:r.label, maxlength:'40', 'aria-label':'Reminder', onInput:e => { r.label = e.target.value; } }), sel,
+          h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove reminder', text:'✕', onClick:() => { o.remind = o.remind.filter(x => x !== r); drawRem(); } })));
+      });
+      rem.appendChild(h('button', { type:'button', class:'fhe-add', text:'＋ Reminder', onClick:() => { o.remind.push({ id:uid('r'), label:'', days:7, done:{} }); drawRem(); } }));
+    };
+    drawRem();
+    const ideas = h('div', { class:'fho-ideas' });
+    const ideaIn = h('input', { class:'fhe-in', id:'fhoIdea', maxlength:'80', placeholder:'Add a gift idea', 'aria-label':'Gift idea' });
+    const addIdea = () => { const v = ideaIn.value.trim(); if(!v) return; o.ideas.push({ id:uid('i'), text:v, got:false }); ideaIn.value = ''; drawIdeas(); };
+    ideaIn.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addIdea(); } });
+    const drawIdeas = () => { ideas.innerHTML = '';
+      o.ideas.forEach(i => ideas.appendChild(h('div', { class:'fho-idea' + (i.got ? ' got' : '') },
+        h('label', {}, h('input', { type:'checkbox', checked:i.got, onChange:e => { i.got = e.target.checked; drawIdeas(); } }), h('span', { text:i.text })),
+        h('button', { type:'button', class:'fhm-x', 'aria-label':'Remove idea', text:'✕', onClick:() => { o.ideas = o.ideas.filter(x => x !== i); drawIdeas(); } }))));
+      ideas.appendChild(h('div', { class:'fho-idea-add' }, ideaIn, h('button', { type:'button', class:'btn small', text:'Add', onClick:addIdea })));
+    };
+    drawIdeas();
+    const doSave = () => {
+      o.title = title.value.trim(); if(!o.title){ err.textContent = 'Give it a name, e.g. Grandma’s birthday.'; return; }
+      const m = +mm.value, d = +dd.value; if(d > new Date(2024, m, 0).getDate()){ err.textContent = MONTHS[m - 1] + ' doesn’t have ' + d + ' days.'; return; }
+      const yv = year.value.trim(); if(yv && !(/^\d{4}$/.test(yv) && +yv >= 1900 && +yv <= new Date().getFullYear())){ err.textContent = 'The year should look like 1960, or leave it blank.'; return; }
+      o.date = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); o.year = yv;
+      o.remind = o.remind.filter(r => r.label.trim()).map(r => Object.assign(r, { label:r.label.trim().slice(0, 40) }));
+      const list = load(), i = list.findIndex(x => x.id === o.id);
+      if(i >= 0) list[i] = o; else list.push(o);
+      save(list); close();
+    };
+    const field = (lab, el) => h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:lab }), el);
+    const m = h('div', { id:'fhOccSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':orig ? 'Edit occasion' : 'Add an occasion' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:orig ? 'Edit occasion' : 'Add an occasion' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          field('Name', title), kinds,
+          h('div', { class:'fho-daterow' }, field('Day', dd), field('Month', mm), field('Year', year)),
+          h('p', { class:'fhe-lab', text:'Remind me' }), rem,
+          h('p', { class:'fhe-lab', text:'Gift ideas' }), ideas, err,
+          h('div', { class:'fhe-actions' },
+            orig ? h('button', { type:'button', class:'btn secondary', text:'Delete', onClick:() => { if(!confirm('Delete “' + orig.title + '”?')) return; save(load().filter(x => x.id !== orig.id)); close(); } }) : null,
+            h('button', { type:'button', class:'btn', id:'fhoSave', text:'Save', onClick:doSave })))));
+    document.body.appendChild(m); setTimeout(() => title.focus(), 50);
+  }
+  return { KEY, load, next, open, events, todayCard, pushLines, render, editor, tick };
+})();
+
 /* ==================== BIN DAY: which day, and which bins if they alternate ====================
    Household setting (synced): { on, day:0..6 (Mon=0), alt:false|true, a:'General waste', b:'Recycling', aWeek:'YYYY-MM-DD' }
    aWeek is the Monday of a week the "a" bins go out. Shows as an all-day plan on the day (Today, calendar, morning
@@ -8610,6 +8812,7 @@ const FHEvents = (function(){
     let all = own;
     if(typeof FHCal !== 'undefined' && FHCal.forDay){ all = own.concat(FHCal.forDay(date).filter(function(ev){ return isFor(ev, person); })); }
     if(typeof FHBins !== 'undefined'){ const bin = FHBins.event(date); if(bin) all = all.concat([bin]); }
+    if(typeof FHOcc !== 'undefined') all = all.concat(FHOcc.events(date));
     return all.sort(function(a, b){ return (a.allDay ? 0 : 1) - (b.allDay ? 0 : 1) || sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)); });
   }
   function refresh(){ try{ refreshCurrentPage(); }catch(e){} }
@@ -8716,7 +8919,7 @@ const FHEvents = (function(){
     const m = h('div', { id:'fhEventSheet', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog' },
         h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:ev.title || 'Busy' }), h('div', { class:'fhm-sub', text:timeText(ev) + (ev.who ? ' · ' + ev.who + '’s calendar' : '') })), h('button', { type:'button', class:'fhm-x', text:'✕', 'aria-label':'Close', onClick:close })),
-        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:ev.bin ? 'Change the day or bins in Settings › Bin day.' : 'Imported from a connected calendar. Edit it there.' }))));
+        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:ev.bin ? 'Change the day or bins in Settings › Bin day.' : ev.occ ? 'Reminders and gift ideas are on the Occasions page.' : 'Imported from a connected calendar. Edit it there.' }))));
     document.body.appendChild(m);
   }
   return { KEY:KEY, load:load, save:save, forDay:forDay, isFor:isFor, dayBlock:dayBlock, row:row, monthMarks:monthMarks, kitchenCard:kitchenCard, openEditor:openEditor, colorOf:colorOf, iso:iso, occursOn:occursOn };
@@ -9120,6 +9323,8 @@ function fhDayDash(date){
   const n = evs.length + tks.filter(function(t){ return !t.done; }).length;
   wrap.appendChild(h('section', { class:'fhd-sec fhd-plans-sec' },
     h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Plans' + (n ? ' · ' + n : '') }), acts), body));
+  // ---- birthdays & occasions coming up (today only)
+  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ const oc = FHOcc.todayCard(date); if(oc) wrap.appendChild(oc); }
   // ---- dinner
   if(Feature.on('meals')){
     const card = buildMealCard(date);
@@ -9435,7 +9640,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -9447,6 +9652,7 @@ function refreshPage(pageId){
   else if(pageId==='shopping') MealApp.renderShoppingListPage(document.getElementById('shoppingListContent'));
   else if(pageId==='essentials') FHEss.render(document.getElementById('essentialsContent'));
   else if(pageId==='tasks') FHTasks.render(document.getElementById('tasksContent'));
+  else if(pageId==='occasions') FHOcc.render(document.getElementById('occasionsContent'));
   // mealplan / chores refresh themselves via their own module's render()
   if(typeof fhSetupBanner === 'function') fhSetupBanner(pageId);
 }
@@ -11052,7 +11258,7 @@ const FHKitchen = (function(){
    or editing. It is NOT a security lock: the data lives on the device. */
 const FHLock = (function(){
   const KEY = 'family-hub-lock-v1';
-  const HIDDEN = ['mealplan','shopping','tasklists','calendar','settings'];
+  const HIDDEN = ['mealplan','shopping','tasklists','calendar','occasions','settings'];
   let data = load(), idleT = null, fails = 0, blockedUntil = 0, ov = null;
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || 'null'); return (v && v.hash) ? v : { auto:0 }; }catch(e){ return { auto:0 }; } }
   function save(){ fhSaveJSON(KEY, data); }
@@ -11227,7 +11433,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -11662,7 +11868,7 @@ const FHPush = (function(){
     const tasks = (typeof FHTasks !== 'undefined' && Feature.on('tasks')) ? FHTasks.load() : [];
     for(let d = 0; d < DAYS; d++){
       const day = new Date(from.getFullYear(), from.getMonth(), from.getDate() + d), iso = FHEvents.iso(day);
-      const evs = FHEvents.forDay(day).filter(function(ev){ return !ev.ro || ev.bin; });   // household events and bin day, not imported calendars
+      const evs = FHEvents.forDay(day).filter(function(ev){ return !ev.ro || ev.bin || ev.occ; });   // household events and bin day, not imported calendars
       const tks = tasks.filter(function(t){ return !t.done && t.due === iso; });
       const lines = [], eve = [];
       evs.forEach(function(ev){
@@ -11682,6 +11888,7 @@ const FHPush = (function(){
         const cs = ChoreApp.choresForDay(day).filter(function(c){ return !c.done; });
         if(cs.length) items.push({ k:'chores', key:'chores:' + iso, date:iso, lines:cs.map(function(c){ return { t:c.name, who:c.who ? [c.who] : [], f:c.freq, n:c.who ? names([c.who]) : '' }; }) });
       }
+      try{ if(typeof FHOcc !== 'undefined') FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
     }
