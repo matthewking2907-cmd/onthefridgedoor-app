@@ -2866,12 +2866,12 @@ function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMe
    viewer, the "all set" screen) adds a history entry while it's open; Back closes it through its own close button so
    any tidy-up still runs. A pop-up closed on screen takes its entry back off. */
 (function(){
-  const SEL = '.fhm-back, .fhr-overlay, #obDone';
+  const SEL = '.fhm-back, .fhr-overlay, #obDone, #fhSyncModal';
   let depth = 0, ignore = 0;
   function count(){ return document.querySelectorAll(SEL).length; }
   function closeTop(){
     const all = document.querySelectorAll(SEL), el = all[all.length - 1]; if(!el) return;
-    const btn = el.querySelector('.fhm-head .fhm-x, .fhr-close');
+    const btn = el.querySelector('.fhm-head .fhm-x, .fhr-close, #fhSyncClose');
     if(btn){ btn.click(); return; }
     el.dispatchEvent(new MouseEvent('click', { bubbles:true }));   // backdrop tap closes most sheets
     if(document.body.contains(el)) el.remove();
@@ -3737,7 +3737,7 @@ const FHRecipes = (function(){
     const fmtQ = (n, unit) => { const lc = FHLocale.qty(n, unit); const q = lc ? lc.n : niceQty(n, unit), u = lc ? lc.u : plural(FHLocale.unit(unit), n); return q + (u ? ' ' + u : ''); };
     return { size: size, lines: meal.ingredients.map(i => ({ qty: i.qty ? fmtQ(i.perPerson ? i.qty * size : i.qty * scale, i.unit) : '', name: countName(i.name, i.perPerson ? i.qty * size : i.qty * scale, i.unit, i._n0) })) };
   }
-  return { ingLines, changesFor, countName, get, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
+  return { ingLines, changesFor, countName, plural, get, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
 })();
 FHLocale.applyRecipes();
 
@@ -5072,7 +5072,9 @@ if(householdSizeInputEl){
 const shopDaySelectEl = document.getElementById('shopDaySelect');
 if(shopDaySelectEl){
   shopDaySelectEl.addEventListener('change', ()=>{
-    shopDay = parseInt(shopDaySelectEl.value, 10);
+    const d = parseInt(shopDaySelectEl.value, 10);
+    if(typeof FHExtras !== 'undefined' && FHExtras.moveToShopDay){ FHExtras.moveToShopDay(d); return; }
+    shopDay = d;
     persistShopDay();
     if(typeof __onChange === 'function') __onChange();
   });
@@ -6392,7 +6394,7 @@ function renderShoppingListPage(container){
       });
       const nm = document.createElement('span');
       nm.className = 'shopping-item-name';
-      const qtyText = item.qty ? (FHLocale.qtyText(item.qty, item.unit) || (item.qty + (item.unit ? ' ' + FHLocale.unit(item.unit, item.qty) : ''))) : '';
+      const qtyText = item.qty ? (FHLocale.qtyText(item.qty, item.unit) || (function(){ const u = item.unit ? FHRecipes.plural(FHLocale.unit(item.unit, item.qty), item.qty) : ''; return item.qty + (u ? ' ' + u : ''); })()) : '';
       nm.textContent = item.name + (qtyText ? ' — ' + qtyText : '');
       info.appendChild(nm);
       const uses = document.createElement('span');
@@ -8267,7 +8269,7 @@ const FHExtras = (function(){
           save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } }));
     });
   }
-  return { shopDayRow:shopDayRow, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
+  return { shopDayRow:shopDayRow, moveToShopDay:moveToShopDay, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
 /* ==================== OCCASIONS: birthdays, anniversaries, celebrations ====================
@@ -11958,6 +11960,27 @@ const FHSync = (function(){
            _merge3: merge3, _eligible: eligible };
 })();
 
+/* ---------- invite links: app address + #join=CODE (after the #, so the code never reaches the web host) ----------
+   Opening one stores the code on this device only (family-hub-pending-join, not synced) and opens sign-in, which
+   joins the household straight after the email code. Codes still work once, like typing them. */
+const FH_JOIN_KEY = 'family-hub-pending-join';
+function fhInviteLink(code){ return new URL('./', location.href).href.replace(/index\.html$/, '') + '#join=' + encodeURIComponent(code || ''); }
+function fhPendingJoin(){ return fhRawGet(FH_JOIN_KEY) || ''; }
+function fhSendInvite(code){
+  const link = fhInviteLink(code);
+  const text = 'Join our family on On the FridgeDoor: open this link on your phone and sign in with your email. It works once.';
+  if(navigator.share) return navigator.share({ title:'Join our family on On the FridgeDoor', text:text, url:link }).then(function(){ return 'shared'; }, function(){ return 'cancelled'; });
+  return (navigator.clipboard ? navigator.clipboard.writeText(text + ' ' + link) : Promise.reject()).then(function(){ return 'copied'; }, function(){ return 'failed'; });
+}
+function fhCheckInviteLink(){
+  const m = /[#&]join=([A-Za-z0-9-]{8,20})/.exec(location.hash || ''); if(!m) return;
+  try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
+  const s = FHSync.summary(); if(!s.configured) return;
+  if(s.mode === 'ok'){ alert('This device is already part of a household, so the invite wasn’t used. To switch, leave your household first in Settings › Sync across devices › More.'); return; }
+  fhRawSet(FH_JOIN_KEY, decodeURIComponent(m[1]).toUpperCase());
+  setTimeout(function(){ fhSyncSignInModal(); }, 400);
+}
+
 /* ---------- sync UI (a card in Settings; the same card appears on the first screen of setup) ---------- */
 function fhAgo(ts){
   if(!ts) return 'not yet';
@@ -11990,7 +12013,8 @@ function fhSyncCard(opts){
       return;
     }
     if(s.mode === 'signedout'){
-      box.appendChild(note('Keep meals, chores and shopping the same on every phone and tablet. Sign in with your email: we send a code, no password to remember.'));
+      if(fhPendingJoin()) box.appendChild(h('p', { class:'ob-label', id:'stSyncInvited', text:'🎉 You’ve been invited to join a family' }));
+      box.appendChild(note(fhPendingJoin() ? 'Sign in with your email to join. We send a code, no password to remember.' : 'Keep meals, chores and shopping the same on every phone and tablet. Sign in with your email: we send a code, no password to remember.'));
       if(view.step === 'email'){
         const em = h('input', { type:'email', id:'stSyncEmail', placeholder:'you@example.com', value:view.email, autocomplete:'email', inputmode:'email', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
         box.appendChild(em);
@@ -12004,6 +12028,13 @@ function fhSyncCard(opts){
           btn('Back', function(){ view.step = 'email'; view.msg = ''; render(); }, 'ghost')));
       }
     } else if(s.mode === 'nohh'){
+      const invite = fhPendingJoin();
+      if(invite && !view.inviteTried && !view.working){
+        view.inviteTried = true;
+        if(!FHSync.hasLocalSetup() || confirm('This device already has its own data. Joining replaces it with the family’s data. Continue?')){
+          setTimeout(function(){ run(function(){ return FHSync.joinHousehold(invite).then(function(){ fhRawRemove(FH_JOIN_KEY); }, function(e){ fhRawRemove(FH_JOIN_KEY); throw new Error(/invalid/i.test(e.message) ? 'That invite has already been used or replaced. Ask for a new one.' : e.message); }); }); }, 0);
+        }
+      }
       box.appendChild(note('Signed in as ' + s.email + '. Is this the first device for your family, or are you joining someone who already uses the app?'));
       if(!view.join){
         const row = h('div', { class:'ob-row' });
@@ -12013,7 +12044,7 @@ function fhSyncCard(opts){
         box.appendChild(row);
         if(!FHSync.hasLocalSetup()) box.appendChild(note('This device has not been set up yet, so it will take the household data when you join.'));
       } else {
-        const cd = h('input', { type:'text', id:'stSyncJoinCode', placeholder:'ABCD-1234-EF56', autocapitalize:'characters', autocomplete:'off', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
+        const cd = h('input', { type:'text', id:'stSyncJoinCode', placeholder:'ABCD-1234-EF56', value:fhPendingJoin(), autocapitalize:'characters', autocomplete:'off', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
         box.appendChild(cd);
         box.appendChild(note('Find the code on a device already using the app: Settings, Sync across devices.'));
         box.appendChild(h('div', { class:'ob-row' },
@@ -12029,10 +12060,13 @@ function fhSyncCard(opts){
       box.appendChild(h('p', { class:'ob-hint', id:'stSyncState', text:'Signed in as ' + s.email + (hh.members ? ' · ' + hh.members + ' parent account' + (hh.members === 1 ? '' : 's') : '') }));
       box.appendChild(h('p', { class:'ob-hint', text:state, style: s.error ? 'color:var(--brick-strong,#b3402a)' : '' }));
       box.appendChild(h('p', { class:'ob-label', text:'Invite another parent' }));
-      box.appendChild(h('p', { class:'ob-hint', text:'Give them this code to join on their own account. It works once, then a new one appears.' }));
+      box.appendChild(h('p', { class:'ob-hint', text:'Send them a link (WhatsApp, Messages…). They open it, sign in with their own email and they’re in. Each invite works once, then a new one is ready.' }));
+      box.appendChild(h('div', { class:'ob-row' },
+        btn('📨 Send invite', function(){ fhSendInvite(hh.invite_code).then(function(r){ if(r === 'copied'){ view.msg = 'Invite link copied: paste it into a message.'; render(); } else if(r === 'failed'){ view.msg = 'Couldn’t share. Copy the code below instead.'; render(); } }); }, '', 'stSyncSendInvite')));
+      box.appendChild(h('p', { class:'ob-hint', text:'Or give them the code to type in:' }));
       box.appendChild(h('p', { id:'stSyncInvite', text:hh.invite_code || '', style:'font-size:22px;letter-spacing:2px;font-weight:700;margin:4px 0 8px' }));
       box.appendChild(h('div', { class:'ob-row' },
-        btn('Sync now', function(){ run(function(){ return FHSync.syncNow('manual'); }); }, '', 'stSyncNow'),
+        btn('Sync now', function(){ run(function(){ return FHSync.syncNow('manual'); }); }, 'ghost', 'stSyncNow'),
         btn('Copy code', function(){ try{ navigator.clipboard.writeText(hh.invite_code || ''); view.msg = 'Code copied.'; }catch(e){ view.msg = 'Select the code and copy it.'; } render(); }, 'ghost'),
         btn('New code', function(){ run(function(){ return FHSync.newCode(); }); }, 'ghost')));
       box.appendChild(h('details', { style:'margin-top:10px' }, h('summary', { text:'More' }),
@@ -12048,6 +12082,7 @@ function fhSyncCard(opts){
             run(function(){ return FHSync.deleteAccount().then(function(){ view.msg = 'Your account has been deleted.'; }); }); }, 'ghost', 'stDeleteAccount'))));
     }
     if(view.msg) box.appendChild(note(view.msg, !/copied|deleted/i.test(view.msg)));
+    if(!view.msg && s.mode === 'ok' && opts.bare && fhPendingJoin() === '' && view.inviteTried) box.appendChild(note('You’ve joined the family. Everything is coming across now.'));
   }
   function afterSignIn(mode){
     // Signed in on a device that belongs to an existing household: offer to take its data.
@@ -12073,6 +12108,8 @@ function fhSyncSignInModal(){
 }
 FHSync.init();
 FHCal.init();
+fhCheckInviteLink();
+window.addEventListener('hashchange', fhCheckInviteLink);
 
 /* ==================== REMINDERS: push notifications ==================== */
 /* Each device works out the household's reminders for the next 14 days from the synced events and tasks (the same
