@@ -12233,7 +12233,12 @@ function fhDeviceSetupModal(startStep){
       body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhDeviceConnect', disabled:busy, text:busy ? 'Connecting…' : 'Connect this device', onClick:function(){
         busy = true; msg = ''; draw(); fhRawSet(FH_DEVICE_STEP, 'who');
         FHSync.joinAsDevice(code).then(function(){ fhRawRemove(FH_DEVICE_KEY); busy = false; go('who'); },
-          function(e){ fhRawRemove(FH_DEVICE_STEP); busy = false; msg = /invalid/i.test(e.message) ? 'That link has already been used. Ask a parent for a new one.' : /anonymous|signups? not allowed|disabled/i.test(e.message) ? 'Child devices aren’t switched on for this app yet.' : e.message; fhRawRemove(FH_DEVICE_KEY); draw(); }); } })));
+          function(e){ fhRawRemove(FH_DEVICE_STEP); busy = false;
+            const used = /invalid/i.test(e.message);
+            msg = used ? 'That link has already been used. Ask a parent for a new one.'
+              : (/anonymous|signups? not allowed|disabled/i.test(e.message) ? 'Child devices aren’t switched on for this app yet.' : 'Couldn’t connect this device.') + ' (' + e.message + ') You can try again.';
+            if(used) fhRawRemove(FH_DEVICE_KEY);   // keep the code for a retry unless it's been used
+            draw(); }); } })));
     } else if(step === 'who'){
       const ps = people(), kids = ps.filter(function(p){ return p.role === 'child'; }), rest = ps.filter(function(p){ return p.role !== 'child'; });
       const pick = function(p){
