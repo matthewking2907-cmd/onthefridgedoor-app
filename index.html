@@ -2309,6 +2309,7 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhc-code{ font-size:1.4rem; font-weight:800; letter-spacing:2px; text-align:center; background:var(--accent-soft,#f3eef8); border-radius:10px; padding:8px; }
 .fhc-input{ font-size:1.2rem; letter-spacing:2px; text-transform:uppercase; }
 .fhc-choices{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.nav-item.lock-hidden{ display:none !important; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -11520,6 +11521,8 @@ const FHLock = (function(){
   /* ---- state ---- */
   function applyState(){
     document.body.classList.toggle('kid-locked', isLocked());
+    // the menu hides exactly the pages the lock keeps closed (one list, so they can't drift apart)
+    document.querySelectorAll('.nav-item[data-page]').forEach(b=> b.classList.toggle('lock-hidden', isLocked() && HIDDEN.indexOf(b.dataset.page) >= 0));
     updateNav();
     try{ if(isLocked() && HIDDEN.indexOf(currentPage) >= 0) showPage('today'); }catch(e){}
     schedIdle();
