@@ -2303,6 +2303,12 @@ body.kid-locked #manageChores{ display:none !important; }
 .fho-empty{ margin:0; }
 .fho-daterow.two{ grid-template-columns:1fr 2fr; }
 .fho-emojis .ob-chip{ padding:6px 10px; font-size:18px; }
+.st-device{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-top:1px solid var(--panel-line,#eee); }
+.fhc-hint{ border:1.5px dashed var(--accent,#6C4F8A); border-radius:12px; padding:10px 12px; margin:6px 0 10px; font-size:0.92rem; }
+.fhc-hint p{ margin:0 0 6px; }
+.fhc-code{ font-size:1.4rem; font-weight:800; letter-spacing:2px; text-align:center; background:var(--accent-soft,#f3eef8); border-radius:10px; padding:8px; }
+.fhc-input{ font-size:1.2rem; letter-spacing:2px; text-transform:uppercase; }
+.fhc-choices{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -4261,7 +4267,7 @@ const MEALS = [
     ing("Sausages",8,"each","meat-fish",3), ing("Peppers",2,"each","produce",7), ing("Onion",1,"each","produce",14), ing("Chopped tomatoes",1,"tin","store-cupboard"), ing("Tomato purée",1,"tbsp","store-cupboard"), ing("Crusty rolls",4,"each","bakery",3), ing("Olive oil",1,"tbsp","store-cupboard"), ing("Garlic",2,"clove","produce",21), ing("Dried oregano",1,"tsp","store-cupboard")
   ]},
   {id:"tomato-cheese-tarts", name:"Tomato & Cheese Puff Tarts with Salad", cat:"veggie", cuisine:"French", ingredients:[
-    ing("Puff pastry sheet",1,"piece","bakery",14), ing("Cherry tomatoes",250,"g","produce",7), ing("Cheddar cheese",120,"g","dairy-chilled",14), ing("Tomato purée",2,"tbsp","store-cupboard"), ing("Eggs",1,"each","dairy-chilled",14), ing("Salad leaves",1,"bag","produce",5), ing("Fresh basil",1,"bunch","produce",5)
+    ing("Puff pastry sheet",1,"piece","dairy-chilled",14), ing("Cherry tomatoes",250,"g","produce",7), ing("Cheddar cheese",120,"g","dairy-chilled",14), ing("Tomato purée",2,"tbsp","store-cupboard"), ing("Eggs",1,"each","dairy-chilled",14), ing("Salad leaves",1,"bag","produce",5), ing("Fresh basil",1,"bunch","produce",5)
   ]},
   {id:"chicken-pesto-pasta", name:"Chicken & Pesto Pasta", cat:"chicken", cuisine:"Italian", ingredients:[
     ing("Pasta",350,"g","store-cupboard"), ing("Chicken breast",450,"g","meat-fish",2), ing("Green pesto",1,"jar","store-cupboard"), ing("Cherry tomatoes",250,"g","produce",7), ing("Olive oil",1,"tbsp","store-cupboard"), ing("Parmesan",30,"g","dairy-chilled",14)
@@ -4377,6 +4383,9 @@ const MEALS = [
 ];
 /* built-in ingredient lists before any household edits, so the recipe viewer can say what you changed */
 window.FH_BUILTIN_INGS = {}; window.FH_BUILTIN_FULL = {};
+/* ingredients filed in the wrong aisle, in built-in meals and households' saved copies */
+function fhFixAisles(list){ (list || []).forEach(function(i){ if(i && /^puff pastry/i.test(i._n0 || i.name || '') && i.section === 'bakery') i.section = 'dairy-chilled'; }); }
+(function(){ MEALS.forEach(function(m){ fhFixAisles(m.ingredients); }); })();
 window.FH_RECIPE_UPDATES ={"moussaka":{"add":["Tomato purée","Ground cinnamon","Bay leaves","Ground nutmeg","Eggs","Olive oil"],"drop":[],"qty":["Milk","Butter","Plain flour","Milk","Butter","Plain flour"]},"lasagne":{"add":["Tomato purée","Bay leaves","Ground nutmeg"],"drop":[],"qty":[]},"cottage-pie":{"add":["Garlic","Worcestershire sauce","Dried thyme","Bay leaves"],"drop":[],"qty":[]},"shepherds-pie":{"add":["Garlic","Worcestershire sauce","Dried rosemary","Dried thyme"],"drop":[],"qty":[]},"meatballs":{"add":["Dried oregano","Dried basil","Eggs"],"drop":["Egg"],"qty":[]},"veggie-chilli":{"add":["Ground cumin","Smoked paprika","Vegetable stock cube","Olive oil"],"drop":[],"qty":[]},"veg-lasagne":{"add":["Dried oregano","Dried basil","Ground nutmeg"],"drop":[],"qty":[]},"keema-curry":{"add":["Ground cumin","Ground coriander","Garam masala","Fresh coriander"],"drop":[],"qty":["Curry powder"]},"dahl":{"add":["Ground cumin","Ground turmeric","Garam masala","Vegetable stock cube","Lemon"],"drop":[],"qty":["Curry powder"]},"lamb-koftas":{"add":["Fresh parsley","Fresh mint","Smoked paprika","Ground cinnamon"],"drop":[],"qty":[]},"sausage-pasta":{"add":["Dried mixed herbs","Tomato purée","Chicken stock cube"],"drop":[],"qty":[]},"minestrone":{"add":["Tomato purée","Dried oregano"],"drop":[],"qty":[]},"quick-chicken-spinach-curry":{"add":["Chicken stock cube","Tomato purée","Ground turmeric"],"drop":[],"qty":[]},"chickpea-spinach-curry":{"add":["Ground cumin","Ground turmeric","Garam masala","Fresh ginger"],"drop":[],"qty":["Curry powder"]},"chorizo-chickpea-stew":{"add":["Fresh parsley","Bay leaves","Chicken stock cube"],"drop":[],"qty":[]},"chicken-chorizo-rice":{"add":["Onion","Garlic","Chicken stock cube","Fresh parsley","Lemon"],"drop":[],"qty":[]},"huevos-rancheros":{"add":["Ground cumin","Garlic","Fresh coriander"],"drop":[],"qty":[]},"stuffed-peppers":{"add":["Ground cumin","Smoked paprika","Lime","Fresh coriander"],"drop":[],"qty":[]},"lentil-bol":{"add":["Tomato purée","Dried mixed herbs","Olive oil"],"drop":[],"qty":[]},"mushroom-risotto":{"add":["Dried thyme","Fresh parsley"],"drop":[],"qty":[]},"chilli":{"add":["Smoked paprika","Dried oregano","Tomato purée","Olive oil","Beef stock cube","Ground cumin"],"drop":[],"qty":[]},"greek-chicken":{"add":["Olive oil"],"drop":[],"qty":[]},"chicken-gyros-pittas":{"add":["Smoked paprika","Ground cumin","Garlic","Fresh dill"],"drop":[],"qty":[]},"halloumi-tray":{"add":["Garlic","Dried oregano","Vegetable stock cube","Lemon"],"drop":[],"qty":[]},"pitta-burgers":{"add":["Fresh mint","Ground coriander","Onion"],"drop":[],"qty":[]},"beef-stew-dumplings":{"add":["Garlic","Worcestershire sauce","Dried thyme","Bay leaves"],"drop":[],"qty":[]},"chicken-leek-casserole":{"add":["Garlic","Dried thyme","Lemon"],"drop":[],"qty":[]},"sausage-casserole":{"add":["Garlic","Dried thyme"],"drop":[],"qty":[]},"chicken-pie":{"add":["Dijon mustard","Dried thyme","Garlic","Eggs"],"drop":[],"qty":[]},"fish-pie":{"add":["Fresh parsley","Dijon mustard","Lemon"],"drop":[],"qty":[]},"toad-in-hole":{"add":["Dijon mustard","Dried thyme"],"drop":[],"qty":[]},"roast-chicken":{"add":["Butter","Lemon","Garlic","Dried thyme","Olive oil","Peas"],"drop":[],"qty":[]},"beef-stroganoff":{"add":["Dijon mustard"],"drop":[],"qty":[]},"teriyaki":{"add":["Olive oil"],"drop":[],"qty":[]},"pizza":{"add":["Dried oregano"],"drop":[],"qty":[]},"chicken-korma":{"add":["Fresh ginger","Fresh coriander"],"drop":[],"qty":[]},"lamb-rogan-josh":{"add":["Fresh ginger","Tomato purée","Fresh coriander"],"drop":[],"qty":[]},"thai-green-curry":{"add":["Fish sauce","Fresh ginger","Fresh basil"],"drop":["Soy sauce"],"qty":[]},"massaman":{"add":["Fresh coriander","Ground cinnamon","Olive oil"],"drop":[],"qty":[]},"katsu":{"add":["Garlic","Fresh ginger","Honey","Olive oil","Chicken stock cube","Soy sauce","Eggs"],"drop":["Egg"],"qty":[]},"veg-curry":{"add":["Ground cumin","Ground turmeric","Garam masala","Olive oil"],"drop":[],"qty":["Curry powder","Curry powder"]},"curry-chicken":{"add":["Ground turmeric","Chicken stock cube","Olive oil"],"drop":[],"qty":[]},"sweet-sour":{"add":["Garlic","Fresh ginger","Olive oil"],"drop":[],"qty":[]},"orange-chicken":{"add":["Honey","Orange","Sesame oil","Olive oil"],"drop":[],"qty":[]},"korean-pork":{"add":["Honey","Sesame oil","Sesame seeds"],"drop":[],"qty":[]},"veg-stirfry":{"add":["Honey","Sesame oil","Rice vinegar","Olive oil"],"drop":[],"qty":[]},"beef-stirfry":{"add":["Oyster sauce","Sesame oil","Beef stock cube","Olive oil"],"drop":[],"qty":[]},"egg-fried-rice":{"add":["Sesame oil"],"drop":[],"qty":[]},"chicken-chow-mein":{"add":["Sesame oil"],"drop":[],"qty":[]},"mince-tacos":{"add":["Chilli powder","Ground cumin","Smoked paprika","Garlic powder","Dried oregano"],"drop":["Taco seasoning"],"qty":[]},"chicken-tacos":{"add":["Garlic","Ground coriander","Olive oil","Smoked paprika","Ground cumin"],"drop":[],"qty":[]},"fajitas":{"add":["Lime","Olive oil","Smoked paprika","Ground cumin","Chilli powder","Garlic powder","Dried oregano"],"drop":["Fajita seasoning"],"qty":[]},"veggie-fajitas":{"add":["Lime"],"drop":[],"qty":[]},"fish-tacos":{"add":["Ground cumin","Smoked paprika","Garlic powder","Fresh coriander","Olive oil"],"drop":[],"qty":[]},"prawn-tacos":{"add":["Garlic","Ground cumin","Smoked paprika"],"drop":[],"qty":[]},"bean-burritos":{"add":["Onion","Garlic","Ground cumin","Lime","Fresh coriander","Olive oil"],"drop":[],"qty":[]},"shawarma":{"add":["Lemon","Olive oil","Ground cumin","Paprika","Ground coriander","Ground turmeric","Garlic powder","Ground cinnamon","Ground allspice"],"drop":["Shawarma spice mix"],"qty":[]},"mac-cheese":{"add":["Dijon mustard"],"drop":[],"qty":[]},"cauli-cheese":{"add":["Dijon mustard","Ground nutmeg"],"drop":[],"qty":[]},"cheese-leek-pasta":{"add":["Dijon mustard","Garlic","Dried thyme"],"drop":[],"qty":[]},"tuna-pasta-bake":{"add":["Dried mixed herbs"],"drop":[],"qty":[]},"spinach-ricotta-cannelloni":{"add":["Ground nutmeg","Fresh basil"],"drop":[],"qty":[]},"sausage-gnocchi-skillet":{"add":["Garlic","Fresh basil"],"drop":[],"qty":[]},"tomato-soup":{"add":["Garlic","Tomato purée","Fresh basil","Olive oil"],"drop":[],"qty":[]},"leek-potato-soup":{"add":["Garlic","Bay leaves","Dried thyme"],"drop":[],"qty":[]},"butternut-soup":{"add":["Ground cumin","Fresh ginger"],"drop":[],"qty":[]},"pea-soup-toast":{"add":["Garlic","Lemon"],"drop":[],"qty":[]},"chicken-noodle-soup":{"add":["Dried thyme","Bay leaves","Fresh parsley"],"drop":[],"qty":[]},"creamy-mushroom-pasta":{"add":["Dried thyme"],"drop":[],"qty":[]},"gnocchi-mushroom-spinach":{"add":["Onion","Dried thyme","Vegetable stock cube"],"drop":[],"qty":[]},"tortellini-spinach":{"add":["Fresh basil","Dried oregano"],"drop":[],"qty":[]},"ham-pea-pasta":{"add":["Chicken stock cube","Fresh parsley"],"drop":[],"qty":[]},"smoked-mackerel-pasta":{"add":["Horseradish sauce"],"drop":[],"qty":[]},"peanut-noodles":{"add":["Fresh ginger","Rice vinegar"],"drop":[],"qty":[]},"chicken-fried-rice":{"add":["Garlic","Sesame oil","Oyster sauce"],"drop":[],"qty":[]},"pork-mince-noodles":{"add":["Hoisin sauce","Sesame oil"],"drop":["Ketchup"],"qty":[]},"soy-salmon-noodles":{"add":["Garlic","Sesame oil"],"drop":[],"qty":[]},"sticky-tofu-rice-bowls":{"add":["Garlic","Fresh ginger","Rice vinegar"],"drop":[],"qty":[]},"salmon-roast-veg":{"add":["Garlic","Dried mixed herbs"],"drop":[],"qty":[]},"kedgeree":{"add":["Bay leaves","Fresh parsley","Ground turmeric"],"drop":[],"qty":[]},"fish-goujons":{"add":["Smoked paprika","Lemon","Olive oil","Eggs"],"drop":["Egg"],"qty":[]},"cod-chips":{"add":["Garlic","Fresh parsley"],"drop":[],"qty":[]},"beef-burgers":{"add":["Onion","Garlic","Worcestershire sauce"],"drop":[],"qty":[]},"chicken-burgers":{"add":["Smoked paprika","Garlic powder","Olive oil"],"drop":[],"qty":[]},"sausage-traybake":{"add":["Dried rosemary"],"drop":[],"qty":[]},"roast-beef":{"add":["Dijon mustard","Dried thyme","Garlic"],"drop":[],"qty":[]},"roast-pork":{"add":["Fennel seeds","Garlic"],"drop":[],"qty":[]},"roast-lamb":{"add":["Lemon"],"drop":[],"qty":[]},"veg-omelette":{"add":["Onion","Fresh chives","Olive oil"],"drop":[],"qty":[]},"pork-chops":{"add":["Dried mixed herbs","Garlic"],"drop":[],"qty":[]},"quiche":{"add":["Ground nutmeg"],"drop":[],"qty":[]},"sausage-bean-hotpot":{"add":["Worcestershire sauce"],"drop":[],"qty":[]},"chicken-nuggets":{"add":["Garlic powder","Parmesan"],"drop":[],"qty":[]},"sausage-pepper-rolls":{"add":["Garlic","Dried oregano"],"drop":[],"qty":[]},"tomato-cheese-tarts":{"add":["Fresh basil"],"drop":[],"qty":[]},"pork-steaks-mash":{"add":["Dried sage"],"drop":[],"qty":[]},"feta-chickpea-pittas":{"add":["Ground cumin","Smoked paprika","Garlic"],"drop":[],"qty":[]},"sweetcorn-fritters":{"add":["Baking powder","Fresh coriander"],"drop":[],"qty":[]}};
 (function(){ MEALS.forEach(function(m){ const f = FH_MEAL_FIXES[m.id]; if(!f) return; if(f.name) m.name = f.name; (f.remove || []).forEach(function(n){ for(let q=m.ingredients.length-1;q>=0;q--){ if(m.ingredients[q].name === n) m.ingredients.splice(q,1); } }); (f.add || []).forEach(function(a){ if(!m.ingredients.some(function(i){ return i.name === a[0]; })) m.ingredients.push(ing.apply(null, a)); }); }); MEALS.forEach(function(m){ window.FH_BUILTIN_INGS[m.id] = m.ingredients.map(function(i){ return { name:i.name, qty:i.qty, unit:i.unit }; }); }); FHLocale.applyMeals(MEALS); MEALS.forEach(function(m){ window.FH_BUILTIN_FULL[m.id] = m.ingredients.map(function(i){ return Object.assign({}, i); }); }); })();
 const mealsById = Object.fromEntries(MEALS.map(m => [m.id, m]));
@@ -4571,6 +4580,7 @@ function applyMealOverrides(){
     if(o.cat) meal.cat = o.cat;
     if(typeof o.cuisine === 'string') meal.cuisine = o.cuisine;
     if(Array.isArray(o.ingredients) && fhRecipeCatchUp(id, o)) fhOvDirty = true;
+    if(Array.isArray(o.ingredients)) fhFixAisles(o.ingredients);
     if(Array.isArray(o.ingredients)) meal.ingredients = o.ingredients;
     if(typeof o.link === 'string') meal.link = o.link;
     if(o.servesOverride) meal.servesOverride = o.servesOverride;
@@ -9943,7 +9953,7 @@ function fhGuessSection(name){
   if(/toilet (roll|paper)|kitchen roll|paper towel|tissue|bin (bag|liner)|trash bag|washing.?up|dish ?soap|dishwasher|rinse aid|detergent|fabric (softener|conditioner)|laundry|hand soap|shampoo|conditioner|shower gel|body wash|toothpaste|toothbrush|deodorant|sponge|scourer|scouring|microfibre|mop head|cleaner|bleach|limescale|descal|drain|batter(y|ies)|light bulb|vacuum|\bfoil\b|cling ?film|baking (paper|parchment)|plasters?|nappies|baby wipes|sanitary|cat litter|dog food|cat food|pet food/.test(n)) return 'household';
   if(/chicken|beef|pork|lamb|mince|steak|bacon|sausage|ham\b|salmon|cod\b|haddock|prawn|tuna|fish|turkey|chorizo|meatball/.test(n)) return 'meat-fish';
   if(/frozen|ice cream|oven chips|peas\b/.test(n)) return 'frozen';
-  if(/milk|cheese|butter|yogh?urt|cream|egg|mozzarella|parmesan|cheddar|halloumi|feta|crème|creme/.test(n)) return 'dairy-chilled';
+  if(/milk|cheese|butter|yogh?urt|cream|egg|mozzarella|parmesan|cheddar|halloumi|feta|crème|creme|puff pastry|filo|ready.rolled/.test(n)) return 'dairy-chilled';
   if(/bread|wrap|tortilla|bun\b|bagel|naan|pitta|roll\b|baguette|pizza base/.test(n)) return 'bakery';
   if(/onion|garlic|pepper|carrot|potato|tomato|lettuce|salad|veg|apple|banana|broccoli|courgette|mushroom|spinach|lemon|lime|herb|basil|coriander|parsley|cucumber|leek|celery|cabbage|avocado|ginger|chilli\b|berries|fruit|sweet potato|spring onion/.test(n)) return 'produce';
   return 'store-cupboard';
@@ -10549,7 +10559,7 @@ const OBW = (function(){
       h('div',{class:'ob-hero'},'🏡'),
       ...title(mode==='rerun' ? 'Set up again' : 'On the FridgeDoor', 'Your family’s hub for meals, chores and plans. A few quick questions and it’s ready: your people, your rooms, suggested chores and a meal plan that fills in your shopping list. Takes about three minutes — you can change anything later.'),
       mode!=='rerun' ? h('p',{class:'ob-hint',style:'margin-top:14px'}, 'Your plans stay on this device unless you switch on sync. ', h('a',{href:'privacy.html',target:'_blank',rel:'noopener',text:'Privacy'}), ' · ', h('a',{href:'terms.html',target:'_blank',rel:'noopener',text:'Terms'})) : null,
-      (mode!=='rerun' && FHSync.summary().configured) ? h('div',{class:'ob-row',style:'margin-top:14px'}, h('button',{type:'button',class:'ob-btn ghost',id:'obSyncLink',text:'I already use it on another device',onClick:()=>fhSyncSignInModal()})) : null,
+      (mode!=='rerun' && FHSync.summary().configured) ? h('div',{class:'ob-row',style:'margin-top:14px'}, h('button',{type:'button',class:'ob-btn ghost',id:'obSyncLink',text:'I already use it on another device',onClick:()=>fhSyncSignInModal()}), h('button',{type:'button',class:'ob-btn ghost',id:'obCodeLink',text:'Got a family code?',onClick:()=>fhCodeModal()})) : null,
       mode==='rerun' ? h('div',{class:'ob-warn'},'⚠️ Finishing this replaces your current people, chores, meal plan and ticks. Export a backup from Settings first if you want to keep them.') : null
     ];
   }
@@ -11817,6 +11827,18 @@ const FHSync = (function(){
     st.seq = 0; st.keys = {}; save();
     await pull('join');
   }
+  /* a child's device: email-free (anonymous) sign-in, then join with a parent's one-time code (sync/supabase_devices.sql) */
+  async function joinAsDevice(code, label){
+    takeSession(await authCall('signup', {}));
+    st.auth.email = ''; st.auth.device = true; save();
+    try{ st.hh = await rpc('join_as_device', { p_code: code, p_label: label || '' }); }
+    catch(e){ st.auth = null; save(); emit(); throw e; }
+    save();
+    await adoptHousehold();
+  }
+  async function setDeviceLabel(label){ await rpc('set_device_label', { p_label: label || '' }); await refreshHousehold(); }
+  async function removeDevice(id){ await rpc('remove_device', { p_user: id }); await refreshHousehold(); }
+  function isDevice(){ return !!(st.hh && st.hh.role === 'device') || !!(st.auth && st.auth.device); }
   async function leaveHousehold(){
     await rpc('leave_household');
     st.hh = null; st.seq = 0; st.keys = {}; save(); stopTimers(); emit();
@@ -11956,7 +11978,7 @@ const FHSync = (function(){
   }
 
   return { init, summary, onChange, nudge, setConfig, sendCode, verify, createHousehold, joinHousehold, adoptHousehold,
-           leaveHousehold, deleteAccount, newCode, disconnect, syncNow, hasLocalSetup, refreshHousehold, rpc, fn,
+           leaveHousehold, deleteAccount, joinAsDevice, setDeviceLabel, removeDevice, isDevice, newCode, disconnect, syncNow, hasLocalSetup, refreshHousehold, rpc, fn,
            _merge3: merge3, _eligible: eligible };
 })();
 
@@ -11968,16 +11990,80 @@ function fhInviteLink(code){ return new URL('./', location.href).href.replace(/i
 function fhPendingJoin(){ return fhRawGet(FH_JOIN_KEY) || ''; }
 function fhSendInvite(code){
   const link = fhInviteLink(code);
-  const text = 'Join our family on On the FridgeDoor: open this link on your phone and sign in with your email. It works once.';
+  const text = 'Join our family on On the FridgeDoor: open this link on your phone and sign in with your email. It works once. Already have the app on your Home Screen? Open it, tap “Got a family code?” and type ' + code + '.';
   if(navigator.share) return navigator.share({ title:'Join our family on On the FridgeDoor', text:text, url:link }).then(function(){ return 'shared'; }, function(){ return 'cancelled'; });
   return (navigator.clipboard ? navigator.clipboard.writeText(text + ' ' + link) : Promise.reject()).then(function(){ return 'copied'; }, function(){ return 'failed'; });
 }
+const FH_DEVICE_KEY = 'family-hub-pending-device';
+function fhDeviceLink(code){ return fhInviteLink(code).replace('#join=', '#device='); }
+function fhSendDeviceLink(code){
+  const link = fhDeviceLink(code);
+  const text = 'Open this on your child’s phone or tablet to connect it to our family on On the FridgeDoor. No email or account needed. It works once. On an iPhone with the app on the Home Screen: open the app, tap “Got a family code?” and type ' + code + '.';
+  if(navigator.share) return navigator.share({ title:'Connect a child’s device', text:text, url:link }).then(function(){ return 'shared'; }, function(){ return 'cancelled'; });
+  return (navigator.clipboard ? navigator.clipboard.writeText(text + ' ' + link) : Promise.reject()).then(function(){ return 'copied'; }, function(){ return 'failed'; });
+}
+/* Where a link opens: an installed app on Android usually catches it, and if not, the browser tab and the installed
+   app share storage, so the pending code is waiting when the app opens. On iPhone links always open in Safari, which
+   keeps a separate copy from the Home Screen app, so every link also carries a code to type into the app. */
+const FH_PENDING_AT = 'family-hub-pending-at';
+function fhStandalone(){ try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } }
+function fhIsIOS(){ return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function fhIsAndroid(){ return /Android/i.test(navigator.userAgent); }
+function fhPendingFresh(){ const t = +(fhRawGet(FH_PENDING_AT) || 0); return t && Date.now() - t < 48 * 3600 * 1000; }
+function fhSetPending(key, code){ fhRawSet(key, code); fhRawSet(FH_PENDING_AT, String(Date.now())); }
+function fhCodeOf(raw){ const c = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return c.length === 12 ? c.slice(0, 4) + '-' + c.slice(4, 8) + '-' + c.slice(8) : (c.length >= 8 ? c : ''); }
+/* shown when a link opened in a browser tab on a phone instead of the installed app */
+function fhOpenInAppHint(code){
+  if(fhStandalone() || !(fhIsIOS() || fhIsAndroid())) return null;
+  const box = h('div', { class:'fhc-hint', id:'fhOpenInApp' });
+  if(fhIsIOS()){
+    box.appendChild(h('p', { text:'Using the app from your Home Screen? On iPhone and iPad, links open in Safari, which keeps a separate copy. Open the app from the Home Screen instead, tap “Got a family code?” and type:' }));
+    box.appendChild(h('p', { class:'fhc-code', text:code }));
+    box.appendChild(h('p', { class:'ob-hint', text:'Not on the Home Screen yet? Tap Share › Add to Home Screen first, then open it from there. Or carry on here to use it in Safari.' }));
+  } else {
+    box.appendChild(h('p', { text:'Prefer the installed app? Open it from your home screen: this will be waiting there. Not installed yet? Tap ⋮ › Install app (or Add to Home screen), then open it.' }));
+  }
+  return box;
+}
+/* "Got a family code?": type a code from an invite or child-device link into the installed app */
+function fhCodeModal(){
+  if(document.getElementById('fhCodeModal')) return;
+  const close = function(){ const m = document.getElementById('fhCodeModal'); if(m) m.remove(); };
+  const err = h('p', { class:'fhe-err' });
+  const inp = h('input', { class:'fhe-in fhc-input', id:'fhCodeInput', maxlength:'20', placeholder:'ABCD-1234-EF56', autocapitalize:'characters', autocomplete:'off', 'aria-label':'Family code' });
+  const go = function(kind){
+    const code = fhCodeOf(inp.value); if(!code){ err.textContent = 'Type the code from the link, e.g. ABCD-1234-EF56.'; return; }
+    close();
+    if(kind === 'device'){ fhRawRemove(FH_JOIN_KEY); fhSetPending(FH_DEVICE_KEY, code); fhDeviceSetupModal(); }
+    else { fhRawRemove(FH_DEVICE_KEY); fhSetPending(FH_JOIN_KEY, code); fhSyncSignInModal(); }
+  };
+  const m = h('div', { id:'fhCodeModal', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
+    h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Got a family code?' },
+      h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'Got a family code?' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+      h('div', { class:'fhe-form' },
+        h('p', { class:'ob-hint', text:'It’s in the message a parent sent you, after “type”. Each code works once.' }),
+        inp, err,
+        h('div', { class:'fhc-choices' },
+          h('button', { type:'button', class:'btn', id:'fhCodeDevice', text:'This is a child’s device (no email)', onClick:function(){ go('device'); } }),
+          h('button', { type:'button', class:'btn secondary', id:'fhCodeParent', text:'I’m a parent: sign in with my email', onClick:function(){ go('join'); } })))));
+  document.body.appendChild(m);
+}
 function fhCheckInviteLink(){
+  const dv = /[#&]device=([A-Za-z0-9-]{8,20})/.exec(location.hash || '');
+  if(dv){
+    try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
+    if(!FHSync.summary().configured) return;
+    if(FHSync.summary().mode === 'ok'){ alert('This device is already connected to a family, so the link wasn’t used.'); return; }
+    fhSetPending(FH_DEVICE_KEY, decodeURIComponent(dv[1]).toUpperCase());
+    fhRawRemove(FH_JOIN_KEY);   // a parent invite opened earlier on this device no longer applies
+    setTimeout(function(){ fhDeviceSetupModal(); }, 400);
+    return;
+  }
   const m = /[#&]join=([A-Za-z0-9-]{8,20})/.exec(location.hash || ''); if(!m) return;
   try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
   const s = FHSync.summary(); if(!s.configured) return;
   if(s.mode === 'ok'){ alert('This device is already part of a household, so the invite wasn’t used. To switch, leave your household first in Settings › Sync across devices › More.'); return; }
-  fhRawSet(FH_JOIN_KEY, decodeURIComponent(m[1]).toUpperCase());
+  fhSetPending(FH_JOIN_KEY, decodeURIComponent(m[1]).toUpperCase());
   setTimeout(function(){ fhSyncSignInModal(); }, 400);
 }
 
@@ -12015,9 +12101,11 @@ function fhSyncCard(opts){
     if(s.mode === 'signedout'){
       if(fhPendingJoin()) box.appendChild(h('p', { class:'ob-label', id:'stSyncInvited', text:'🎉 You’ve been invited to join a family' }));
       box.appendChild(note(fhPendingJoin() ? 'Sign in with your email to join. We send a code, no password to remember.' : 'Keep meals, chores and shopping the same on every phone and tablet. Sign in with your email: we send a code, no password to remember.'));
+      if(fhPendingJoin()){ const hint = fhOpenInAppHint(fhPendingJoin()); if(hint) box.appendChild(hint); }
       if(view.step === 'email'){
         const em = h('input', { type:'email', id:'stSyncEmail', placeholder:'you@example.com', value:view.email, autocomplete:'email', inputmode:'email', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
         box.appendChild(em);
+        box.appendChild(h('div', { class:'ob-row' }, btn('Got a family code?', function(){ fhCodeModal(); }, 'ghost', 'stSyncCodeBtn')));
         box.appendChild(h('div', { class:'ob-row' }, btn('Email me a code', function(){ view.email = em.value; run(function(){ return FHSync.sendCode(view.email).then(function(e){ view.email = e; view.step = 'code'; }); }); }, '', 'stSyncSend')));
       } else {
         box.appendChild(note('We emailed a code to ' + view.email + ' from On the FridgeDoor. It can take a minute. Not there? Check spam or Promotions.'));
@@ -12054,6 +12142,14 @@ function fhSyncCard(opts){
           }, '', 'stSyncJoin'),
           btn('Back', function(){ view.join = false; view.msg = ''; render(); }, 'ghost')));
       }
+    } else if(FHSync.isDevice()){
+      const hh = s.household || {};
+      const state = s.error ? s.error : (s.busy ? 'Syncing…' : 'Up to date. Last synced ' + fhAgo(s.last) + '.');
+      box.appendChild(note((hh.label ? hh.label : 'This device') + ' is connected to your family. Changes sync automatically.'));
+      box.appendChild(h('p', { class:'ob-hint', id:'stSyncState', text:state, style: s.error ? 'color:var(--brick-strong,#b3402a)' : '' }));
+      box.appendChild(h('div', { class:'ob-row' },
+        btn('Sync now', function(){ run(function(){ return FHSync.syncNow('manual'); }); }, 'ghost', 'stSyncNow'),
+        btn('Disconnect this device', function(){ if(confirm('Disconnect this device from the family? It keeps what’s on it but stops syncing. A parent can connect it again with a new link.')) run(function(){ return FHSync.deleteAccount().then(function(){ view.msg = 'This device has been disconnected.'; }); }); }, 'ghost', 'stDeviceDisconnect')));
     } else {
       const hh = s.household || {};
       const state = s.error ? s.error : (s.busy ? 'Syncing…' : (s.pending ? s.pending + ' change' + (s.pending === 1 ? '' : 's') + ' waiting to send' : 'Up to date. Last synced ' + fhAgo(s.last) + '.'));
@@ -12069,6 +12165,14 @@ function fhSyncCard(opts){
         btn('Sync now', function(){ run(function(){ return FHSync.syncNow('manual'); }); }, 'ghost', 'stSyncNow'),
         btn('Copy code', function(){ try{ navigator.clipboard.writeText(hh.invite_code || ''); view.msg = 'Code copied.'; }catch(e){ view.msg = 'Select the code and copy it.'; } render(); }, 'ghost'),
         btn('New code', function(){ run(function(){ return FHSync.newCode(); }); }, 'ghost')));
+      box.appendChild(h('p', { class:'ob-label', text:'Children’s devices' }));
+      box.appendChild(h('p', { class:'ob-hint', text:'Connect a child’s phone or tablet without an email or account. Send yourself the link, open it on their device, and choose whose device it is.' }));
+      box.appendChild(h('div', { class:'ob-row' },
+        btn('📱 Add a child’s device', function(){ fhSendDeviceLink(hh.invite_code).then(function(r){ if(r === 'copied'){ view.msg = 'Link copied: open it on the child’s device.'; render(); } else if(r === 'failed'){ view.msg = 'Couldn’t share the link.'; render(); } }); }, 'ghost', 'stAddDevice')));
+      (hh.devices || []).forEach(function(d){
+        box.appendChild(h('div', { class:'st-device' }, h('span', { text:'📱 ' + (d.label || 'Child’s device') }),
+          btn('Remove', function(){ if(confirm('Remove ' + (d.label || 'this device') + '? It stops syncing straight away.')) run(function(){ return FHSync.removeDevice(d.id); }); }, 'ghost')));
+      });
       box.appendChild(h('details', { style:'margin-top:10px' }, h('summary', { text:'More' }),
         h('p', { class:'ob-hint', text:'Per-device settings stay on each device: the parent PIN, theme and kitchen display options.' }),
         h('div', { class:'ob-row' },
@@ -12081,7 +12185,7 @@ function fhSyncCard(opts){
             if(!confirm('Last check: delete ' + (FHSync.summary().email || 'this account') + ' and, if you’re the last parent, the household’s shared data?')) return;
             run(function(){ return FHSync.deleteAccount().then(function(){ view.msg = 'Your account has been deleted.'; }); }); }, 'ghost', 'stDeleteAccount'))));
     }
-    if(view.msg) box.appendChild(note(view.msg, !/copied|deleted/i.test(view.msg)));
+    if(view.msg) box.appendChild(note(view.msg, !/copied|deleted|disconnected/i.test(view.msg)));
     if(!view.msg && s.mode === 'ok' && opts.bare && fhPendingJoin() === '' && view.inviteTried) box.appendChild(note('You’ve joined the family. Everything is coming across now.'));
   }
   function afterSignIn(mode){
@@ -12106,9 +12210,61 @@ function fhSyncSignInModal(){
       h('div', { class:'ob-row', style:'margin-top:10px' }, h('button', { type:'button', class:'ob-btn ghost', id:'fhSyncClose', text:'Close', onClick:close }))));
   document.body.appendChild(m);
 }
+/* Opened from a parent's "Add a child's device" link: connect, choose whose device it is, then lock it. */
+const FH_DEVICE_STEP = 'family-hub-device-step';   // per device: joining reloads the app, so remember where setup was
+function fhDeviceSetupModal(startStep){
+  if(document.getElementById('fhDeviceModal')) return;
+  const code = fhRawGet(FH_DEVICE_KEY) || '';
+  const sheet = h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Set up this device' });
+  const close = function(){ fhRawRemove(FH_DEVICE_STEP); const m = document.getElementById('fhDeviceModal'); if(m) m.remove(); };
+  const m = h('div', { id:'fhDeviceModal', class:'fhm-back' }, sheet);
+  let step = startStep || 'connect', msg = '', busy = false;
+  const go = function(s){ step = s; fhRawSet(FH_DEVICE_STEP, s); draw(); };
+  const people = function(){ try{ return JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); }catch(e){ return []; } };
+  function draw(){
+    sheet.innerHTML = '';
+    sheet.appendChild(h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:step === 'connect' ? 'Set up this device for your family' : step === 'who' ? 'Whose device is this?' : 'Lock the settings' }),
+      h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })));
+    const body = h('div', { class:'fhe-form' }); sheet.appendChild(body);
+    if(step === 'connect'){
+      body.appendChild(h('p', { text:'A parent has invited this phone or tablet to join your family’s plans. No email or account is needed.' }));
+      { const hint = fhOpenInAppHint(code); if(hint) body.appendChild(hint); }
+      if(FHSync.hasLocalSetup()) body.appendChild(h('p', { class:'ob-hint', text:'Anything already on this device is replaced by the family’s plans.' }));
+      body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhDeviceConnect', disabled:busy, text:busy ? 'Connecting…' : 'Connect this device', onClick:function(){
+        busy = true; msg = ''; draw(); fhRawSet(FH_DEVICE_STEP, 'who');
+        FHSync.joinAsDevice(code).then(function(){ fhRawRemove(FH_DEVICE_KEY); busy = false; go('who'); },
+          function(e){ fhRawRemove(FH_DEVICE_STEP); busy = false; msg = /invalid/i.test(e.message) ? 'That link has already been used. Ask a parent for a new one.' : /anonymous|signups? not allowed|disabled/i.test(e.message) ? 'Child devices aren’t switched on for this app yet.' : e.message; fhRawRemove(FH_DEVICE_KEY); draw(); }); } })));
+    } else if(step === 'who'){
+      const ps = people(), kids = ps.filter(function(p){ return p.role === 'child'; }), rest = ps.filter(function(p){ return p.role !== 'child'; });
+      const pick = function(p){
+        const pr = FHPush.prefs(); pr.person = p ? p.id : ''; pr.name = p ? p.name : ''; if(p && p.role === 'child') pr.shop = false; FHPush.savePrefs(pr);
+        try{ fhRawRemove('family-hub-dash-person'); }catch(e){}
+        FHSync.setDeviceLabel(p ? p.name + '’s device' : 'Shared device').catch(function(){});
+        go('lock'); try{ refreshCurrentPage(); }catch(e){}
+      };
+      body.appendChild(h('p', { class:'ob-hint', text:'Today then shows their plans and chores, and nudges reach them here.' }));
+      body.appendChild(h('div', { class:'ob-chips' }, kids.concat(rest).map(function(p){ return h('button', { type:'button', class:'ob-chip', 'data-person':p.id, text:p.name, onClick:function(){ pick(p); } }); }),
+        h('button', { type:'button', class:'ob-chip', 'data-person':'', text:'Shared (e.g. kitchen tablet)', onClick:function(){ pick(null); } })));
+    } else {
+      body.appendChild(h('p', { text:'Set a parent PIN so settings, chores and rewards can only be changed by a parent.' }));
+      try{ body.appendChild(FHLock.settingsCard(draw)); }catch(e){}
+      body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhDeviceDone', text:'Done', onClick:function(){ close(); try{ refreshCurrentPage(); }catch(e){} } })));
+    }
+    if(msg) body.appendChild(h('p', { class:'fhe-err', text:msg }));
+  }
+  draw(); document.body.appendChild(m);
+}
 FHSync.init();
 FHCal.init();
 fhCheckInviteLink();
+if(fhRawGet(FH_DEVICE_STEP) && FHSync.isDevice()) setTimeout(function(){ fhDeviceSetupModal(fhRawGet(FH_DEVICE_STEP)); }, 600);
+else (function(){
+  let shown = false; try{ shown = sessionStorage.getItem('fhPendingShown') === '1'; sessionStorage.setItem('fhPendingShown', '1'); }catch(e){}
+  if(shown || /[#&](join|device)=/.test(location.hash) || !fhPendingFresh() || !FHSync.summary().configured) return;
+  const s = FHSync.summary();
+  if(fhRawGet(FH_DEVICE_KEY) && s.mode !== 'ok') setTimeout(function(){ fhDeviceSetupModal(); }, 600);
+  else if(fhRawGet(FH_JOIN_KEY) && s.mode === 'signedout') setTimeout(function(){ fhSyncSignInModal(); }, 600);
+})();
 window.addEventListener('hashchange', fhCheckInviteLink);
 
 /* ==================== REMINDERS: push notifications ==================== */
@@ -12338,7 +12494,7 @@ const FHPush = (function(){
     setInterval(function(){ upload(false); }, 30 * 60000);
     try{ FHSync.onChange(soon); }catch(e){}
   }
-  return { buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
+  return { savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
 })();
 
 /* ==================== Startup (setup-aware) ==================== */
