@@ -2329,6 +2329,23 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhs-cook-ro{ margin:8px 0 0; font-weight:600; }
 .fhs-done{ border-top:1px solid var(--panel-line,#eee); margin-top:14px; padding-top:10px; }
 .fht-hand{ flex:0 0 auto; border:1px solid var(--panel-line,#ddd); background:transparent; border-radius:10px; font-size:18px; padding:4px 8px; cursor:pointer; }
+/* owner dashboard */
+.fho2 summary{ cursor:pointer; list-style:none; display:flex; flex-wrap:wrap; gap:6px; align-items:baseline; }
+.fho2 summary::-webkit-details-marker{ display:none; }
+.fho2-body{ margin-top:10px; }
+.fho2-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin-bottom:8px; }
+.fho2-stat{ border:1px solid var(--panel-line,#ddd); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:2px; }
+.fho2-stat b{ font-size:1.5rem; }
+.fho2-stat span{ font-size:0.85rem; }
+.fho2-stat small{ color:var(--muted,#777); font-size:0.78rem; }
+.fho2-bars{ display:flex; flex-direction:column; gap:5px; margin-bottom:8px; }
+.fho2-bar{ display:grid; grid-template-columns:7.5em 1fr 2.5em; gap:8px; align-items:center; font-size:0.85rem; }
+.fho2-track{ height:10px; background:var(--panel,#eee); border-radius:6px; overflow:hidden; }
+.fho2-fill{ display:block; height:100%; background:var(--accent,#6C4F8A); border-radius:6px; }
+.fho2-n{ text-align:right; font-weight:700; }
+.fho2-fb{ border-top:1px solid var(--panel-line,#eee); padding:6px 0; }
+.fho2-fb small{ color:var(--muted,#777); }
+.fho2-fb p{ margin:2px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -11231,6 +11248,7 @@ function renderSettingsPage(){
   root.appendChild(FHPush.settingsCard(rr));
   root.appendChild(FHCal.card());
   root.appendChild(feedbackCard());
+  { const oc = fhOwnerCard(); if(oc) root.appendChild(oc); }
   root.appendChild(h('div',{class:'st-card'}, h('h3',{text:'Setup'}),
     h('p',{class:'ob-hint',text:'Run the setup questions again to start fresh with a new household, rooms, chores and meal plan.'}),
     h('div',{class:'ob-row'},
@@ -11299,19 +11317,70 @@ function fhFeedbackNote(){
   return L.join('\n');
 }
 function feedbackCard(){
-  const out = h('p',{class:'ob-hint',id:'stFbMsg'});
-  const ta = h('textarea',{id:'stFbBox',rows:'3',placeholder:'What happened? What did you expect? (optional, added above the details)',style:'width:100%;box-sizing:border-box;border:1px solid var(--line,#ddd);border-radius:10px;padding:8px;font:inherit;margin-top:6px'});
+  const out = h('p',{class:'ob-hint',id:'stFbMsg',role:'status'});
+  const ta = h('textarea',{id:'stFbBox',rows:'4',maxlength:'2000',placeholder:'What’s working, what isn’t, or what would help next?',style:'width:100%;box-sizing:border-box;border:1px solid var(--line,#ddd);border-radius:10px;padding:8px;font:inherit;margin-bottom:8px'});
+  const s = FHSync.summary();
+  const signedIn = s.configured && s.mode === 'ok';
   const copy = ()=>{
     const msg = (ta.value.trim() ? ta.value.trim()+'\n\n' : '') + '--- Details (no names or personal data) ---\n' + fhFeedbackNote();
-    const done = ()=>{ out.textContent = 'Copied. Paste it into a message to whoever sent you the app.'; };
-    const fallback = ()=>{ const t=document.createElement('textarea'); t.value=msg; t.style.cssText='position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); done(); }catch(e){ out.textContent='Could not copy automatically. Long-press this text to copy: '+msg; } t.remove(); };
+    const done = ()=>{ out.textContent = 'Copied. Paste it into an email to hello@onthefridgedoor.com.'; };
+    const fallback = ()=>{ const t=document.createElement('textarea'); t.value=msg; t.style.cssText='position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); done(); }catch(e){ out.textContent='Could not copy automatically. Email hello@onthefridgedoor.com instead.'; } t.remove(); };
     try{ if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done, fallback); else fallback(); }catch(e){ fallback(); }
   };
-  return h('div',{class:'st-card'}, h('h3',{text:'Send feedback'}),
-    h('p',{class:'ob-hint',text:'Found a bug or have an idea? Tap the button to copy a short note with your device, app version and settings, then paste it into a message. It never includes names, meals or chores.'}),
-    ta, h('div',{class:'ob-row'}, h('button',{type:'button',class:'ob-btn',id:'stFeedback',text:'📋 Copy feedback note',onClick:copy})), out,
+  const send = h('button',{type:'button',class:'ob-btn primary',id:'stFeedbackSend',text:'Send',onClick:async ()=>{
+    const msg = ta.value.trim(); if(msg.length < 2){ out.textContent = 'Type a message first.'; ta.focus(); return; }
+    send.disabled = true; out.textContent = 'Sending…';
+    try{
+      await FHSync.fn('send-reminders', { action:'feedback', message:msg, meta:fhFeedbackNote() });
+      ta.value = ''; out.textContent = 'Thanks, it’s on its way. We read every message' + (s.email ? ' and will reply to ' + s.email + ' if we need to.' : '.');
+    }catch(e){ out.textContent = (e && e.message) || 'Couldn’t send. Check the connection and try again.'; }
+    send.disabled = false;
+  }});
+  const mail = 'mailto:hello@onthefridgedoor.com?subject=' + encodeURIComponent('On the FridgeDoor feedback');
+  return h('div',{class:'st-card',id:'stFeedbackCard'}, h('h3',{text:'Send feedback'}),
+    h('p',{class:'ob-hint',text:'Found a bug, or have an idea? Tell us what’s working, what isn’t, or what would help next. We read every message.'}),
+    ta,
+    signedIn ? h('div',{class:'ob-row'}, send, h('button',{type:'button',class:'ob-btn ghost',id:'stFeedback',text:'Copy instead',onClick:copy}))
+             : h('div',{class:'ob-row'}, h('a',{class:'ob-btn primary',id:'stFeedbackMail',href:mail,text:'Email us'}), h('button',{type:'button',class:'ob-btn ghost',id:'stFeedback',text:'📋 Copy message and details',onClick:copy})),
+    h('p',{class:'ob-hint',text: signedIn ? 'Sends your message with a few device details (app version, phone type, settings). Never names, meals or chores.' : 'Email: hello@onthefridgedoor.com. The copy button adds a few device details (app version, phone type, settings), never names, meals or chores.'}),
+    out,
     h('p',{class:'ob-hint',id:'stLegal'}, 'Questions about your data: hello@onthefridgedoor.com · ',
       h('a',{href:'privacy.html',target:'_blank',rel:'noopener',text:'Privacy'}), ' · ', h('a',{href:'terms.html',target:'_blank',rel:'noopener',text:'Terms'})));
+}
+
+/* Owner dashboard: totals only, from sync/supabase_insights.sql. Shows for the owner's account (fh_admins). */
+function fhOwnerCard(){
+  const s = FHSync.summary(), hh = s.household || {};
+  if(!s.configured || s.mode !== 'ok' || !hh.admin) return null;
+  const body = h('div',{class:'fho2-body'}, h('p',{class:'ob-hint',text:'Loading…'}));
+  const pct = (a, b)=> b ? Math.round(a * 100 / b) + '%' : '–';
+  const stat = (n, label, sub)=> h('div',{class:'fho2-stat'}, h('b',{text:String(n)}), h('span',{text:label}), sub ? h('small',{text:sub}) : null);
+  const bars = (rows, max)=> h('div',{class:'fho2-bars'}, ...rows.map(r=> h('div',{class:'fho2-bar'}, h('span',{class:'fho2-bl',text:r[0]}),
+    h('span',{class:'fho2-track'}, h('span',{class:'fho2-fill',style:'width:' + (max ? Math.round(r[1] * 100 / max) : 0) + '%'})), h('span',{class:'fho2-n',text:String(r[1])}))));
+  const load = ()=> FHSync.rpc('fh_admin_stats').then(d=>{
+    body.innerHTML = '';
+    const H = d.households || 0, f = d.features || {};
+    body.appendChild(h('div',{class:'fho2-grid'},
+      stat(H, 'households'), stat(d.active7 || 0, 'active this week', pct(d.active7 || 0, H)), stat(d.active30 || 0, 'active this month', pct(d.active30 || 0, H)),
+      stat(d.shared || 0, 'sharing the load', pct(d.shared || 0, H) + ' have a 2nd parent or a child’s device')));
+    body.appendChild(h('p',{class:'ob-hint',text:(d.parents || 0) + ' parent accounts · ' + (d.devices || 0) + ' children’s devices · ' + (d.twoParents || 0) + ' households with two parents · ' + (d.withDevices || 0) + ' with a child’s device'}));
+    body.appendChild(h('p',{class:'ob-label',text:'Switched on'}));
+    body.appendChild(bars([['Meal plan', f.meals || 0], ['Shopping list', f.shopping || 0], ['Essentials', f.essentials || 0], ['Chores', f.chores || 0], ['Rewards', f.rewards || 0], ['Tasks', f.tasks || 0]], H));
+    body.appendChild(h('p',{class:'ob-label',text:'Also using'}));
+    body.appendChild(bars([['Reminders', d.reminderHouseholds || 0], ['Occasions', d.occasions || 0], ['Who’s cooking', d.cooking || 0], ['Bin day', d.bins || 0], ['Calendars', d.calendars || 0]], H));
+    body.appendChild(h('p',{class:'ob-hint',text:(d.reminderDevices || 0) + ' devices with reminders on · ' + (d.nudges7 || 0) + ' nudges sent in the last 7 days'}));
+    const wk = d.weekly || [];
+    if(wk.length){ body.appendChild(h('p',{class:'ob-label',text:'New households by week'})); body.appendChild(bars(wk.map(w=>[new Date(w.week + 'T00:00:00').toLocaleDateString(undefined,{ day:'numeric', month:'short' }), w.n]), Math.max.apply(null, wk.map(w=>w.n)))); }
+    body.appendChild(h('p',{class:'ob-label',text:'Latest feedback'}));
+    const fb = d.feedback || [];
+    if(!fb.length) body.appendChild(h('p',{class:'ob-hint',text:'None yet.'}));
+    fb.forEach(x=> body.appendChild(h('div',{class:'fho2-fb'}, h('small',{text:new Date(x.at).toLocaleString(undefined,{ day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) + (x.email ? ' · ' + x.email : '')}), h('p',{text:x.message}))));
+    body.appendChild(h('div',{class:'ob-row'}, h('button',{type:'button',class:'ob-btn ghost',id:'stOwnerRefresh',text:'Refresh',onClick:load})));
+  }, e=>{ body.innerHTML = ''; body.appendChild(h('p',{class:'ob-hint',text:'Couldn’t load the numbers: ' + ((e && e.message) || 'try again')})); });
+  const card = h('details',{class:'st-card fho2',id:'stOwner'}, h('summary',{}, h('b',{text:'📊 Owner dashboard'}), h('span',{class:'ob-hint',text:' Only you can see this. Totals only, never names or plans.'})), body);
+  let loaded = false;
+  card.addEventListener('toggle', ()=>{ if(card.open && !loaded){ loaded = true; load(); } });
+  return card;
 }
 
 // Offered on a page whose feature was switched on after setup and has no starter data yet.
