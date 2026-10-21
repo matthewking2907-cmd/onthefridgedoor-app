@@ -10558,7 +10558,7 @@ const OBW = (function(){
   function stepWelcome(){
     return [
       h('div',{class:'ob-hero'},'🏡'),
-      ...title(mode==='rerun' ? 'Set up again' : 'On the FridgeDoor', 'Your family’s hub for meals, chores and plans. A few quick questions and it’s ready: your people, your rooms, suggested chores and a meal plan that fills in your shopping list. Takes about three minutes — you can change anything later.'),
+      ...title(mode==='rerun' ? 'Set up again' : 'On the FridgeDoor', 'No one carries it all. Share the meals, shopping, chores and plans with everyone at home. A few quick questions and it’s ready: your people, your rooms, suggested chores and a meal plan that fills in your shopping list. About three minutes, and you can change anything later.'),
       mode!=='rerun' ? h('p',{class:'ob-hint',style:'margin-top:14px'}, 'Your plans stay on this device unless you switch on sync. ', h('a',{href:'privacy.html',target:'_blank',rel:'noopener',text:'Privacy'}), ' · ', h('a',{href:'terms.html',target:'_blank',rel:'noopener',text:'Terms'})) : null,
       (mode!=='rerun' && FHSync.summary().configured) ? h('div',{class:'ob-row',style:'margin-top:14px'}, h('button',{type:'button',class:'ob-btn ghost',id:'obSyncLink',text:'I already use it on another device',onClick:()=>fhSyncSignInModal()}), h('button',{type:'button',class:'ob-btn ghost',id:'obCodeLink',text:'Got a family code?',onClick:()=>fhCodeModal()})) : null,
       mode==='rerun' ? h('div',{class:'ob-warn'},'⚠️ Finishing this replaces your current people, chores, meal plan and ticks. Export a backup from Settings first if you want to keep them.') : null

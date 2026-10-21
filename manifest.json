@@ -1,7 +1,7 @@
 {
   "name": "On the FridgeDoor",
   "short_name": "FridgeDoor",
-  "description": "Your family's hub for meals, chores and plans.",
+  "description": "No one carries it all. Meals, shopping, chores and plans, shared with the whole household.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
