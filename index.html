@@ -2310,6 +2310,25 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhc-input{ font-size:1.2rem; letter-spacing:2px; text-transform:uppercase; }
 .fhc-choices{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
 .nav-item.lock-hidden{ display:none !important; }
+/* share the load */
+.fhs-card{ border:1.5px solid var(--accent,#6C4F8A); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+.fhs-card-t{ display:flex; flex-direction:column; gap:4px; }
+.fhs-card-t span{ color:var(--muted,#777); font-size:0.92rem; }
+.fhs-card-b{ display:flex; gap:8px; flex-wrap:wrap; }
+.fhs-body > p{ margin:0 0 8px; }
+.fhs-step{ font-weight:600; }
+.fhs-big{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; font:inherit; color:inherit; background:var(--white,#fff); border:1.5px solid var(--panel-line,#ddd); border-radius:14px; padding:12px; margin:0 0 8px; cursor:pointer; }
+.fhs-big:hover{ border-color:var(--accent,#6C4F8A); }
+.fhs-ico{ font-size:26px; }
+.fhs-txt{ display:flex; flex-direction:column; gap:2px; }
+.fhs-txt small{ color:var(--muted,#777); }
+.fhs-msg{ font-weight:600; color:var(--accent,#6C4F8A); }
+.fhs-cook{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.fhs-cook-l{ font-weight:700; font-size:0.9rem; }
+.fhs-cook-msg{ font-size:0.85rem; color:var(--muted,#777); }
+.fhs-cook-ro{ margin:8px 0 0; font-weight:600; }
+.fhs-done{ border-top:1px solid var(--panel-line,#eee); margin-top:14px; padding-top:10px; }
+.fht-hand{ flex:0 0 auto; border:1px solid var(--panel-line,#ddd); background:transparent; border-radius:10px; font-size:18px; padding:4px 8px; cursor:pointer; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -9367,7 +9386,8 @@ const FHTasks = (function(){
       tick(t),
       h('button', { type:'button', class:'fht-main', onClick:function(){ openEditor({ task:t }); } },
         h('span', { class:'fht-title', text:'☑ ' + t.title }),
-        h('span', { class:'fht-meta', text:[od ? 'Overdue' : (t.time ? timeLabel(t) : 'Due'), whoName(t.who)].filter(Boolean).join(' · ') })));
+        h('span', { class:'fht-meta', text:[od ? 'Overdue' : (t.time ? timeLabel(t) : 'Due'), whoName(t.who)].filter(Boolean).join(' · ') })),
+      (typeof FHShare !== 'undefined' && FHShare.canHandOver(t)) ? h('button', { type:'button', class:'fht-hand', 'aria-label':'Hand over: ' + t.title, title:'Hand it over', text:'🤝', onClick:function(){ FHShare.handOverTask(t); } }) : null);
   }
   function isFor(t, person){ return !person || !t.who || t.who === person; }
   function dayBlock(date, opts){
@@ -9567,6 +9587,8 @@ function fhDayDash(date){
   const n = evs.length + tks.filter(function(t){ return !t.done; }).length;
   wrap.appendChild(h('section', { class:'fhd-sec fhd-plans-sec' },
     h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Plans' + (n ? ' · ' + n : '') }), acts), body));
+  // ---- bring everyone in (today only, while the plan is with one person)
+  if(typeof FHShare !== 'undefined'){ const sc = FHShare.todayCard(date); if(sc) wrap.appendChild(sc); }
   // ---- birthdays & occasions coming up (today only)
   if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ const oc = FHOcc.todayCard(date); if(oc) wrap.appendChild(oc); }
   // ---- dinner
@@ -9575,6 +9597,7 @@ function fhDayDash(date){
     let info = null; try{ info = MealApp.getDayDisplay(date); }catch(e){}
     const ing = info && info.mealId && FHRecipes.ingLines ? FHRecipes.ingLines(info.mealId) : [];
     const sec = h('section', { class:'fhd-sec fhd-dinner' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Dinner' })), card);
+    if(typeof FHShare !== 'undefined' && info && info.mealId){ const cr = FHShare.cookRow(date, info.mealName); if(cr) sec.appendChild(cr); }
     if(ing && ing.lines && ing.lines.length){
       card.classList.add('fhd-has-ings');
       const d = h('details', { class:'fhd-ings' }, h('summary', { text:'Ingredients · ' + ing.size + (ing.size === 1 ? ' person' : ' people') }),
@@ -11248,6 +11271,11 @@ function showAllSet(){
       h('div',{class:'ob-foot'},
         shop ? h('button',{type:'button',class:'ob-btn ghost',id:'obGoShop',text:'Open shopping list',onClick:()=>{ overlay.remove(); MealApp.jumpToUpcomingShop(); showPage('shopping'); }}) : null,
         h('button',{type:'button',class:'ob-btn primary',id:'obGoToday',text:'Go to Today',onClick:()=>{ overlay.remove(); }}))));
+    if(typeof FHShare !== 'undefined' && FHShare.needsSharing()){
+      box.appendChild(h('div',{class:'fhs-done',id:'obShareCard'}, h('p',{class:'ob-label',text:'👪 Bring everyone in'}),
+        h('p',{class:'ob-sub',text:'No one carries it all. Invite another parent or carer and add the children’s devices, so everyone sees their own day.'}),
+        h('button',{type:'button',class:'ob-btn primary',id:'obShare',text:'Bring everyone in',onClick:()=>{ overlay.remove(); FHShare.openSheet(); }})));
+    }
     document.body.appendChild(overlay);
   });
 }
@@ -11682,7 +11710,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -12336,6 +12364,7 @@ const FHPush = (function(){
         if(cs.length) items.push({ k:'chores', key:'chores:' + iso, date:iso, lines:cs.map(function(c){ return { t:c.name, who:c.who ? [c.who] : [], f:c.freq, n:c.who ? names([c.who]) : '' }; }) });
       }
       try{ if(typeof FHOcc !== 'undefined') FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
+      try{ if(typeof FHShare !== 'undefined' && Feature.on('meals')) FHShare.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
     }
@@ -12454,6 +12483,12 @@ const FHPush = (function(){
     try{ if(FHLock.isLocked()) return false; }catch(e){}
     return true;
   }
+  /* a nudge sent by the app on someone's behalf (cooking tonight, a handed-over task) */
+  async function nudgeTo(to, text){
+    const m = me(); let mine = '';
+    try{ const sub = await current(); mine = sub ? sub.endpoint : ''; }catch(e){}
+    return await FHSync.fn('send-reminders', { action:'nudge', to:to, message:String(text || '').slice(0, 120), from:m ? m.name : '', fromId:m ? m.id : '', exclude:mine }) || {};
+  }
   const QUICK = ['Dinner\u2019s ready!', 'Time for bed', 'Come downstairs please', 'Shoes on, we\u2019re leaving', 'Bath time', 'Home in 10 minutes'];
   function openNudge(){
     if(document.getElementById('fhNudgeSheet')) return;
@@ -12502,7 +12537,147 @@ const FHPush = (function(){
     setInterval(function(){ upload(false); }, 30 * 60000);
     try{ FHSync.onChange(soon); }catch(e){}
   }
-  return { savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
+  return { nudgeTo:nudgeTo, savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
+})();
+
+/* ==================== SHARE THE LOAD: bring everyone in, who's cooking, hand it over ====================
+   "No one carries it all" in the app itself:
+   - Bring everyone in: a sheet (from the all-set screen, a Today card while the plan is still with one person, or
+     Settings) that switches on sync if needed, then invites another parent or carer and adds children's devices.
+   - Who's cooking? on the dinner card: synced per date (family-hub-cooks-v1), nudges the cook, and goes in their
+     morning summary.
+   - Hand over on a task: reassign it to someone and nudge them "Over to you: …". */
+const FHShare = (function(){
+  const COOKS = 'family-hub-cooks-v1', DISMISS = 'family-hub-share-dismissed';
+  function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; } }
+  function personOf(id){ return people().find(p => p.id === id) || null; }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function me(){ try{ return FHPush.prefs().person || ''; }catch(e){ return ''; } }
+  function canNudge(){ try{ return FHPush.canNudge(); }catch(e){ return false; } }
+  function iso(d){ return FHEvents.iso(d); }
+  function hue(p){ return p && p.hue != null ? 'hsl(' + p.hue + ',55%,48%)' : 'var(--accent,#6C4F8A)'; }
+
+  /* ---------- bring everyone in ---------- */
+  function sharedState(){
+    const s = FHSync.summary(), hh = s.household || {};
+    return { configured:s.configured, mode:s.mode, device:FHSync.isDevice(), parents:hh.members || 0, devices:hh.devices || [], code:hh.invite_code || '' };
+  }
+  /* the plan is still with one person: no sync yet, or one parent with no one else connected */
+  function needsSharing(){
+    const s = sharedState();
+    if(!s.configured || s.device || locked()) return false;
+    if(s.mode !== 'ok') return true;
+    return s.parents <= 1 && !s.devices.length;
+  }
+  let off = null;
+  function openSheet(){
+    if(document.getElementById('fhShareSheet')) return;
+    const close = () => { const m = document.getElementById('fhShareSheet'); if(m) m.remove(); if(off){ off(); off = null; } };
+    const sheet = h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Bring everyone in' });
+    const m = h('div', { id:'fhShareSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } }, sheet);
+    let msg = '';
+    const draw = () => {
+      const s = sharedState();
+      sheet.innerHTML = '';
+      sheet.appendChild(h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'👪 Bring everyone in' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })));
+      const body = h('div', { class:'fhe-form fhs-body' }); sheet.appendChild(body);
+      body.appendChild(h('p', { text:'No one carries it all. When everyone’s on, they each see their own day, get their own reminders and tick things off themselves.' }));
+      if(!s.configured){ body.appendChild(h('p', { class:'ob-hint', text:'Sharing needs sync, which isn’t set up in this copy of the app.' })); return; }
+      if(s.mode !== 'ok'){
+        body.appendChild(h('p', { class:'fhs-step', text:'First, switch on sync (free). Sign in with your email and your plan stays in step on every device.' }));
+        body.appendChild(fhSyncCard({ bare:true }));
+        return;
+      }
+      const btn = (id, ico, label, sub, fn) => h('button', { type:'button', class:'fhs-big', id:id, onClick:fn }, h('span', { class:'fhs-ico', text:ico }), h('span', { class:'fhs-txt' }, h('b', { text:label }), h('small', { text:sub })));
+      const after = r => { msg = r === 'copied' ? 'Link copied: paste it into a message.' : r === 'failed' ? 'Couldn’t share the link. Use the code in Settings › Sync across devices instead.' : r === 'shared' ? 'Sent. Each link works once; come back here for another.' : ''; draw(); };
+      body.appendChild(btn('fhsInvite', '📨', 'Invite another parent or carer', 'They sign in with their own email and share the same plan.', () => fhSendInvite(s.code).then(after)));
+      body.appendChild(btn('fhsDevice', '📱', 'Add a child’s device', 'No email needed. They see their own day; a parent PIN keeps settings safe.', () => fhSendDeviceLink(s.code).then(after)));
+      const who = [s.parents + (s.parents === 1 ? ' parent account' : ' parent accounts')].concat(s.devices.map(d => d.label || 'a child’s device'));
+      body.appendChild(h('p', { class:'ob-hint', id:'fhsWho', text:'Connected now: ' + who.join(', ') + '.' }));
+      if(msg) body.appendChild(h('p', { class:'fhs-msg', role:'status', text:msg }));
+      body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhsDone', text:'Done', onClick:close })));
+    };
+    off = FHSync.onChange(() => { if(document.getElementById('fhShareSheet')) draw(); });
+    draw(); document.body.appendChild(m);
+  }
+  /* Today: shown while the plan is still with one person (dismiss per device) */
+  function todayCard(date){
+    if(iso(date) !== iso(new Date()) || !needsSharing() || fhRawGet(DISMISS)) return null;
+    return h('section', { class:'fhd-sec fhs-card', id:'fhsToday' },
+      h('div', { class:'fhs-card-t' }, h('b', { text:'👪 Bring everyone in' }), h('span', { text:'Right now this plan lives with you. Share it so everyone sees their own day and gets their own reminders.' })),
+      h('div', { class:'fhs-card-b' },
+        h('button', { type:'button', class:'btn small', id:'fhsOpen', text:'Share with my household', onClick:openSheet }),
+        h('button', { type:'button', class:'btn small secondary', id:'fhsLater', text:'Not now', onClick:() => { fhRawSet(DISMISS, '1'); try{ refreshCurrentPage(); }catch(e){} } })));
+  }
+
+  /* ---------- who's cooking? ---------- */
+  function cooks(){ try{ const v = JSON.parse(fhRawGet(COOKS) || '{}'); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } }
+  function cookFor(dateIso){ return cooks()[dateIso] || ''; }
+  function setCook(dateIso, id){
+    const c = cooks();
+    if(id) c[dateIso] = id; else delete c[dateIso];
+    const keep = iso(new Date(Date.now() - 7 * 864e5));       // tidy: forget dinners over a week old
+    Object.keys(c).forEach(k => { if(k < keep) delete c[k]; });
+    fhSaveJSON(COOKS, c);
+    try{ FHPush.upload(); }catch(e){}
+  }
+  function cookRow(date, mealName){
+    const d = iso(date), cook = personOf(cookFor(d)), ps = people();
+    if(!ps.length) return null;
+    if(locked()) return cook ? h('p', { class:'fhs-cook-ro', text:'🍳 ' + cook.name + '’s cooking' + (d === iso(new Date()) ? ' tonight' : '') }) : null;
+    const status = h('span', { class:'fhs-cook-msg', role:'status' });
+    const pick = id => {
+      setCook(d, id);
+      const p = personOf(id), today = iso(new Date()), tomorrow = iso(new Date(Date.now() + 864e5));
+      if(p && id !== me() && canNudge() && (d === today || d === tomorrow)){
+        const text = 'You’re cooking ' + (d === today ? 'tonight' : 'tomorrow') + (mealName ? ': ' + mealName : '');
+        FHPush.nudgeTo(id, text).then(r => { status.textContent = r && r.sent ? 'Let ' + p.name + ' know.' : ''; }, () => {});
+      }
+      try{ refreshCurrentPage(); }catch(e){}
+    };
+    return h('div', { class:'fhs-cook', id:'fhsCook' },
+      h('span', { class:'fhs-cook-l', text:'🍳 Who’s cooking?' }),
+      h('div', { class:'fhe-chips' },
+        ...ps.map(p => h('button', { type:'button', class:'fhe-chip' + (cook && cook.id === p.id ? ' on' : ''), 'aria-pressed':cook && cook.id === p.id ? 'true' : 'false', style:'--ec:' + hue(p), text:p.name, onClick:() => pick(cook && cook.id === p.id ? '' : p.id) }))),
+      status);
+  }
+  /* morning-summary lines for FHPush.buildSchedule */
+  function pushLines(date){
+    const p = personOf(cookFor(iso(date))); if(!p) return [];
+    let meal = ''; try{ meal = (MealApp.getDayDisplay(date) || {}).mealName || ''; }catch(e){}
+    return [{ t:'🍳 ' + p.name + ' is cooking' + (meal ? ': ' + meal : ''), who:[p.id] }];
+  }
+
+  /* ---------- hand over a task ---------- */
+  function handOverTask(t){
+    if(document.getElementById('fhHandSheet')) return;
+    const ps = people().filter(p => p.id !== t.who);
+    const close = () => { const m = document.getElementById('fhHandSheet'); if(m) m.remove(); };
+    const out = h('p', { class:'ob-hint', role:'status' });
+    const give = async p => {
+      const list = FHTasks.load(), x = list.find(y => y.id === t.id); if(!x) return close();
+      x.who = p.id; FHTasks.save(list);
+      try{ FHPush.upload(); }catch(e){}
+      if(p.id !== me() && canNudge()){
+        out.textContent = 'Letting ' + p.name + ' know…';
+        try{ const r = await FHPush.nudgeTo(p.id, 'Over to you: ' + t.title); out.textContent = r && r.sent ? 'Handed to ' + p.name + ', and they’ve had a nudge.' : 'Handed to ' + p.name + '. They’ll see it on their Today.'; }
+        catch(e){ out.textContent = 'Handed to ' + p.name + '. They’ll see it on their Today.'; }
+      } else out.textContent = 'Handed to ' + p.name + '.';
+      try{ refreshCurrentPage(); }catch(e){}
+      setTimeout(close, 1400);
+    };
+    const m = h('div', { id:'fhHandSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Hand over' },
+        h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:'🤝 Hand it over' }), h('div', { class:'fhm-sub', text:t.title })), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          h('p', { class:'ob-hint', text:'Who’s taking this on? They’ll see it on their Today' + (canNudge() ? ' and get a nudge.' : '.') }),
+          h('div', { class:'fhe-chips' }, ps.map(p => h('button', { type:'button', class:'fhe-chip', style:'--ec:' + hue(p), 'data-person':p.id, text:p.name, onClick:() => give(p) }))),
+          out)));
+    document.body.appendChild(m);
+  }
+  function canHandOver(t){ return !t.done && !locked() && people().filter(p => p.id !== t.who).length > 0; }
+
+  return { needsSharing, openSheet, todayCard, cookFor, setCook, cookRow, pushLines, handOverTask, canHandOver };
 })();
 
 /* ==================== Startup (setup-aware) ==================== */
