@@ -11900,10 +11900,18 @@ const FHSync = (function(){
     emit();
     return mode();
   }
+  let hhAt = 0;
   async function refreshHousehold(){
     const h = await rpc('my_household');
-    st.hh = h || null; save(); emit();
+    st.hh = h || null; hhAt = Date.now(); save(); emit();
     return st.hh;
+  }
+  /* keep who's in the household (and the owner flag) current: once on opening, then every 10 minutes while syncing.
+     Only takes an answer that has a household, so a hiccup never drops this device out of sync. */
+  async function freshenHousehold(){
+    if(Date.now() - hhAt < 600000) return;
+    hhAt = Date.now();
+    try{ const h = await rpc('my_household'); if(h && h.id){ st.hh = h; save(); emit(); } }catch(e){}
   }
   function hasLocalSetup(){ try{ return Feature.isSetUp(); }catch(e){ return false; } }
 
@@ -12046,6 +12054,7 @@ const FHSync = (function(){
       let changed = false;
       if(!wiz) changed = await pull(reason || 'poll');
       st.last = Date.now(); save();
+      if(!wiz) await freshenHousehold();
       if(mergedLocal && !changed) remoteChanged(reason || 'poll');
       return changed;
     }catch(e){ lastErr = e.offline ? 'Offline. Changes will sync when you are back online.' : (e.message || 'Sync problem.'); throw e; }
@@ -12745,6 +12754,9 @@ const FHShare = (function(){
     document.body.appendChild(m);
   }
   function canHandOver(t){ return !t.done && !locked() && people().filter(p => p.id !== t.who).length > 0; }
+
+  // someone joined since Today was drawn (household info is refreshed after it opens): take the card away
+  try{ FHSync.onChange(() => { const c = document.getElementById('fhsToday'); if(c && !needsSharing()) c.remove(); }); }catch(e){}
 
   return { needsSharing, openSheet, todayCard, cookFor, setCook, cookRow, pushLines, handOverTask, canHandOver };
 })();
