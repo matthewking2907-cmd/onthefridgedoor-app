@@ -2346,6 +2346,10 @@ body.kid-locked #manageChores{ display:none !important; }
 .fho2-fb{ border-top:1px solid var(--panel-line,#eee); padding:6px 0; }
 .fho2-fb small{ color:var(--muted,#777); }
 .fho2-fb p{ margin:2px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+/* put a changed built-in meal back to the app's recipe (recipe viewer and meal library) */
+.fhr-ch-reset{ margin-top:8px; border:1px solid var(--accent,#6C4F8A); background:transparent; color:var(--accent,#6C4F8A); border-radius:999px; padding:6px 12px; font:inherit; font-size:.88rem; font-weight:700; cursor:pointer; }
+.fhr-ing-reset{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 10px; }
+.fhr-ing-reset span{ font-size:.8rem; font-weight:700; color:var(--muted,#777); }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2809,6 +2813,12 @@ function fhRawGet(key){ try{ return localStorage.getItem(STORAGE_PREFIX + key); 
 function fhRawSet(key, val){ try{ localStorage.setItem(STORAGE_PREFIX + key, val); }catch(e){} }
 function fhRawRemove(key){ try{ localStorage.removeItem(STORAGE_PREFIX + key); }catch(e){} }
 function fhSaveJSON(key, value){ fhRawSet(key, JSON.stringify(value)); }
+/* one key for the same shopping item, so a household's "Cinnamon" matches the app's "Ground cinnamon":
+   Egg/Eggs, Ground cinnamon/Cinnamon, Dried oregano/Oregano, Bay leaves/Bay leaf */
+function fhIngKey(i){
+  return String((typeof i === 'string' ? i : (i && (i._n0 || i.name))) || '').trim().toLowerCase()
+    .replace(/^(ground|dried)\s+/, '').replace(/leaves$/, 'leaf').replace(/s$/, '');
+}
 
 const Feature = (function(){
   let cfg = null;
@@ -3660,6 +3670,7 @@ const FHRecipes = (function(){
 
   /* ---- the recipe viewer ---- */
   let method = 'short';            // remembers Quick vs Full between recipes
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
   function close(){
     const o = document.getElementById('fhrOverlay'); if(o) o.remove();
     document.body.classList.remove('fhr-lock');
@@ -3668,7 +3679,7 @@ const FHRecipes = (function(){
   /* what the household added or took out compared with the built-in recipe (null for their own meals or no changes) */
   function changesFor(meal){
     if(!meal || meal.isCustom || !window.FH_BUILTIN_INGS || !window.FH_BUILTIN_INGS[meal.id]) return null;
-    const key = i => String(i._n0 || i.name || '').trim().toLowerCase().replace(/s$/, '');  // "Egg" and "Eggs" are the same item
+    const key = fhIngKey;   // "Egg"/"Eggs", "Cinnamon"/"Ground cinnamon" are the same item
     const base = window.FH_BUILTIN_INGS[meal.id], mine = meal.ingredients || [];
     const baseKeys = base.map(key), mineKeys = mine.map(key);
     const added = mine.filter(i => key(i) && baseKeys.indexOf(key(i)) < 0);
@@ -3752,7 +3763,11 @@ const FHRecipes = (function(){
         h('p', { class:'fhr-ch-hint', text:'The steps below are the original recipe. ' + [
           ch.added.length ? 'Add ' + (ch.added.length === 1 ? 'the new ingredient' : 'the new ingredients') + ' where ' + (ch.added.length === 1 ? 'it fits' : 'they fit') + ' (herbs and spices usually go in with the sauce).' : '',
           ch.removed.length ? 'Skip ' + (ch.removed.length === 1 ? 'the one you took out' : 'the ones you took out') + ' when the steps mention ' + (ch.removed.length === 1 ? 'it' : 'them') + '.' : ''
-        ].filter(Boolean).join(' ') })));
+        ].filter(Boolean).join(' ') }),
+        locked() ? null : h('button', { type:'button', class:'fhr-ch-reset', id:'fhrReset', text:'↺ Use the app’s recipe', onClick:() => {
+          if(!confirm(MealApp.resetQuestion(meal))) return;
+          if(MealApp.resetToBuiltin(meal.id)) open(meal.id);
+        } })));
     }
     right.appendChild(seg);
     right.appendChild(steps);
@@ -4595,7 +4610,7 @@ function fhRecipeCatchUp(id, o){
   o.fhRecipes = FH_RECIPES_VER;
   const u = (window.FH_RECIPE_UPDATES || {})[id], full = (window.FH_BUILTIN_FULL || {})[id];
   if(!u || !full) return true;
-  const key = i => String((typeof i === 'string' ? i : (i._n0 || i.name)) || '').trim().toLowerCase().replace(/s$/, '');
+  const key = fhIngKey;
   const inBuiltin = n => full.find(i => key(i) === key(n));
   let list = o.ingredients.slice();
   u.drop.forEach(n => { const b = inBuiltin(n);
@@ -5372,6 +5387,15 @@ function buildIngredientsEditor(meal){
   note.className = 'panel-note';
   note.textContent = 'By default, quantities are written for ' + MEAL_SERVES_BASE + ' people and scale to your household size automatically. Tick "Per person" on an ingredient (handy for meat/fish) to give a flat amount for one person instead. The line under each ingredient shows the real total it works out to for your household right now.';
   wrap.appendChild(note);
+  if(!meal.isCustom && differsFromBuiltin(meal.id)){
+    const fhReset = document.createElement('div'); fhReset.className = 'fhr-ing-reset';
+    const fhResetBtn = document.createElement('button'); fhResetBtn.type = 'button'; fhResetBtn.className = 'fhr-ch-reset'; fhResetBtn.id = 'fhIngReset';
+    fhResetBtn.textContent = '↺ Use the app’s recipe';
+    fhResetBtn.addEventListener('click', ()=>{ if(confirm(resetQuestion(meal))) resetToBuiltin(meal.id); });
+    const fhResetNote = document.createElement('span'); fhResetNote.textContent = 'You’ve changed this meal’s ingredients.';
+    fhReset.appendChild(fhResetNote); fhReset.appendChild(fhResetBtn);
+    wrap.appendChild(fhReset);
+  }
 
   meal.ingredients.forEach((line, idx)=>{
     wrap.appendChild(buildIngredientLineRow(meal, line, idx));
@@ -6512,6 +6536,40 @@ function getKnownIngredients(){
   }); });
   return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
 }
+/* The app's own ingredients for a built-in meal, with the household's per-person portions applied, so a meal can be put
+   back to the app's recipe (recipe viewer and meal library). Its name, category, cuisine and serves are left alone. */
+function builtinIngredients(id){
+  const full = (window.FH_BUILTIN_FULL || {})[id]; if(!full) return null;
+  return full.map(function(i){
+    const l = Object.assign({}, i);
+    const p = globalPortions.find(function(g){ return normPortionName(g.name) === normPortionName(l.name); });
+    if(p){ l.perPerson = true; l.qty = p.qty; l.unit = p.unit; }
+    return l;
+  });
+}
+function differsFromBuiltin(id){
+  const meal = mealsById[id], b = builtinIngredients(id);
+  if(!meal || meal.isCustom || !b) return false;
+  const sig = function(list){ return JSON.stringify((list || []).map(function(i){ return [String(i._n0 || i.name || '').trim().toLowerCase(), +i.qty || 0, i.unit || '', !!i.perPerson]; }).sort()); };
+  return sig(meal.ingredients) !== sig(b);
+}
+function resetQuestion(meal){
+  return 'Put ' + meal.name + ' back to the app’s recipe? Ingredients you added, took out or changed for this meal will go. Its name, category and serves stay as they are.';
+}
+function resetToBuiltin(id){
+  const meal = mealsById[id], b = builtinIngredients(id);
+  if(!meal || meal.isCustom || !b) return false;
+  meal.ingredients = b;
+  const o = Object.assign({}, mealOverrides[id] || {});
+  // no portions to keep: drop the saved list so later recipe corrections reach this meal by themselves
+  if(JSON.stringify(b) === JSON.stringify(window.FH_BUILTIN_FULL[id])){ delete o.ingredients; delete o.fhRecipes; }
+  else { o.ingredients = b; o.fhRecipes = FH_RECIPES_VER; }
+  mealOverrides[id] = o;
+  persistMealOverrides();
+  render(); renderMealLibrary();
+  if(typeof __onChange === 'function') __onChange();
+  return true;
+}
 
 /* ---------- fixed nights (rules): a meal tied to a night, optionally repeating every x weeks ---------- */
 const FH_DAYLONG = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -6665,6 +6723,7 @@ const __ready = init();
   return {
     ready: __ready, getCatalog: getCatalog, applyDiets: applyDiets, getShopDay: getShopDay, setShopDay: setShopDay, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
     getPlannedCount: getPlannedCount, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
+    differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, resetQuestion: resetQuestion,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
     getDayDisplay: getDayDisplay,
     getWeekForDate: weekForDate,
@@ -8228,14 +8287,23 @@ const FHExtras = (function(){
     save(list); return true;
   }
   // The add form that sits at the top of the shopping list.
-  /* Changing the shop day changes which week every item is filed under. Items for this shop or a later one move to
-     the new week that ends nearest the old one, so nothing you added disappears. */
+  /* Changing the shop day changes which week every item is filed under. Items for the next shop stay with the next
+     shop; others move to the nearest new shop, never one that has already gone, so nothing you added disappears. */
   function moveToShopDay(day){
-    const list = load(), cur = ck(MealApp.mostRecentShopDay(new Date())), ends = {};
-    list.forEach(function(x){ if(x.scope === 'once' && x.cycle >= cur){ const p = x.cycle.split('-'); ends[x.id] = new Date(+p[0], +p[1] - 1, +p[2] + 6); } });
+    const list = load(), cur = ck(MealApp.mostRecentShopDay(new Date())), next = ck(upcomingAnchor());
+    const toDate = function(k){ const p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
+    const todo = list.filter(function(x){ return x.scope === 'once' && x.cycle >= cur; });
     MealApp.setShopDay(day);
+    const nCur = MealApp.mostRecentShopDay(new Date()), nNext = ck(upcomingAnchor());
     let moved = false;
-    list.forEach(function(x){ if(ends[x.id]){ const k = ck(MealApp.mostRecentShopDay(ends[x.id])); if(k !== x.cycle){ x.cycle = k; moved = true; } } });
+    todo.forEach(function(x){
+      let k = nNext;
+      if(x.cycle !== next){
+        const n = Math.max(0, Math.round((toDate(x.cycle) - nCur) / (7 * 86400000)));
+        k = ck(new Date(nCur.getFullYear(), nCur.getMonth(), nCur.getDate() + 7 * n));
+      }
+      if(k !== x.cycle){ x.cycle = k; moved = true; }
+    });
     if(moved) save(list);
   }
   /* shop day picker on the shopping page (needed when there's no meal planner to set it on) */
