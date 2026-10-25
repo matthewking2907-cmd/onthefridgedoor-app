@@ -2819,6 +2819,11 @@ function fhIngKey(i){
   return String((typeof i === 'string' ? i : (i && (i._n0 || i.name))) || '').trim().toLowerCase()
     .replace(/^(ground|dried)\s+/, '').replace(/leaves$/, 'leaf').replace(/s$/, '');
 }
+/* Things that make no sense in halves: eggs, and foods people eat one each (buns, wraps, sausages, chicken breasts…)
+   when counted rather than weighed. These round up; everything else keeps its halves (“Onion — 4½”). */
+const FH_WHOLE_RE = /\b(eggs?|buns?|rolls?|pittas?|wraps?|tortillas?|naans?|bagels?|muffins?|crumpets?|sausages?|burgers?|hot dogs?|breasts?|thighs?|drumsticks?|fillets?|steaks?|chops?|fish fingers?|yorkshire puddings?|croissants?|potato waffles?)\b/i;
+function fhWholeOnly(name, unit){ return (!unit || unit === 'each') && FH_WHOLE_RE.test(String(name || '')); }
+function fhWholeQty(q, name, unit){ return fhWholeOnly(name, unit) && q > 0 ? Math.ceil(q - 0.01) : q; }
 
 const Feature = (function(){
   let cfg = null;
@@ -3555,6 +3560,8 @@ const FHRecipes = (function(){
   }
 
   /* ---- quantity formatting ---- */
+  /* the total for everyone eating: per-person lines times people, the rest scaled from 4; eggs and one-each foods whole */
+  function lineTotal(i, size, scale){ return fhWholeQty(i.perPerson ? i.qty * size : i.qty * scale, i._n0 || i.name, i.unit); }
   function niceQty(q, unit){
     if(unit === 'g' || unit === 'ml'){ const step = q >= 200 ? 25 : 5; return String(Math.max(step, Math.round(q/step)*step)); }
     if(unit === 'kg' || unit === 'l'){ return String(Math.round(q*20)/20); }
@@ -3733,7 +3740,7 @@ const FHRecipes = (function(){
       ingList.innerHTML = ''; scratchHost.innerHTML = '';
       (meal.ingredients || []).forEach(i => {
         // Always show the TOTAL for everyone eating. Meat lines set as a per-person portion are multiplied up by the number of people.
-        const tot = i.perPerson ? i.qty * size : i.qty * scale;
+        const tot = lineTotal(i, size, scale);
         const rawName = FHScratch.raw(i), canMake = !!FHScratch.recipeFor(i), making = canMake && FHScratch.has(rawName);
         const li = making
           ? h('li', {}, h('span', { class:'fhr-iq', text:'🥣' }), h('span', { text:' Homemade ' + i.name.toLowerCase() + ' (recipe below)' }))
@@ -3756,7 +3763,7 @@ const FHRecipes = (function(){
     const ch = changesFor(meal);
     if(ch){
       const line = (label, list, sign) => list.length ? h('p', { class:'fhr-ch-line' }, h('b', { text:label + ' ' }),
-        list.map(i => { const t = i.perPerson ? i.qty * size : i.qty * scale; return sign + (i.qty ? fmtQ(t, i.unit) + ' ' : '') + countName(FHLocale.name(i._n0 || i.name), t, i.unit, i._n0 || i.name); }).join(', ')) : null;
+        list.map(i => { const t = lineTotal(i, size, scale); return sign + (i.qty ? fmtQ(t, i.unit) + ' ' : '') + countName(FHLocale.name(i._n0 || i.name), t, i.unit, i._n0 || i.name); }).join(', ')) : null;
       right.appendChild(h('div', { class:'fhr-changes', role:'note' },
         h('div', { class:'fhr-ch-title', text:'✎ You’ve changed this recipe' }),
         line('Added:', ch.added, '+ '), line('Taken out:', ch.removed, '− '),
@@ -3793,9 +3800,9 @@ const FHRecipes = (function(){
     if(!meal || !(meal.ingredients || []).length) return [];
     const size = (meal.servesOverride) || (MealApp.getHouseholdSize ? MealApp.getHouseholdSize() : 4) || 4, scale = size / 4;
     const fmtQ = (n, unit) => { const lc = FHLocale.qty(n, unit); const q = lc ? lc.n : niceQty(n, unit), u = lc ? lc.u : plural(FHLocale.unit(unit), n); return q + (u ? ' ' + u : ''); };
-    return { size: size, lines: meal.ingredients.map(i => ({ qty: i.qty ? fmtQ(i.perPerson ? i.qty * size : i.qty * scale, i.unit) : '', name: countName(i.name, i.perPerson ? i.qty * size : i.qty * scale, i.unit, i._n0) })) };
+    return { size: size, lines: meal.ingredients.map(i => ({ qty: i.qty ? fmtQ(lineTotal(i, size, scale), i.unit) : '', name: countName(i.name, lineTotal(i, size, scale), i.unit, i._n0) })) };
   }
-  return { ingLines, changesFor, countName, plural, get, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
+  return { ingLines, changesFor, countName, plural, niceQty, get, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
 })();
 FHLocale.applyRecipes();
 
@@ -6215,7 +6222,7 @@ function buildShoppingList(anchor){
   const bySection = {};
   SHOP_SECTIONS.forEach(s=> bySection[s.id] = []);
   Object.values(lineMap).forEach(entry=>{
-    const rounded = Math.round(entry.qty*10)/10;
+    const rounded = Math.round(fhWholeQty(entry.qty, entry.name, entry.unit)*10)/10;
     entry.qty = rounded;
     (bySection[entry.section] || bySection.other).push(entry);
   });
@@ -6465,7 +6472,7 @@ function renderShoppingListPage(container){
       });
       const nm = document.createElement('span');
       nm.className = 'shopping-item-name';
-      const qtyText = item.qty ? (FHLocale.qtyText(item.qty, item.unit) || (function(){ const u = item.unit ? FHRecipes.plural(FHLocale.unit(item.unit, item.qty), item.qty) : ''; return item.qty + (u ? ' ' + u : ''); })()) : '';
+      const qtyText = item.qty ? (FHLocale.qtyText(item.qty, item.unit) || (function(){ const u = item.unit ? FHRecipes.plural(FHLocale.unit(item.unit, item.qty), item.qty) : ''; return (/^(g|ml|kg|l)$/.test(item.unit || '') ? item.qty : FHRecipes.niceQty(item.qty, item.unit)) + (u ? ' ' + u : ''); })()) : '';
       nm.textContent = item.name + (qtyText ? ' — ' + qtyText : '');
       info.appendChild(nm);
       const uses = document.createElement('span');
