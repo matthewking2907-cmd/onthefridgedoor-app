@@ -1,0 +1,9 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "uk.co.mking.household",
+        "sha256_cert_fingerprints": ["70:87:E7:F0:62:79:4B:A8:D1:03:F0:FA:6B:20:F2:B6:6D:5E:F1:6A:41:E0:DC:92:E4:D3:C3:E5:EE:89:24:4C"]
+      }
+    }]
+
