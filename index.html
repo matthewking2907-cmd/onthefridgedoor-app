@@ -12218,6 +12218,18 @@ const FHSync = (function(){
     return mode();
   }
   let hhAt = 0;
+  /* For Google Play's app reviewers, who can't receive an emailed code: an account Matthew made in Supabase with a
+     password (Authentication › Add user). Ordinary accounts have no password, so this does nothing for them. */
+  async function signInWithPassword(email, password){
+    email = String(email || '').trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(email)) throw fail('That email address does not look right.', false);
+    if(!password) throw fail('Enter the password.', false);
+    takeSession(await authCall('token?grant_type=password', { email:email, password:String(password) }));
+    st.auth.email = email; save();
+    await refreshHousehold();
+    emit();
+    return mode();
+  }
   async function refreshHousehold(){
     const h = await rpc('my_household');
     st.hh = h || null; hhAt = Date.now(); save(); emit();
@@ -12403,7 +12415,7 @@ const FHSync = (function(){
     return { mode:m, email: st.auth ? st.auth.email : '', household: st.hh, pending:p, last:st.last, busy:busy, error:lastErr, configured:!!config(), fromBuild:!!BUILD };
   }
 
-  return { init, summary, onChange, nudge, setConfig, sendCode, verify, createHousehold, joinHousehold, adoptHousehold,
+  return { init, summary, onChange, nudge, setConfig, sendCode, verify, signInWithPassword, createHousehold, joinHousehold, adoptHousehold,
            leaveHousehold, deleteAccount, joinAsDevice, setDeviceLabel, removeDevice, isDevice, newCode, disconnect, syncNow, hasLocalSetup, refreshHousehold, rpc, fn,
            _merge3: merge3, _eligible: eligible };
 })();
@@ -12533,6 +12545,15 @@ function fhSyncCard(opts){
         box.appendChild(em);
         box.appendChild(h('div', { class:'ob-row' }, btn('Got a family code?', function(){ fhCodeModal(); }, 'ghost', 'stSyncCodeBtn')));
         box.appendChild(h('div', { class:'ob-row' }, btn('Email me a code', function(){ view.email = em.value; run(function(){ return FHSync.sendCode(view.email).then(function(e){ view.email = e; view.step = 'code'; }); }); }, '', 'stSyncSend')));
+        box.appendChild(h('p', { class:'ob-hint' }, h('a', { href:'#', id:'stSyncPwLink', text:'App reviewer? Sign in with a password', onClick:function(e){ e.preventDefault(); view.email = em.value; view.step = 'password'; view.msg = ''; render(); } })));
+      } else if(view.step === 'password'){
+        box.appendChild(note('For app store reviewers with a review account. Everyone else signs in with an emailed code.'));
+        const em = h('input', { type:'email', id:'stSyncPwEmail', placeholder:'Review account email', value:view.email, autocomplete:'username', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
+        const pw = h('input', { type:'password', id:'stSyncPw', placeholder:'Password', autocomplete:'current-password', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
+        box.appendChild(em); box.appendChild(pw);
+        box.appendChild(h('div', { class:'ob-row' },
+          btn('Sign in', function(){ view.email = em.value; run(function(){ return FHSync.signInWithPassword(em.value, pw.value).then(afterSignIn); }); }, '', 'stSyncPwGo'),
+          btn('Back', function(){ view.step = 'email'; view.msg = ''; render(); }, 'ghost')));
       } else {
         box.appendChild(note('We emailed a code to ' + view.email + ' from On the FridgeDoor. It can take a minute. Not there? Check spam or Promotions.'));
         const cd = h('input', { type:'text', id:'stSyncCode', placeholder:'Code from the email', inputmode:'numeric', autocomplete:'one-time-code', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px;letter-spacing:2px' });
