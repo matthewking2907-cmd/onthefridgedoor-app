@@ -3,7 +3,7 @@
       "target": {
         "namespace": "android_app",
         "package_name": "uk.co.mking.household",
-        "sha256_cert_fingerprints": ["70:87:E7:F0:62:79:4B:A8:D1:03:F0:FA:6B:20:F2:B6:6D:5E:F1:6A:41:E0:DC:92:E4:D3:C3:E5:EE:89:24:4C"]
+        "sha256_cert_fingerprints": ["70:87:E7:F0:62:79:4B:A8:D1:03:F0:FA:6B:20:F2:B6:6D:5E:F1:6A:41:E0:DC:92:E4:D3:C3:E5:EE:89:24:4C", "FA:A8:90:DC:DF:5F:46:A1:0D:85:37:07:77:91:6E:C8:78:DF:7A:5E:76:53:58:D2:F2:B3:BE:D4:19:92:88:FF"]
       }
     }]
 
