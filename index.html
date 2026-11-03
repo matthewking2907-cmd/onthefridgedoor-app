@@ -2370,6 +2370,13 @@ body.kid-locked #manageChores{ display:none !important; }
 .fha-day{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 2px; }
 .fha-daychip{ border:1px solid var(--accent,#6C4F8A); background:color-mix(in srgb, var(--accent,#6C4F8A) 10%, transparent); color:var(--accent,#6C4F8A); border-radius:999px; padding:4px 10px; font:inherit; font-size:.84rem; font-weight:600; cursor:pointer; }
 .fha-daychip.off{ background:transparent; border-style:dashed; opacity:.8; }
+.fha-planchip{ display:inline-flex; align-items:center; background:color-mix(in srgb, var(--accent,#6C4F8A) 12%, transparent); color:var(--accent-dark,#4B3463); border-radius:12px; padding:3px 8px; font-size:.7rem; font-weight:600; }
+.fha-planadd{ color:var(--accent,#6C4F8A); font-weight:700; }
+.fha-sheetbody{ overflow-y:auto; padding:0 16px 8px; -webkit-overflow-scrolling:touch; }
+.fha-ownrow{ display:flex; gap:6px; margin-top:8px; }
+.fha-ownname{ flex:1; min-width:0; font:inherit; padding:8px 10px; border:1px solid var(--panel-line,#ddd); border-radius:10px; background:var(--white,#fff); color:inherit; }
+.fha-ownadd{ font:inherit; font-weight:700; border:1px solid var(--accent,#6C4F8A); color:var(--accent,#6C4F8A); background:transparent; border-radius:10px; padding:8px 14px; cursor:pointer; }
+.fha-done{ margin:8px 16px 16px; font:inherit; font-weight:700; background:var(--accent,#6C4F8A); color:#fff; border:0; border-radius:12px; padding:12px; cursor:pointer; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2575,7 +2582,7 @@ var FHTheme = (function(){
       <input type="text" id="newSideName" placeholder="Side or veggie name" maxlength="40">
       <button id="addSideBtn">Add side</button>
     </div>
-    <p class="panel-note">Sides aren't tied to any one meal — pick one below, then tap a day to attach it alongside whatever's cooking that night.</p>
+    <p class="panel-note">Your own sides, for any night. Pick one below, then tap a day. For the app's sides, dips and tweaks that go with a meal (pilau rice, garlic bread, raita…), tap ＋ sides under a day.</p>
     <div class="meal-library" id="sidesLibraryList"></div>
   </details>
 
@@ -2609,7 +2616,7 @@ var FHTheme = (function(){
     <button id="clearBtn">Clear this week</button>
   </div>
 
-  <p class="hint">Tip: tap a day's meal, then switch weeks and tap a day there — it'll move across weeks. Tap two days to swap. Sides work the same way but attach to the day, not the meal.</p>
+  <p class="hint">Tip: tap a day's meal, then switch weeks and tap a day there — it'll move across weeks. Tap two days to swap. Tap ＋ sides under a day for sides, dips and tweaks that go with that meal.</p>
 </div>
     </section>
 
@@ -4095,7 +4102,50 @@ const FHAddOns = (function(){
         onClick:() => { setOff(date, a.id, !off); redo(); } });
     }));
   }
-  return { ALL, byId, suggestions, chosen, picked, isOn, toggle, isOff, setOff, kept, lines, ings, paint, dayRow };
+  /* ---- Meal Plan: a chip on the day for each extra its meal has, and the "+ sides" sheet ---- */
+  function planChip(a){ return h('span', { class:'fha-planchip', 'data-plan-addon':a.id, text:(a.kind === 'tweak' ? '✨ ' : '🍽 ') + FHLocale.text(a.name) }); }
+  function planSheet(meal, o){
+    if(document.getElementById('fhaPlanSheet')) return;
+    const close = () => { const m = document.getElementById('fhaPlanSheet'); if(m) m.remove(); document.removeEventListener('keydown', onKey); o.done(); };
+    const onKey = e => { if(e.key === 'Escape') close(); };
+    const body = h('div', { class:'fha-sheetbody' });
+    const draw = () => {
+      body.innerHTML = '';
+      const list = meal ? suggestions(meal) : [];
+      if(list.length){
+        GROUPS.forEach(g => {
+          const of = list.filter(a => a.kind === g[0]); if(!of.length) return;
+          body.appendChild(h('p', { class:'fha-label', text:g[1] }));
+          body.appendChild(h('div', { class:'fha-chips' }, of.map(a => {
+            const on = isOn(meal.id, a.id);
+            return h('button', { type:'button', class:'fha-chip' + (on ? ' on' : ''), 'data-addon':a.id, 'aria-pressed':on ? 'true' : 'false',
+              text:(on ? '✓ ' : '＋ ') + FHLocale.text(a.name) + (a.mins ? ' · ' + a.mins + ' min' : ''), onClick:() => { toggle(meal.id, a.id); draw(); } });
+          })));
+        });
+        body.appendChild(h('p', { class:'fha-hint', text:'These stay with ' + meal.name + ' every time it’s planned: the recipe, method and shopping list all update. To leave one out for a single night, tap it on Today or the calendar.' }));
+      } else body.appendChild(h('p', { class:'fha-hint', text: !meal ? 'Plan a meal for this day to see sides that go with it.' : meal.isCustom ? 'The app’s sides, dips and tweaks go with its own recipes, not meals you’ve added.' : 'No sides from the app go with this meal.' }));
+      const own = o.own();
+      body.appendChild(h('p', { class:'fha-label', text:'Your own sides' }));
+      if(own.length) body.appendChild(h('div', { class:'fha-chips' }, own.map(s => h('button', { type:'button', class:'fha-chip' + (s.on ? ' on' : ''), 'data-own-side':s.id, 'aria-pressed':s.on ? 'true' : 'false',
+        text:(s.on ? '✓ ' : '＋ ') + s.name, onClick:() => { o.toggleOwn(s.id); draw(); } }))));
+      const inp = h('input', { type:'text', class:'fha-ownname', maxlength:'40', placeholder:'Add your own (e.g. Greek potatoes)', 'aria-label':'Add your own side' });
+      const addIt = () => { const v = inp.value.trim(); if(v){ o.addOwn(v); draw(); } };
+      inp.addEventListener('keydown', e => { if(e.key === 'Enter') addIt(); });
+      body.appendChild(h('div', { class:'fha-ownrow' }, inp, h('button', { type:'button', class:'fha-ownadd', text:'Add', onClick:addIt })));
+      body.appendChild(h('p', { class:'fha-hint', text:'Your own sides are for this day only, and don’t add anything to the shopping list.' }));
+    };
+    const m = h('div', { id:'fhaPlanSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Sides' },
+        h('div', { class:'fhm-head' },
+          h('div', {}, h('div', { class:'fhm-title', text:meal ? 'Sides for ' + meal.name : 'Sides' }), h('div', { class:'fhm-sub', text:o.title })),
+          h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        body,
+        h('button', { type:'button', class:'fha-done', text:'Done', onClick:close })));
+    document.body.appendChild(m);
+    document.addEventListener('keydown', onKey);
+    draw();
+  }
+  return { ALL, byId, suggestions, chosen, picked, isOn, toggle, isOff, setOff, kept, lines, ings, paint, dayRow, planChip, planSheet };
 })();
 
 // ==================== MEAL PLAN MODULE ====================
@@ -5173,8 +5223,9 @@ function renderDayGrid(){
     }
     sidesRow.addEventListener('click', (e)=>{
       if(e.target.closest('.side-remove-btn')) return;
-      if(selectedSide) attachSideToDay(idx);
+      if(selectedSide) attachSideToDay(idx); else fhOpenSides(idx);
     });
+    fhPlanExtras(sidesRow, dayObj);
     col.appendChild(sidesRow);
 
     row.appendChild(col);
@@ -6160,7 +6211,7 @@ function renderSidesShelf(){
   el.innerHTML = '';
   if(sidesLibrary.length === 0){
     el.className = 'sides-shelf empty-lib';
-    el.textContent = 'No sides added yet — use "Sides & veggies" above to create some.';
+    el.textContent = 'Tap ＋ sides under a day for sides that go with that meal, or add your own in Sides & veggies above.';
     return;
   }
   el.className = 'sides-shelf';
@@ -7133,6 +7184,41 @@ function renderRulesPanel(anchorEl){
   form.appendChild(msg);
   body.appendChild(form);
   det.appendChild(body); box.appendChild(det);
+}
+
+
+/* ---------- the planner's "+ sides": the app's sides, dips and tweaks for that day's meal, and the household's own ---------- */
+function fhPlanExtras(row, dayObj){
+  if(selectedSide) return;
+  const meal = dayObj.meal ? findMeal(dayObj.meal) : null;
+  const ours = meal ? FHAddOns.picked(meal.id) : [];
+  const empty = row.querySelector('.day-sides-empty');
+  if(empty) empty.remove();
+  ours.slice().reverse().forEach(function(a){ row.insertBefore(FHAddOns.planChip(a), row.firstChild); });
+  const add = document.createElement('span');
+  add.className = 'day-sides-empty fha-planadd';
+  add.textContent = (ours.length || dayObj.sides.length) ? '＋' : '＋ sides';
+  row.appendChild(add);
+}
+function fhOpenSides(idx){
+  const week = currentWeek, day = plan[week][idx], meal = day.meal ? findMeal(day.meal) : null;
+  FHAddOns.planSheet(meal, {
+    title: FH_DAYLONG[idx] + ', week ' + week,
+    own: function(){ return sidesLibrary.map(function(s){ return { id:s.id, name:s.name, on:day.sides.indexOf(s.id) >= 0 }; }); },
+    toggleOwn: function(id){
+      const i = day.sides.indexOf(id);
+      if(i >= 0) day.sides.splice(i, 1); else day.sides.push(id);
+      savePlan();
+    },
+    addOwn: function(name){
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+      const id = (slug || 'side') + '-' + Date.now().toString(36);
+      sidesLibrary.push({ id:id, name:name });
+      persistSidesLibrary(); renderSidesLibraryList();
+      day.sides.push(id); savePlan();
+    },
+    done: function(){ render(); }
+  });
 }
 
 const __ready = init();
