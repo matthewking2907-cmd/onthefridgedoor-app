@@ -2452,6 +2452,16 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhpush-row.fhpush-house > span{ display:flex; flex-direction:column; gap:2px; flex:1 1 auto; min-width:0; }
 .fhpush-house small{ color:var(--muted,#777); font-size:0.82rem; }
 .fhpush-cals{ margin:0 0 6px 26px; }
+/* Paperwork (ob_paperwork.js) */
+.fhpw-card.open{ border-color:var(--accent,#6C4F8A); }
+.fhpw-card.late{ border-color:#C0392B; }
+.fhpw-card .fho-chips{ align-items:center; justify-content:space-between; }
+.fhpw-act{ font-size:0.85rem; font-weight:700; color:var(--accent,#6C4F8A); }
+.fhpw-card.late .fhpw-act, .fhpw-late{ color:#C0392B; }
+.fhpw-kinds{ margin-top:4px; }
+.fhpw-two{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.fhpw-hint{ font-size:0.85rem; margin:-2px 0 4px; }
+@media (max-width:380px){ .fhpw-two{ grid-template-columns:1fr; } }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2530,6 +2540,7 @@ var FHTheme = (function(){
     <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span><span class="nav-chev" id="navChoresChev" role="button" tabindex="0" aria-label="Show or hide Upcoming chores" aria-expanded="false">▶</span></button>
     <button class="nav-item nav-sub" data-page="tasklists"><span class="nav-icon">📋</span><span class="nav-label">Upcoming chores</span></button>
     <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
+    <button class="nav-item" data-page="paperwork"><span class="nav-icon">📄</span><span class="nav-label">Paperwork</span></button>
     <div class="nav-label-grp">App</div>
     <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
     <div class="nav-spacer"></div>
@@ -2856,6 +2867,10 @@ var FHTheme = (function(){
 
     <section class="page" id="page-tasks">
       <div class="app"><div id="tasksContent"></div></div>
+    </section>
+
+    <section class="page" id="page-paperwork">
+      <div class="app"><div id="paperworkContent"></div></div>
     </section>
 
     <section class="page" id="page-occasions">
@@ -10512,6 +10527,7 @@ const FHEvents = (function(){
     if(typeof FHCal !== 'undefined' && FHCal.forDay){ all = own.concat(FHCal.forDay(date).filter(function(ev){ return isFor(ev, person); })); }
     if(typeof FHBins !== 'undefined'){ const bin = FHBins.event(date); if(bin) all = all.concat([bin]); }
     if(typeof FHOcc !== 'undefined') all = all.concat(FHOcc.events(date));
+    if(typeof FHPaper !== 'undefined') all = all.concat(FHPaper.events(date));
     return all.sort(function(a, b){ return (a.allDay ? 0 : 1) - (b.allDay ? 0 : 1) || sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)); });
   }
   function refresh(){ try{ refreshCurrentPage(); }catch(e){} }
@@ -11051,7 +11067,7 @@ function fhDayDash(date){
     if(sc) wrap.appendChild(sc);
     else if(typeof FHCal !== 'undefined'){ const cc = FHCal.todayCard(date); if(cc) wrap.appendChild(cc); } }
   // ---- birthdays & occasions coming up (today only)
-  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ const oc = FHOcc.todayCard(date); if(oc) wrap.appendChild(oc); }
+  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = FHOcc.todayCard(date); if(typeof FHPaper !== 'undefined') oc = FHPaper.todayCard(date, oc); if(oc) wrap.appendChild(oc); }
   // ---- dinner
   if(Feature.on('meals')){
     const card = buildMealCard(date);
@@ -11110,6 +11126,221 @@ function fhDayPage(root, page, base){
     }, { passive:true });
   }
 }
+
+/* ==================== PAPERWORK: renewals and deals that end ====================
+   Synced key family-hub-paperwork-v1: [{ id, kind, title (own items only), who (person id: passports, licences, phones),
+     car (which car, optional), with (who it's with, optional), date:'YYYY-MM-DD' (expires / due / renews / ends),
+     every (years; 0 = doesn't repeat), days (remind this many days before) }]
+   Only dates and names are kept: never passport, licence or policy numbers (the editor says so).
+   From `days` before the date it's "Needs doing": on the page, in Today's "Coming up" (with occasions) and in the
+   parents' morning summary when it starts, a week before, and on the day. "Renewed" sets the next date (a year, or
+   ten, on for repeating ones). The page and Today's lines are behind the parent lock; the date shows on the calendar
+   for parents' devices only. */
+const FHPaper = (function(){
+  const KEY = 'family-hub-paperwork-v1';
+  // id, icon, chip text, name, verb on the day, date label, what to do, repeat (years), remind (days before)
+  // per: true = a person's (required), 'opt' = can be a person's; car: which car; dated deals don't repeat
+  const KINDS = [
+    { id:'passport', icon:'🛂', chip:'Passport', name:'Passport', pos:'passport', verb:'expires', dl:'Expiry date', act:'Renew', every:10, kidEvery:5, days:91, per:true,
+      hint:'Some countries want six months or more left on a passport. Check before you book a trip.' },
+    { id:'licence', icon:'🪪', chip:'Driving licence', name:'Driving licence', pos:'driving licence', verb:'expires', dl:'Photocard expiry date', act:'Renew', every:10, days:56, per:true },
+    { id:'mot', icon:'🚗', chip:'MOT', name:'MOT', verb:'due', dl:'Due date', act:'Book', every:1, days:28, car:true, uk:true },
+    { id:'cartax', icon:'🚗', chip:'Car tax', name:'Car tax', usName:'Car registration', verb:'due', dl:'Due date', act:'Renew', every:1, days:14, car:true },
+    { id:'carins', icon:'🚗', chip:'Car insurance', name:'Car insurance', verb:'renews', dl:'Renewal date', act:'Renew or switch', every:1, days:28, car:true },
+    { id:'service', icon:'🔧', chip:'Car service', name:'Car service', verb:'due', dl:'Due date', act:'Book', every:1, days:14, car:true },
+    { id:'breakdown', icon:'🛟', chip:'Breakdown cover', name:'Breakdown cover', verb:'renews', dl:'Renewal date', act:'Renew or switch', every:1, days:28 },
+    { id:'homeins', icon:'🏠', chip:'Home insurance', name:'Home insurance', verb:'renews', dl:'Renewal date', act:'Renew or switch', every:1, days:28 },
+    { id:'boiler', icon:'🔥', chip:'Boiler service', name:'Boiler service', verb:'due', dl:'Due date', act:'Book', every:1, days:28 },
+    { id:'tv', icon:'📺', chip:'TV licence', name:'TV licence', verb:'renews', dl:'Renewal date', act:'Renew', every:1, days:28, uk:true },
+    { id:'energy', icon:'💡', chip:'Energy deal', name:'Energy deal', verb:'ends', dl:'End date', act:'Find a new deal', every:0, days:42 },
+    { id:'mortgage', icon:'🏡', chip:'Mortgage deal', name:'Mortgage deal', verb:'ends', dl:'End date', act:'Find a new deal', every:0, days:182 },
+    { id:'phone', icon:'📱', chip:'Phone contract', name:'Phone contract', pos:'phone contract', verb:'ends', dl:'End date', act:'Find a new deal', every:0, days:28, per:'opt' },
+    { id:'pet', icon:'🐾', chip:'Pet vaccinations', name:'Pet vaccinations', verb:'due', dl:'Due date', act:'Book', every:1, days:14 },
+    { id:'other', icon:'📄', chip:'Something else', name:'', verb:'due', dl:'Date', act:'Sort out', every:1, days:28, per:'opt' }
+  ];
+  const EVERY = [[0, 'Doesn’t repeat'], [1, 'Every year'], [2, 'Every 2 years'], [3, 'Every 3 years'], [5, 'Every 5 years'], [10, 'Every 10 years']];
+  const DAYS = [[7, '1 week'], [14, '2 weeks'], [28, '4 weeks'], [42, '6 weeks'], [56, '8 weeks'], [91, '3 months'], [182, '6 months']];
+
+  function us(){ try{ return FHLocale.us(); }catch(e){ return false; } }
+  function kind(id){ return KINDS.find(k => k.id === id) || KINDS[KINDS.length - 1]; }
+  function kinds(){ return KINDS.filter(k => !(k.uk && us())); }
+  function uid(){ return 'pw' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '[]'); return Array.isArray(v) ? v.filter(x => x && x.date) : []; }catch(e){ return []; } }
+  function save(list){ fhSaveJSON(KEY, list); try{ refreshCurrentPage(); }catch(e){} try{ FHPush.upload(); }catch(e){} }
+  function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; } }
+  function person(id){ return id ? people().find(p => p.id === id) : null; }
+  function parents(){ return people().filter(p => p.role !== 'child').map(p => p.id); }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function childDevice(){ try{ return !!(FHSync.isDevice && FHSync.isDevice()); }catch(e){ return false; } }
+  function day0(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function isoOf(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  /* n years on; 29 Feb falls on 28 Feb in a year without one */
+  function addYears(iso, n){
+    const d = parse(iso); if(!d) return '';
+    const y = d.getFullYear() + n, m = d.getMonth();
+    return isoOf(new Date(y, m, Math.min(d.getDate(), new Date(y, m + 1, 0).getDate())));
+  }
+  function daysLeft(x, from){ const d = parse(x.date); return d ? Math.round((d - day0(from || new Date())) / 864e5) : 0; }
+  function shortDate(d){ return d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short', year:d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined }); }
+  function when(n){ return n === 0 ? 'today' : n === 1 ? 'tomorrow' : n > 0 ? 'in ' + n + ' days' : n === -1 ? 'yesterday' : -n + ' days ago'; }
+  function kName(k){ return us() && k.usName ? k.usName : k.name; }
+  /* "Ivy’s passport", "MOT (Golf)", "Boiler service", own items by their name */
+  function fullName(x){
+    const k = kind(x.kind), p = person(x.who);
+    let n = x.kind === 'other' ? (x.title || 'Paperwork') : kName(k);
+    if(p) n = k.pos ? p.name + '’s ' + k.pos : n + ' (' + p.name + ')';
+    if(x.car) n += ' (' + x.car + ')';
+    return n;
+  }
+  function lc1(s){ return s.charAt(0).toLowerCase() + s.slice(1); }
+  function icon(x){ return kind(x.kind).icon; }
+  function dateLine(x){ const k = kind(x.kind), d = parse(x.date); return (k.verb === 'due' ? 'Due' : k.verb.charAt(0).toUpperCase() + k.verb.slice(1)) + ' ' + shortDate(d); }
+  /* open from `days` before the date, and still open once it has passed (until renewed or removed) */
+  function isOpen(x, from){ return daysLeft(x, from) <= (+x.days || 0); }
+  function needs(from){ return load().filter(x => isOpen(x, from)).sort((a, b) => a.date.localeCompare(b.date)); }
+
+  /* read-only all-day "events" for FHEvents.forDay, for parents' devices (not when locked, not on a child's device) */
+  function events(date){
+    if(locked() || childDevice()) return [];
+    const iso = isoOf(date);
+    return load().filter(x => x.date === iso).map(x => ({ id:'paper:' + x.id + ':' + iso, title:icon(x) + ' ' + fullName(x) + ' ' + kind(x.kind).verb, allDay:true, ro:true, paper:true, color:'#4A6FA5', who:'' }));
+  }
+  /* morning-summary lines for FHPush (parents only): when the reminder starts, a week before, and on the day */
+  function pushLines(date){
+    const who = parents(), out = [];
+    load().forEach(x => {
+      const n = daysLeft(x, date), k = kind(x.kind);
+      if(n === 0) out.push({ t:icon(x) + ' ' + fullName(x) + ' ' + k.verb + ' today', who });
+      else if(n > 0 && (n === +x.days || (n === 7 && +x.days > 7))) out.push({ t:icon(x) + ' ' + k.act + ': ' + fullName(x) + ', ' + lc1(dateLine(x)), who });
+    });
+    return out;
+  }
+
+  /* Today: lines in the "Coming up" card (made here if occasions has none) */
+  function todayCard(date, card){
+    if(locked() || childDevice()) return card;
+    const list = needs(date); if(!list.length) return card;
+    if(!card) card = h('section', { class:'fhd-sec fho-coming' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Coming up' })), h('div', { class:'fho-list' }));
+    const box = card.querySelector('.fho-list');
+    list.forEach(x => {
+      const n = daysLeft(x, date);
+      box.appendChild(h('div', { class:'fho-todo fhpw-todo' },
+        h('button', { type:'button', class:'fho-tick', 'aria-label':'Done: ' + kind(x.kind).act + ' ' + fullName(x), onClick:() => renewSheet(x) }, ''),
+        h('span', { class:'fho-todo-t' + (n < 0 ? ' fhpw-late' : '') }, h('b', { text:kind(x.kind).act }), ' · ' + icon(x) + ' ' + fullName(x) + ', ' + lc1(dateLine(x)) + ' (' + when(n) + ')')));
+    });
+    return card;
+  }
+
+  /* ---- page ---- */
+  function card(x){
+    const n = daysLeft(x, new Date()), open = isOpen(x), k = kind(x.kind);
+    const meta = dateLine(x) + ' · ' + when(n) + (+x.every ? ' · every ' + (+x.every === 1 ? 'year' : x.every + ' years') : '') + (x.with ? ' · ' + x.with : '');
+    return h('div', { class:'fho-card fhpw-card' + (open ? ' open' : '') + (n < 0 ? ' late' : ''), 'data-id':x.id },
+      h('button', { type:'button', class:'fho-card-main', onClick:() => editor(x) },
+        h('span', { class:'fho-emoji', text:icon(x) }),
+        h('span', { class:'fho-card-txt' }, h('b', { text:fullName(x) }), h('small', { text:meta }))),
+      open ? h('div', { class:'fho-chips' },
+        h('span', { class:'fhpw-act', text:n < 0 ? 'Overdue: ' + lc1(k.act) : k.act }),
+        h('button', { type:'button', class:'fho-chip fhpw-done', text:+x.every ? '✓ Renewed' : '✓ Done', onClick:() => renewSheet(x) })) : null);
+  }
+  function render(root){
+    if(!root) return; root.innerHTML = '';
+    const all = load().sort((a, b) => a.date.localeCompare(b.date));
+    root.appendChild(h('div', { class:'fho-headrow' },
+      h('div', {}, h('h2', { class:'fho-h', text:'Paperwork' }),
+        h('p', { class:'fho-sub', text:'Passports, MOT, insurance and deals that end, all in one place. Add the date once and we remind the parents in good time.' }))));
+    const open = all.filter(x => isOpen(x)), later = all.filter(x => !isOpen(x));
+    const group = (id, title, list) => { if(!list.length) return;
+      const grid = h('div', { class:'fho-cards' }); list.forEach(x => grid.appendChild(card(x)));
+      root.appendChild(h('section', { class:'fho-group', id }, h('div', { class:'fho-group-h' }, h('h3', { text:title })), grid)); };
+    group('fhpwNeeds', 'Needs doing', open);
+    group('fhpwLater', all.length > open.length && open.length ? 'Later' : 'Coming up', later);
+    root.appendChild(h('section', { class:'fho-group', id:'fhpwAdd' },
+      h('div', { class:'fho-group-h' }, h('h3', { text:all.length ? 'Add more' : 'Add your first' })),
+      all.length ? null : h('p', { class:'fho-sub fho-empty', text:'Tap one to add its date. Start with whatever runs out soonest.' }),
+      h('div', { class:'ob-chips fhpw-kinds' }, kinds().map(k => h('button', { type:'button', class:'ob-chip', 'data-kind':k.id, text:k.icon + ' ' + (us() && k.usName ? k.usName : k.chip), onClick:() => editor(null, k.id) })))));
+  }
+
+  /* ---- add / edit ---- */
+  function editor(orig, newKind){
+    if(document.getElementById('fhpwSheet')) return;
+    const k = kind(orig ? orig.kind : newKind);
+    const x = JSON.parse(JSON.stringify(orig || { id:uid(), kind:k.id, title:'', who:'', car:'', with:'', date:'', every:k.every, days:k.days }));
+    const ps = people();
+    const close = () => { const m = document.getElementById('fhpwSheet'); if(m) m.remove(); };
+    const err = h('div', { class:'fhe-err' });
+    const field = (lab, el) => h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:lab }), el);
+    const sel = (id, aria, opts, val) => { const s = h('select', { class:'fhe-in', id, 'aria-label':aria }); opts.forEach(o => s.appendChild(h('option', { value:o[0], text:o[1] }))); s.value = String(val); return s; };
+    const title = k.id === 'other' ? h('input', { class:'fhe-in', id:'fhpwTitle', value:x.title || '', maxlength:'50', placeholder:'e.g. Life insurance, Gym membership', 'aria-label':'What it is' }) : null;
+    const who = k.per && ps.length ? sel('fhpwWho', 'Whose', (k.per === true ? [] : [['', 'Not anyone in particular']]).concat(ps.map(p => [p.id, p.name])), x.who || '') : null;
+    if(who && k.per === true && !x.who){ who.insertBefore(h('option', { value:'', text:'Choose…' }), who.firstChild); who.value = ''; }
+    const car = k.car ? h('input', { class:'fhe-in', id:'fhpwCar', value:x.car || '', maxlength:'30', placeholder:'Only if you have more than one, e.g. Golf', 'aria-label':'Which car' }) : null;
+    const withIn = !k.per || k.id === 'other' || k.id === 'phone' ? h('input', { class:'fhe-in', id:'fhpwWith', value:x.with || '', maxlength:'40', placeholder:k.id === 'mot' || k.id === 'service' ? 'e.g. the garage' : k.id === 'pet' ? 'e.g. the vet' : 'e.g. the company', 'aria-label':'Who it’s with (optional)' }) : null;
+    const dateIn = h('input', { class:'fhe-in', id:'fhpwDate', type:'date', value:x.date || '', 'aria-label':k.dl });
+    const every = sel('fhpwEvery', 'Repeats', EVERY, x.every || 0);
+    const days = sel('fhpwDays', 'Remind me', DAYS.map(d => [d[0], d[1] + ' before']), x.days);
+    if(!days.value){ days.appendChild(h('option', { value:x.days, text:x.days + ' days before' })); days.value = String(x.days); }
+    // a child's passport lasts 5 years: follow the person while the repeat is still the default
+    if(who && k.kidEvery) who.addEventListener('change', () => { const p = person(who.value); if(+every.value === k.every || +every.value === k.kidEvery) every.value = String(p && p.role === 'child' ? k.kidEvery : k.every); });
+    const doSave = () => {
+      if(title){ x.title = title.value.trim(); if(!x.title){ err.textContent = 'What is it? For example, Life insurance.'; title.focus(); return; } }
+      if(who){ x.who = who.value; if(k.per === true && !x.who){ err.textContent = 'Whose ' + k.pos + ' is it?'; who.focus(); return; } }
+      if(!parse(dateIn.value)){ err.textContent = 'Add the ' + k.dl.toLowerCase() + '.'; dateIn.focus(); return; }
+      x.date = dateIn.value; x.every = +every.value; x.days = +days.value;
+      x.car = car ? car.value.trim() : ''; x.with = withIn ? withIn.value.trim() : '';
+      ['car', 'with', 'who', 'title'].forEach(f => { if(!x[f]) delete x[f]; });
+      const list = load(), i = list.findIndex(o => o.id === x.id);
+      if(i >= 0) list[i] = x; else list.push(x);
+      save(list); close();
+    };
+    const name = orig ? icon(orig) + ' ' + fullName(orig) : k.id === 'other' ? 'Add something else' : 'Add ' + k.icon + ' ' + (us() && k.usName ? k.usName : k.chip);
+    const m = h('div', { id:'fhpwSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':name },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:name }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          title ? field('What it is', title) : null,
+          who ? field(k.per === true ? 'Whose' : 'Whose (optional)', who) : null,
+          car ? field('Which car (optional)', car) : null,
+          field(k.dl, dateIn),
+          k.hint ? h('p', { class:'fho-sub fhpw-hint', text:k.hint }) : null,
+          h('div', { class:'fhpw-two' }, field('Repeats', every), field('Remind me', days)),
+          withIn ? field('Who it’s with (optional)', withIn) : null,
+          h('p', { class:'fho-sub fhpw-hint', text:'Just the date. Don’t keep passport, licence or policy numbers here.' }),
+          err,
+          h('div', { class:'fhe-actions' },
+            orig ? h('button', { type:'button', class:'btn secondary', id:'fhpwDel', text:'Delete', onClick:() => { if(!confirm('Delete “' + fullName(orig) + '”?')) return; save(load().filter(o => o.id !== orig.id)); close(); } }) : null,
+            h('button', { type:'button', class:'btn', id:'fhpwSave', text:'Save', onClick:doSave })))));
+    document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(title || who || dateIn), 50);
+  }
+
+  /* ---- renewed: set the next date ---- */
+  function renewSheet(x){
+    if(document.getElementById('fhpwRenew')) return;
+    const k = kind(x.kind), rep = +x.every > 0;
+    const close = () => { const m = document.getElementById('fhpwRenew'); if(m) m.remove(); };
+    const err = h('div', { class:'fhe-err' });
+    const dateIn = h('input', { class:'fhe-in', id:'fhpwNext', type:'date', value:rep ? addYears(x.date, +x.every) : '', 'aria-label':'Next date' });
+    const put = (date) => { const list = load(), o = list.find(i => i.id === x.id); if(!o) return close(); o.date = date; save(list); close(); };
+    const m = h('div', { id:'fhpwRenew', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Done: ' + fullName(x) },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:icon(x) + ' ' + fullName(x) }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          h('p', { class:'fho-sub', text:rep ? 'Sorted? Check the next date and save. We’ll remind you again before then.' : 'Sorted? If there’s a new end date, add it and we’ll remind you again. Otherwise remove it.' }),
+          h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Next ' + k.dl.toLowerCase() }), dateIn),
+          k.id === 'passport' ? h('p', { class:'fho-sub fhpw-hint', text:'A new passport runs from the day it’s issued: use the date printed in it.' }) : null,
+          err,
+          h('div', { class:'fhe-actions' },
+            h('button', { type:'button', class:'btn secondary', id:'fhpwRemove', text:'Remove it', onClick:() => { if(!confirm('Remove “' + fullName(x) + '”?')) return; save(load().filter(o => o.id !== x.id)); close(); } }),
+            h('button', { type:'button', class:'btn', id:'fhpwNextSave', text:'Save', onClick:() => {
+              if(!parse(dateIn.value)){ err.textContent = 'Add the next date, or remove it.'; return; }
+              if(dateIn.value <= x.date){ err.textContent = 'The next date should be after ' + shortDate(parse(x.date)) + '.'; return; }
+              put(dateIn.value); } })))));
+    document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(dateIn), 50);
+  }
+
+  return { KEY, KINDS, load, needs, events, pushLines, todayCard, render, editor, renewSheet, addYears, fullName };
+})();
 
 // Builds (or removes, if already open) an inline meal-picker under a meal
 // card — lets any day view (Today, Tomorrow, Calendar drill-in, or a range
@@ -11369,7 +11600,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -11382,6 +11613,7 @@ function refreshPage(pageId){
   else if(pageId==='essentials') FHEss.render(document.getElementById('essentialsContent'));
   else if(pageId==='tasks') FHTasks.render(document.getElementById('tasksContent'));
   else if(pageId==='occasions') FHOcc.render(document.getElementById('occasionsContent'));
+  else if(pageId==='paperwork') FHPaper.render(document.getElementById('paperworkContent'));
   // mealplan / chores refresh themselves via their own module's render()
   if(typeof fhSetupBanner === 'function') fhSetupBanner(pageId);
 }
@@ -13099,7 +13331,7 @@ const FHKitchen = (function(){
    or editing. It is NOT a security lock: the data lives on the device. */
 const FHLock = (function(){
   const KEY = 'family-hub-lock-v1';
-  const HIDDEN = ['mealplan','shopping','tasklists','calendar','occasions','settings'];
+  const HIDDEN = ['mealplan','shopping','tasklists','calendar','occasions','paperwork','settings'];
   let data = load(), idleT = null, fails = 0, blockedUntil = 0, ov = null;
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || 'null'); return (v && v.hash) ? v : { auto:0 }; }catch(e){ return { auto:0 }; } }
   function save(){ fhSaveJSON(KEY, data); }
@@ -13276,7 +13508,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -13998,6 +14230,7 @@ const FHPush = (function(){
         if(cs.length) items.push({ k:'chores', key:'chores:' + iso, date:iso, lines:cs.map(function(c){ return { t:c.name, who:c.who ? [c.who] : [], f:c.freq, n:c.who ? names([c.who]) : '' }; }) });
       }
       try{ if(typeof FHOcc !== 'undefined') FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
+      try{ if(typeof FHPaper !== 'undefined') FHPaper.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       try{ if(typeof FHShare !== 'undefined' && Feature.on('meals')) FHShare.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
