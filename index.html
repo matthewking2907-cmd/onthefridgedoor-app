@@ -2021,6 +2021,14 @@ body.kid-locked .cassignee{pointer-events:none;}
 .fhm-name{ flex:1 1 auto; min-width:0; overflow-wrap:anywhere; }
 .fhm-meta{ flex:0 0 auto; font-size:0.8rem; color:var(--muted,#777); white-space:nowrap; }
 .fhm-tick{ flex:0 0 auto; font-weight:700; }
+.fhm-mark{ flex:0 0 auto; font-size:0.75rem; font-weight:700; white-space:nowrap; border-radius:999px; padding:2px 8px; color:var(--accent,#6C4F8A); background:var(--accent-tint,var(--accent-tint, #F3EEF8)); }
+.fhm-mark.fhm-planned{ color:var(--ink,#2B2530); background:var(--panel,#EDEAF1); }
+.fhdy-opts{ display:flex; flex-direction:column; gap:8px; }
+.fhdy-opt{ display:flex; flex-direction:column; gap:3px; text-align:left; width:100%; font:inherit; color:inherit; border:2px solid var(--panel-line,#DCD7E4); border-radius:14px; background:var(--white,#fff); padding:12px 14px; cursor:pointer; min-height:44px; }
+.fhdy-opt b{ font-size:1.02rem; }
+.fhdy-opt span{ font-size:0.88rem; color:var(--muted,#777); }
+.fhdy-opt.on{ border-color:var(--accent,#6C4F8A); background:var(--accent-tint,var(--accent-tint, #F3EEF8)); }
+.fhdy-back{ margin-left:8px; font-size:0.8rem; text-transform:none; letter-spacing:0; }
 .fhm-empty{ padding:24px 8px; color:var(--muted,#777); text-align:center; }
 
 /* ===== v18+: hand-added shopping items ===== */
@@ -2397,6 +2405,43 @@ body.kid-locked #manageChores{ display:none !important; }
 .fha-ownname{ flex:1; min-width:0; font:inherit; padding:8px 10px; border:1px solid var(--panel-line,#ddd); border-radius:10px; background:var(--white,#fff); color:inherit; }
 .fha-ownadd{ font:inherit; font-weight:700; border:1px solid var(--accent,#6C4F8A); color:var(--accent,#6C4F8A); background:transparent; border-radius:10px; padding:8px 14px; cursor:pointer; }
 .fha-done{ margin:8px 16px 16px; font:inherit; font-weight:700; background:var(--accent,#6C4F8A); color:#fff; border:0; border-radius:12px; padding:12px; cursor:pointer; }
+/* ---- three ways to plan: setup choice, week by week, plan sheet (ob_mealdays.js) ---- */
+.ob-ways{ display:flex; flex-direction:column; gap:8px; margin:6px 0 14px; }
+.ob-way{ display:flex; flex-direction:column; gap:3px; text-align:left; width:100%; font:inherit; color:inherit; border:2px solid var(--panel-line,#DCD7E4); border-radius:16px; background:var(--white,#fff); padding:12px 14px; cursor:pointer; }
+.ob-way b{ font-size:1.05rem; }
+.ob-way span{ font-size:0.9rem; color:var(--muted,#777); line-height:1.35; }
+.ob-way.on{ border-color:var(--accent,#6C4F8A); background:var(--accent-tint,var(--accent-tint, #F3EEF8)); box-shadow:inset 0 0 0 1px var(--accent,#6C4F8A); }
+.fhdy-mode{ display:flex; align-items:center; gap:10px; margin:4px 0 10px; font-weight:600; font-size:0.92rem; }
+.fhdy-mode select{ flex:1 1 auto; min-width:0; max-width:260px; }
+.fhdy-nav{ display:flex; align-items:center; gap:8px; width:100%; }
+.fhdy-arrow{ flex:0 0 44px; height:44px; border-radius:12px; border:1px solid var(--panel-line,#DCD7E4); background:var(--white,#fff); font-size:1.2rem; color:inherit; cursor:pointer; }
+.fhdy-navt{ flex:1 1 auto; display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0; }
+.fhdy-navt b{ font-size:1.05rem; }
+.fhdy-navt span{ font-size:0.82rem; color:var(--muted,#777); }
+.fhdy-navb{ display:flex; gap:8px; margin:8px 0 4px; flex-wrap:wrap; }
+.fhdy-golabel{ position:relative; display:inline-flex; }
+.fhdy-date{ position:absolute; left:0; bottom:0; width:1px; height:1px; opacity:0; pointer-events:none; }
+#weekTabs:has(.fhdy-nav){ display:block; overflow:visible; }
+.fhdy-sum{ display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--panel,#EDEAF1); border-radius:12px; padding:8px 10px; margin:0 0 8px; font-size:0.9rem; flex-wrap:wrap; }
+.fhdy-days{ display:flex; flex-direction:column; gap:6px; }
+.fhdy-day{ display:flex; align-items:center; gap:10px; background:var(--white,#fff); border:1px solid var(--panel-line,#DCD7E4); border-radius:12px; padding:8px 10px; }
+.fhdy-day.today{ border-color:var(--accent,#6C4F8A); }
+.fhdy-dl{ flex:0 0 46px; display:flex; flex-direction:column; font-size:0.82rem; color:var(--muted,#777); line-height:1.2; }
+.fhdy-dl b{ color:var(--ink,#2B2530); }
+.fhdy-shop{ margin-top:3px; font-size:0.7rem; font-weight:700; color:var(--good,#2E9E6F); background:var(--good-tint,#E4F4EC); border-radius:999px; padding:1px 6px; align-self:flex-start; }
+.fhdy-meal, .fhdy-add{ flex:1 1 auto; min-width:0; min-height:44px; text-align:left; font:inherit; border-radius:8px; padding:8px 12px; cursor:pointer; }
+.fhdy-meal{ border:0; background:var(--accent-tint,var(--accent-tint, #F3EEF8)); color:inherit; font-weight:600; display:flex; flex-direction:column; gap:2px; }
+.fhdy-meal small{ font-weight:500; font-size:0.75rem; color:var(--muted,#777); }
+.fhdy-add{ border:1.5px dashed var(--panel-line,#DCD7E4); background:transparent; color:var(--accent,#6C4F8A); font-weight:700; }
+.fhdy-tabs{ display:flex; gap:4px; background:var(--panel,#EDEAF1); border-radius:12px; padding:4px; margin:0 0 8px; }
+.fhdy-tab{ flex:1 1 0; min-width:0; min-height:44px; border:0; border-radius:10px; background:transparent; font:inherit; color:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:4px; }
+.fhdy-tab small{ font-size:0.7rem; color:var(--muted,#777); text-align:center; }
+.fhdy-tab.on{ background:var(--white,#fff); box-shadow:0 1px 3px rgba(43,37,48,.12); }
+.fhdy-plan .fhdy-nav{ margin:0 0 8px; }
+.fhdy-plan > :not(.fhm-head){ margin-left:16px; margin-right:16px; }
+.fhdy-plan > :last-child{ margin-bottom:16px; }
+.fhm-sheet.fhdy-plan{ overflow-y:auto; }
+.fhdy-plan > *{ flex-shrink:0; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -3165,6 +3210,320 @@ const FHShop = (function(){
     return 'Ticked ' + (q || 'some') + (day ? ' on ' + day : '');
   }
   return { key, oldKey, add, finish, shown, label, look, forget, tick, toggle, moreNote };
+})();
+
+/* ==================== DATED DINNERS: one-off nights, week-by-week plans, and what we had ====================
+   The meal plan itself is a repeating rotation (plan[1..4], picked by weekForDate). This adds a dated record on top,
+   synced as family-hub-meal-days-v1: { 'YYYY-MM-DD': { meal:id|null, src:'once'|'week'|'had', at } }
+   - 'once': "Just tonight" — a one-off swap that leaves the rotation alone (Change meal on Today / the calendar).
+   - 'week': a week-by-week household's chosen dinner (specs/plan-your-own-meals.md, part B).
+   - 'had':  what a rotation household had, written once the day has left the current shop week. Kept for good, as
+             the household's meal history (later: "fill in the week for me", "something new to try").
+   Everything that reads the plan by date (getDayDisplay, shopCycleDays) asks slot() first, so Today, the calendar,
+   the kitchen display, reminders and the shopping list follow without changes of their own. */
+const FHDays = (function(){
+  const KEY = 'family-hub-meal-days-v1', MODE = 'family-hub-meal-mode-v1';
+  const USUAL = 'family-hub-usual-meals-v1';         // synced: meals ticked in setup as "meals you make most"
+  const ASK = 'family-hub-change-meal-pref';         // per device: '', 'once' or 'rotation' ("don't ask again")
+  const CHECKED = 'family-hub-meal-days-checked';    // per device: last date the history was written up to
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function iso(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }catch(e){ return {}; } }
+  function save(v){ fhSaveJSON(KEY, v); }
+  function get(date){ return load()[typeof date === 'string' ? date : iso(date)] || null; }
+  function set(date, meal, src){ const v = load(); v[iso(date)] = { meal:meal || null, src:src, at:Date.now() }; save(v); }
+  function clear(date){ const v = load(), k = iso(date); if(v[k]){ delete v[k]; save(v); } }
+  /* 'shuffle' (plan it for me), 'repeat' (I'll choose, on repeat) or 'week' (week by week) */
+  function mode(){ let m = fhRawGet(MODE); try{ m = JSON.parse(m); }catch(e){} return m === 'repeat' || m === 'week' ? m : 'shuffle'; }
+  function setMode(m){ fhSaveJSON(MODE, m === 'repeat' || m === 'week' ? m : 'shuffle'); }
+  function rotWeeks(){ let n = 4; try{ n = JSON.parse(fhRawGet('family-hub-rotation-weeks-v1') || '4'); }catch(e){} return [1, 2, 4].indexOf(n) >= 0 ? n : 4; }
+
+  /* what a date holds: the dated record first, then the rotation's slot. rotMeal is the rotation's own meal.
+     Week by week shows only the rotation's fixed nights (isFixed), never its other meals. */
+  function slot(date, rot, isFixed){
+    const e = get(date);
+    if(e) return { meal:e.meal || null, sides:[], dated:e.src, rotMeal:rot ? rot.meal || null : null };
+    if(!rot) return rot;
+    if(mode() === 'week' && rot.meal && !(isFixed && isFixed(rot.meal))) return { meal:null, sides:[], dated:'', rotMeal:null };
+    return { meal:rot.meal, sides:rot.sides || [], dated:'', rotMeal:rot.meal || null };
+  }
+  function refresh(){ try{ MealApp.render(); }catch(e){} try{ refreshCurrentPage(); }catch(e){} }
+
+  /* the dinner card's line under the meal: "Week 1 of the plan", or a one-off, with a way back */
+  function tag(info, date){
+    const el = h('div', { class:'meal-week-tag' });
+    if(info.dated === 'once'){
+      const rot = mealName(info.rotMealId);
+      el.appendChild(document.createTextNode('Just for this day'));
+      el.appendChild(h('button', { type:'button', class:'ob-link fhdy-back', id:'fhdyBack', text:'↺ Back to ' + (rot || 'the plan'), onClick:function(e){ e.stopPropagation(); clear(date); refresh(); } }));
+    } else if(info.dated === 'week' || mode() === 'week') el.textContent = info.mealId ? 'Chosen for this day' : '';
+    else el.textContent = 'Week ' + info.week + ' of the plan';
+    if(mode() !== 'shuffle') el.appendChild(h('button', { type:'button', class:'ob-link fhdy-back', id:'fhdyPlanWeek', text:'🗓️ Plan the week', onClick:function(e){ e.stopPropagation(); openPlanSheet(date); } }));
+    return el;
+  }
+
+  /* Change meal on Today / Tomorrow / the calendar. A rotation household is asked whether it's just this day. */
+  function choose(date, mealId, info){
+    mealId = mealId || null;
+    if(mode() === 'week'){ set(date, mealId, 'week'); refresh(); return; }
+    const cur = info && info.mealId || null, rot = info && 'rotMealId' in info ? info.rotMealId : cur;
+    if(mealId === cur) return;
+    const once = function(){ if(mealId === rot) clear(date); else set(date, mealId, 'once'); refresh(); };
+    const every = function(){ clear(date); MealApp.setDayMeal(date, mealId); refresh(); };
+    const pref = fhRawGet(ASK);
+    if(pref === 'once') return once();
+    if(pref === 'rotation') return every();
+    ask(date, mealId, info, once, every);
+  }
+  function mealName(id){ if(!id) return ''; const m = MealApp.listAllMeals().find(function(x){ return x.id === id; }); return m ? m.name : ''; }
+  function ask(date, mealId, info, once, every){
+    if(document.getElementById('fhDaySheet')) return;
+    const today = iso(date) === iso(new Date());
+    const dayName = date.toLocaleDateString(undefined, { weekday:'long' });
+    const dt = date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' });
+    let pick = 'once';
+    const close = function(){ const m = document.getElementById('fhDaySheet'); if(m) m.remove(); };
+    const opt = function(id, title, sub){
+      return h('button', { type:'button', class:'fhdy-opt' + (pick === id ? ' on' : ''), id:'fhdy-' + id, 'aria-pressed':pick === id ? 'true' : 'false', onClick:function(){ pick = id; draw(); } },
+        h('b', { text:title }), h('span', { text:sub }));
+    };
+    const remember = h('input', { type:'checkbox', id:'fhdyRemember' });
+    const opts = h('div', { class:'fhdy-opts' });
+    const draw = function(){
+      opts.innerHTML = '';
+      opts.appendChild(opt('once', today ? 'Just tonight' : 'Just this ' + dayName, 'Your rotation stays the same' + (info && info.rotMealId ? ': ' + mealName(info.rotMealId) + ' comes back next time.' : '.')));
+      opts.appendChild(opt('every', 'Every Week ' + (info ? info.week : '') + ' ' + dayName, 'Changes your rotation, like editing it on the Meal Plan.'));
+    };
+    draw();
+    const name = mealName(mealId);
+    const sheet = h('div', { id:'fhDaySheet', class:'fhm-back', onClick:function(e){ if(e.target === sheet) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Change this day’s dinner' },
+        h('div', { class:'fhm-head' },
+          h('div', {}, h('div', { class:'fhm-title', text:name ? name + ' instead?' : 'No dinner planned?' }),
+            h('div', { class:'fhm-sub', text:dt + (info && info.mealName ? ' had ' + info.mealName : '') })),
+          h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' }, opts,
+          h('label', { class:'fhe-check' }, remember, h('span', { text:'Don’t ask again on this device' })),
+          h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhdyGo', text:'Change dinner', onClick:function(){
+            if(remember.checked) fhRawSet(ASK, pick === 'once' ? 'once' : 'rotation');
+            close(); if(pick === 'once') once(); else every();
+          } }), h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close })))));
+    document.body.appendChild(sheet);
+  }
+
+  /* the freshness check's "Swap with Wednesday": swap the dates when either holds a one-off, else the rotation slots */
+  function swapDays(d1, d2, swapSlots){
+    if(!get(d1) && !get(d2)) return swapSlots();
+    const a = MealApp.getDayDisplay(d1), b = MealApp.getDayDisplay(d2);
+    const src = mode() === 'week' ? 'week' : 'once';
+    set(d1, b.mealId, src); set(d2, a.mealId, src); refresh();
+  }
+
+  /* "Week 1 · this week, 16 Nov" on the Meal Plan's week tabs: when each rotation week next comes round */
+  function weekTags(weekForDate){
+    const t = new Date(), mon = addDays(t, -((t.getDay() + 6) % 7)), cw = weekForDate(mon), out = {};
+    [1, 2, 3, 4].forEach(function(w){
+      const off = ((w - cw) % 4 + 4) % 4, d = addDays(mon, off * 7);
+      const when = d.toLocaleDateString(undefined, { day:'numeric', month:'short' });
+      out[w] = off === 0 ? 'this week, ' + when : off === 1 ? 'next week, ' + when : 'from ' + when;
+    });
+    return out;
+  }
+
+  /* write down what rotation households had, once a day has left the current shop week (so this week's list
+     works exactly as before). First run starts from now: no guessing at older history. */
+  function catchUp(){
+    if(typeof MealApp === 'undefined' || !MealApp.mostRecentShopDay) return;
+    const start = MealApp.mostRecentShopDay(new Date());
+    const upto = addDays(start, -1);
+    let last = parse(fhRawGet(CHECKED));
+    if(!last){ fhRawSet(CHECKED, iso(upto)); return; }
+    if(last >= upto) return;
+    const v = load(); let n = 0;
+    for(let d = addDays(last, 1), guard = 0; d <= upto && guard < 120; d = addDays(d, 1), guard++){
+      const k = iso(d); if(v[k]) continue;
+      const info = MealApp.getDayDisplay(d);
+      if(info && info.mealId){ v[k] = { meal:info.mealId, src:'had', at:Date.now() }; n++; }
+    }
+    if(n) save(v);
+    fhRawSet(CHECKED, iso(upto));
+  }
+
+  /* for the meal chooser: this week's other days ("had Tue", "planned Sat"), and how often each meal has been had */
+  function weekMarks(date){
+    const out = {}, mon = addDays(date, -((date.getDay() + 6) % 7)), k0 = iso(date);
+    for(let i = 0; i < 7; i++){
+      const d = addDays(mon, i), k = iso(d); if(k === k0) continue;
+      const info = MealApp.getDayDisplay(d); if(!info || !info.mealId) continue;
+      out[info.mealId] = (k < k0 ? 'had ' : 'planned ') + d.toLocaleDateString(undefined, { weekday:'short' });
+    }
+    return out;
+  }
+  function usage(){
+    const v = load(), u = {};
+    Object.keys(v).forEach(function(k){ const e = v[k]; if(!e || !e.meal) return; const x = u[e.meal] = u[e.meal] || { n:0, last:'' }; x.n++; if(k > x.last) x.last = k; });
+    return u;
+  }
+  /* "Your usual meals": most had, then the rotation's meals, then the household's own; up to 8 */
+  function usual(all){
+    const known = {}; all.forEach(function(m){ known[m.id] = m; });
+    const u = usage(), out = [], seen = {};
+    const push = function(id){ if(out.length < 8 && known[id] && !seen[id]){ seen[id] = 1; out.push(known[id]); } };
+    all.filter(function(m){ return m.isCustom; }).forEach(function(m){ push(m.id); });
+    try{ (JSON.parse(fhRawGet(USUAL) || '[]') || []).forEach(push); }catch(e){}
+    Object.keys(u).sort(function(a, b){ return u[b].n - u[a].n; }).forEach(push);
+    try{ const c = {}; MealApp.getPlanMealIds().forEach(function(id){ c[id] = (c[id] || 0) + 1; }); Object.keys(c).sort(function(a, b){ return c[b] - c[a]; }).forEach(push); }catch(e){}
+    all.filter(function(m){ return m.isCustom; }).forEach(function(m){ push(m.id); });
+    return out;
+  }
+  /* had, but not for 4 weeks or more: up to 5, longest ago first */
+  function notLately(all, today){
+    const u = usage(), cut = iso(addDays(today || new Date(), -28)), known = {};
+    all.forEach(function(m){ known[m.id] = m; });
+    return Object.keys(u).filter(function(id){ return known[id] && u[id].last < cut; })
+      .sort(function(a, b){ return u[a].last.localeCompare(u[b].last); }).slice(0, 5)
+      .map(function(id){ return { meal:known[id], last:u[id].last }; });
+  }
+
+  /* ---------- the three ways to plan, on the Meal Plan page ---------- */
+  const WAYS = [['shuffle', 'Plan it for me'], ['repeat', 'I’ll choose, on repeat'], ['week', 'Week by week']];
+  function modeRow(tabs){
+    let row = document.getElementById('fhdyMode');
+    if(!row){
+      const sel = h('select', { class:'ob-input', id:'fhdyModeSel', 'aria-label':'How we plan dinners' }, WAYS.map(function(w){ return h('option', { value:w[0], text:w[1] }); }));
+      sel.addEventListener('change', function(){
+        const to = sel.value;
+        if(to === 'week' && !confirm('Week by week: each week starts empty and you choose the dinners. Your rotation is kept, and comes back if you switch again.')){ sel.value = mode(); return; }
+        setMode(to); weekView = null; refresh();
+      });
+      row = h('label', { class:'fhdy-mode', id:'fhdyMode' }, h('span', { text:'How we plan' }), sel);
+      tabs.parentNode.insertBefore(row, tabs);
+    }
+    row.querySelector('select').value = mode();
+    const anchor = document.getElementById('weekAnchorRow');
+    if(anchor) anchor.style.display = mode() === 'week' ? 'none' : '';
+    const tapHint = document.getElementById('tapHint');   // "tap a meal, then tap a day" is for the Week 1-4 grid
+    if(tapHint) tapHint.style.display = mode() === 'week' ? 'none' : '';
+    tabs.style.display = '';
+  }
+  let weekView = null;   // the Monday the week-by-week Meal Plan is showing
+  function monday(d){ return addDays(d, -((d.getDay() + 6) % 7)); }
+  function weekLabel(mon){
+    const thisMon = iso(monday(new Date())), k = iso(mon);
+    const range = mon.toLocaleDateString(undefined, { weekday:'short', day:'numeric' }) + ' to ' + addDays(mon, 6).toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'long' });
+    const name = k === thisMon ? 'This week' : k === iso(addDays(monday(new Date()), 7)) ? 'Next week' : k === iso(addDays(monday(new Date()), -7)) ? 'Last week' : 'Week of ' + mon.toLocaleDateString(undefined, { day:'numeric', month:'short' });
+    return { name:name, range:range };
+  }
+  function renderWeekNav(el){
+    if(!weekView) weekView = monday(new Date());
+    const go = function(n){ weekView = addDays(weekView, n * 7); try{ MealApp.render(); }catch(e){} };
+    const lab = weekLabel(weekView);
+    el.style.display = 'block';
+    const date = h('input', { type:'date', class:'fhdy-date', id:'fhdyGoDate', 'aria-label':'Go to a date', value:iso(weekView) });
+    date.addEventListener('change', function(){ const d = parse(date.value); if(d){ weekView = monday(d); try{ MealApp.render(); }catch(e){} } });
+    el.innerHTML = '';
+    el.appendChild(h('div', { class:'fhdy-nav' },
+      h('button', { type:'button', class:'fhdy-arrow', id:'fhdyPrev', 'aria-label':'Earlier week', text:'‹', onClick:function(){ go(-1); } }),
+      h('div', { class:'fhdy-navt' }, h('b', { id:'fhdyWeekName', text:lab.name }), h('span', { text:lab.range })),
+      h('button', { type:'button', class:'fhdy-arrow', id:'fhdyNext', 'aria-label':'Later week', text:'›', onClick:function(){ go(1); } })));
+    el.appendChild(h('div', { class:'fhdy-navb' },
+      h('button', { type:'button', class:'btn small secondary', id:'fhdyThis', text:'Back to this week', onClick:function(){ weekView = monday(new Date()); try{ MealApp.render(); }catch(e){} } }),
+      h('span', { class:'fhdy-golabel' }, h('button', { type:'button', class:'btn small secondary', id:'fhdyGo', text:'Go to a date…', onClick:function(){
+        try{ if(date.showPicker){ date.showPicker(); return; } }catch(e){} date.focus(); date.click(); } }), date)));
+  }
+  /* the days of one week, as rows: meal (tap to change) or "+ Choose a meal"; the shop day is marked */
+  function weekRows(mon, onPick){
+    const shop = (function(){ try{ return MealApp.getShopDay(); }catch(e){ return -1; } })();
+    const rows = h('div', { class:'fhdy-days' });
+    for(let i = 0; i < 7; i++){
+      const d = addDays(mon, i), info = MealApp.getDayDisplay(d);
+      const open = function(){ fhMealSheet(d, info, onPick ? function(id){ onPick(d, id, info); } : null); };
+      rows.appendChild(h('div', { class:'fhdy-day' + (iso(d) === iso(new Date()) ? ' today' : ''), 'data-date':iso(d) },
+        h('span', { class:'fhdy-dl' }, h('b', { text:d.toLocaleDateString(undefined, { weekday:'short' }) }), h('span', { text:String(d.getDate()) }),
+          i === shop ? h('small', { class:'fhdy-shop', text:'Shop' }) : null),
+        info.mealId ? h('button', { type:'button', class:'fhdy-meal', onClick:open }, h('span', { text:info.mealName || 'Meal' }), info.pinText ? h('small', { text:'📌 fixed night' }) : null)
+          : h('button', { type:'button', class:'fhdy-add', onClick:open, text:'+ Choose a meal' })));
+    }
+    return rows;
+  }
+  function filled(mon){ let n = 0; for(let i = 0; i < 7; i++){ if(MealApp.getDayDisplay(addDays(mon, i)).mealId) n++; } return n; }
+  /* copy last week's dinners into the empty days of this one */
+  function copyLastWeek(mon){
+    const v = load(); let n = 0;
+    for(let i = 0; i < 7; i++){
+      const d = addDays(mon, i), prev = MealApp.getDayDisplay(addDays(d, -7)), cur = MealApp.getDayDisplay(d);
+      if(prev.mealId && !cur.mealId){ v[iso(d)] = { meal:prev.mealId, src:'week', at:Date.now() }; n++; }
+    }
+    if(n) save(v);
+    return n;
+  }
+  function renderWeekGrid(el){
+    if(!weekView) weekView = monday(new Date());
+    const mon = weekView, n = filled(mon);
+    el.appendChild(h('div', { class:'fhdy-sum' },
+      h('span', { id:'fhdyCount', text:n + ' of 7 dinners chosen' }),
+      h('button', { type:'button', class:'btn small secondary', id:'fhdyCopy', text:'Copy last week', onClick:function(){
+        const c = copyLastWeek(mon); if(!c) alert('Nothing to copy: last week had no dinners for the empty days.'); refresh(); } })));
+    el.appendChild(weekRows(mon));
+    el.appendChild(h('p', { class:'ob-hint', text:'Past weeks stay as a record of what you had. The shopping list follows whatever is chosen.' }));
+  }
+
+  /* ---------- "Plan the week": a quick sheet from Today, for households that choose their own ---------- */
+  function openPlanSheet(from){
+    if(document.getElementById('fhPlanSheet')) return;
+    const wk = mode() === 'week';
+    let mon = monday(from || new Date()), slotWeek = 0;
+    const close = function(){ const m = document.getElementById('fhPlanSheet'); if(m) m.remove(); refresh(); };
+    const sheet = h('div', { class:'fhm-sheet fhdy-plan', role:'dialog', 'aria-label':'Plan your meals' });
+    const back = h('div', { id:'fhPlanSheet', class:'fhm-back', onClick:function(e){ if(e.target === back) close(); } }, sheet);
+    const draw = function(){
+      sheet.innerHTML = '';
+      sheet.appendChild(h('div', { class:'fhm-head' },
+        h('div', {}, h('div', { class:'fhm-title', text:wk ? 'Plan the week' : 'Plan your meals' }),
+          h('div', { class:'fhm-sub', text:wk ? weekLabel(mon).range : 'Your rotation: it repeats until you change it' })),
+        h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })));
+      let rowsMon = mon, onPick = null;
+      if(wk){
+        sheet.appendChild(h('div', { class:'fhdy-nav' },
+          h('button', { type:'button', class:'fhdy-arrow', 'aria-label':'Earlier week', text:'‹', onClick:function(){ mon = addDays(mon, -7); draw(); } }),
+          h('div', { class:'fhdy-navt' }, h('b', { text:weekLabel(mon).name })),
+          h('button', { type:'button', class:'fhdy-arrow', 'aria-label':'Later week', text:'›', onClick:function(){ mon = addDays(mon, 7); draw(); } })));
+        onPick = function(d, id){ set(d, id, 'week'); draw(); };
+      } else {
+        // a 1 or 2-week rotation is the same weeks repeated in the plan's four slots: show N tabs, fill every copy
+        const N = rotWeeks(), cw = MealApp.getWeekForDate(monday(new Date()));
+        const slotMon = function(w){ return addDays(monday(new Date()), ((w - cw + 4) % 4) * 7); };
+        const tags = weekTags(function(d){ return MealApp.getWeekForDate(d); });
+        if(!slotWeek) slotWeek = ((cw - 1) % N) + 1;
+        if(N > 1) sheet.appendChild(h('div', { class:'fhdy-tabs' }, Array.from({ length:N }, function(_, i){ return i + 1; }).map(function(w){
+          const next = [w, w + N, w + 2 * N, w + 3 * N].filter(function(x){ return x <= 4; }).map(function(x){ return { x:x, d:slotMon(x) }; }).sort(function(a, b){ return a.d - b.d; })[0];
+          return h('button', { type:'button', class:'fhdy-tab' + (w === slotWeek ? ' on' : ''), 'aria-pressed':w === slotWeek ? 'true' : 'false', onClick:function(){ slotWeek = w; draw(); } },
+            h('b', { text:'Week ' + w }), h('small', { text:tags[next.x] }));
+        })));
+        const copies = [slotWeek, slotWeek + N, slotWeek + 2 * N, slotWeek + 3 * N].filter(function(x){ return x <= 4; });
+        rowsMon = copies.map(slotMon).sort(function(a, b){ return a - b; })[0];
+        onPick = function(d, id){
+          const off = Math.round((d - rowsMon) / 864e5);
+          copies.forEach(function(w){ const dd = addDays(slotMon(w), off); clear(dd); MealApp.setDayMeal(dd, id || null); });
+          draw(); };
+      }
+      sheet.appendChild(weekRows(rowsMon, onPick));
+      sheet.appendChild(h('div', { class:'fhe-actions' },
+        wk ? h('button', { type:'button', class:'btn secondary', id:'fhdyPlanCopy', text:'Copy last week', onClick:function(){ copyLastWeek(mon); draw(); } }) : null,
+        h('button', { type:'button', class:'btn', id:'fhdyPlanDone', text:'Done', onClick:close })));
+      sheet.appendChild(h('p', { class:'ob-hint', text:wk ? 'Nothing repeats: each week starts empty. The shopping list updates as you go.' : 'Changes here change the rotation. To swap one night only, use Change meal on that day.' }));
+    };
+    draw(); document.body.appendChild(back);
+  }
+
+  function init(){
+    setTimeout(function(){ try{ catchUp(); }catch(e){} }, 2500);
+    document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible'){ try{ catchUp(); }catch(e){} } });
+  }
+  return { KEY, MODE, USUAL, iso, load, get, set, clear, mode, setMode, slot, tag, choose, ask, swapDays, weekTags, catchUp, weekMarks, usage, usual, notLately,
+           modeRow, renderWeekNav, renderWeekGrid, copyLastWeek, openPlanSheet, init };
 })();
 
 /* ==================== PEOPLE: birth month/year, age and UK school year ==================== */
@@ -5324,8 +5683,10 @@ function applyCategoryColor(el, catId){
 
 function renderWeekTabs(){
   const el = document.getElementById('weekTabs');
+  FHDays.modeRow(el);
+  if(FHDays.mode() === 'week'){ FHDays.renderWeekNav(el); return; }
   const labels = {1:'Week 1',2:'Week 2',3:'Week 3',4:'Week 4'};
-  const tags = {1:'',2:'',3:'',4:'new ideas'};
+  const tags = FHDays.weekTags(weekForDate);
   el.innerHTML = '';
   [1,2,3,4].forEach(w=>{
     const btn = document.createElement('button');
@@ -5339,6 +5700,7 @@ function renderWeekTabs(){
 function renderDayGrid(){
   const el = document.getElementById('dayGrid');
   el.innerHTML = '';
+  if(FHDays.mode() === 'week'){ FHDays.renderWeekGrid(el); return; }
   DAY_NAMES.forEach((day, idx)=>{
     const dayObj = plan[currentWeek][idx];
     if(dayObj.meal && !findMeal(dayObj.meal)){
@@ -6731,7 +7093,7 @@ if(setWeekAnchorBtnEl){
 function getDayDisplay(date){
   const week = weekForDate(date);
   const dayIdx = (date.getDay()+6)%7; // 0=Mon..6=Sun, matches this module's DAY_NAMES
-  const day = plan[week] && plan[week][dayIdx];
+  const day = FHDays.slot(date, plan[week] && plan[week][dayIdx], function(m){ return !!ruleAtSlot(m, week, dayIdx); });
   if(!day) return { week: week, dayIdx: dayIdx, mealId:null, mealName:null, catId:null, sideNames:[] };
   const meal = day.meal ? findMeal(day.meal) : null;
   const sides = (day.sides||[]).map(function(sid){ return findSide(sid); }).filter(Boolean);
@@ -6739,6 +7101,8 @@ function getDayDisplay(date){
     week: week,
     dayIdx: dayIdx,
     mealId: day.meal || null,
+    rotMealId: day.rotMeal !== undefined ? day.rotMeal : (day.meal || null),
+    dated: day.dated || '',
     mealName: meal ? meal.name : null,
     catId: meal ? meal.cat : null,
     link: meal ? (meal.link || '') : '',
@@ -6760,7 +7124,7 @@ function setDayMeal(date, mealId){
   render();
 }
 function listAllMeals(){
-  return MEALS.concat(customMeals).map(function(m){ return { id:m.id, name:m.name, cat:m.cat }; });
+  return MEALS.concat(customMeals).map(function(m){ return { id:m.id, name:m.name, cat:m.cat, isCustom:!!m.isCustom }; });
 }
 function listCategories(){ return categories.slice(); }
 
@@ -6807,7 +7171,7 @@ function shopCycleDays(anchor){
     const date = shAddDaysLocalMeal(anchor, i);
     const week = weekForDate(date);
     const dayIdx = (date.getDay()+6)%7;
-    const slot = plan[week] && plan[week][dayIdx];
+    const slot = FHDays.slot(date, plan[week] && plan[week][dayIdx], function(m){ return !!ruleAtSlot(m, week, dayIdx); });
     const meal = slot && slot.meal ? findMeal(slot.meal) : null;
     const serves = meal ? (meal.servesOverride || householdSize) : householdSize;
     const scale = serves / MEAL_SERVES_BASE;
@@ -7037,7 +7401,7 @@ function renderShoppingListPage(container){
           btn.className = 'btn small';
           btn.textContent = 'Swap with ' + formatShopDate(c.suggestion.date).split(',')[0];
           btn.addEventListener('click', ()=>{
-            swapPlanDays(c.week, c.dayIdx, c.suggestion.week, c.suggestion.dayIdx);
+            FHDays.swapDays(c.date, c.suggestion.date, function(){ swapPlanDays(c.week, c.dayIdx, c.suggestion.week, c.suggestion.dayIdx); });
             renderShoppingListPage(container);
           });
           row.appendChild(btn);
@@ -7152,6 +7516,7 @@ function getShoppingSummary(){
   return { anchorISO: toISODateLocal(anchor), total: total, done: done, sections: sections };
 }
 function jumpToUpcomingShop(){ shopCycleAnchor = upcomingShopAnchor(); }
+function getPlanMealIds(){ const o = []; [1,2,3,4].forEach(function(w){ (plan[w]||[]).forEach(function(d){ if(d && d.meal) o.push(d.meal); }); }); return o; }
 function getPlannedCount(){ let n = 0; [1,2,3,4].forEach(function(w){ (plan[w]||[]).forEach(function(d){ if(d && d.meal) n++; }); }); return n; }
 function getHouseholdSize(){ return householdSize; }
 function getSections(){ return SHOP_SECTIONS.slice(); }
@@ -7404,7 +7769,7 @@ const __ready = init();
 
   return {
     ready: __ready, getCatalog: getCatalog, applyDiets: applyDiets, getShopDay: getShopDay, setShopDay: setShopDay, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
-    getPlannedCount: getPlannedCount, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
+    getPlannedCount: getPlannedCount, getPlanMealIds: getPlanMealIds, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
     differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, resetQuestion: resetQuestion, swapPlanned: swapPlanned,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
     getDayDisplay: getDayDisplay,
@@ -8813,10 +9178,7 @@ function buildMealCard(date){
     sides.textContent = info.sideNames.join(' · ');
     card.appendChild(sides);
   }
-  const tag = document.createElement('div');
-  tag.className = 'meal-week-tag';
-  tag.textContent = 'Week ' + info.week + ' of the plan';
-  card.appendChild(tag);
+  card.appendChild(FHDays.tag(info, date));
 
   const flag = MealApp.getDayFreshnessFlag(date);
   if(flag){
@@ -8834,7 +9196,7 @@ function buildMealCard(date){
       swapBtn.textContent = 'Swap with ' + suggDayName;
       swapBtn.addEventListener('click', (e)=>{
         e.stopPropagation();
-        MealApp.swapPlanDays(flag.week, flag.dayIdx, flag.suggestion.week, flag.suggestion.dayIdx);
+        FHDays.swapDays(flag.date, flag.suggestion.date, function(){ MealApp.swapPlanDays(flag.week, flag.dayIdx, flag.suggestion.week, flag.suggestion.dayIdx); });
         refreshCurrentPage();
       });
       flagBox.appendChild(swapBtn);
@@ -8859,37 +9221,54 @@ function buildMealCard(date){
   return card;
 }
 
-/* Meal chooser sheet: searchable, wrapping list (replaces the native dropdown) */
-function fhMealSheet(date, info){
+/* Meal chooser sheet: searchable, wrapping list (replaces the native dropdown).
+   With nothing typed it leads with "Your usual meals" and "Not had for a while"; meals had or planned on other days
+   of the same week say so ("had Tue", "planned Sat") and sink to the bottom of the usual list.
+   Choosing goes through FHDays.choose, which asks a rotation household "Just tonight?" */
+function fhMealSheet(date, info, onPick){
   if(document.getElementById('fhMealSheet')) return;
   const cur = (info && info.mealId) || '';
   const close = function(){ const m = document.getElementById('fhMealSheet'); if(m) m.remove(); document.removeEventListener('keydown', onKey); };
   const onKey = function(e){ if(e.key === 'Escape') close(); };
-  const pick = function(id){ close(); MealApp.setDayMeal(date, id || null); };
+  const pick = function(id){ close(); if(onPick) onPick(id || null); else FHDays.choose(date, id || null, info || MealApp.getDayDisplay(date)); };
   const search = h('input', { type:'search', class:'fhm-search', placeholder:'Search meals', autocomplete:'off', 'aria-label':'Search meals' });
   const list = h('div', { class:'fhm-list' });
-  const row = function(id, name, meta){
-    const b = h('button', { type:'button', class:'fhm-row' + (id === cur ? ' sel' : ''), onClick:function(){ pick(id); } },
+  let marks = {}; try{ marks = FHDays.weekMarks(date); }catch(e){}
+  const row = function(id, name, meta, mark){
+    return h('button', { type:'button', class:'fhm-row' + (id === cur ? ' sel' : ''), onClick:function(){ pick(id); } },
       h('span', { class:'fhm-name', text:name }),
-      meta ? h('span', { class:'fhm-meta', text:meta }) : null,
+      mark ? h('span', { class:'fhm-mark' + (/^planned/.test(mark) ? ' fhm-planned' : ''), text:mark }) : (meta ? h('span', { class:'fhm-meta', text:meta }) : null),
       id === cur ? h('span', { class:'fhm-tick', text:'✓' }) : null);
-    return b;
   };
+  const time = function(id){ return (FHRecipes.timeSuffix(id) || '').replace(/^\s*·\s*/, ''); };
   const cats = MealApp.listCategories();
   const all = MealApp.listAllMeals();
   const draw = function(){
     const q = search.value.trim().toLowerCase();
     list.innerHTML = '';
-    if(!q) list.appendChild(row('', 'No meal planned', ''));
+    if(!q){
+      list.appendChild(row('', 'No meal planned', ''));
+      let usual = []; try{ usual = FHDays.usual(all); }catch(e){}
+      if(usual.length){
+        usual = usual.filter(function(m){ return !marks[m.id]; }).concat(usual.filter(function(m){ return marks[m.id]; }));
+        list.appendChild(h('div', { class:'fhm-cat', id:'fhmUsual', text:'⭐ Your usual meals' }));
+        usual.forEach(function(m){ list.appendChild(row(m.id, m.name, m.isCustom && !time(m.id) ? 'your recipe' : time(m.id), marks[m.id])); });
+      }
+      let lately = []; try{ lately = FHDays.notLately(all, date); }catch(e){}
+      if(lately.length){
+        list.appendChild(h('div', { class:'fhm-cat', id:'fhmLately', text:'🕰️ Not had for a while' }));
+        lately.forEach(function(x){
+          const wk = Math.round((date - new Date(x.last + 'T00:00:00')) / (7 * 864e5));
+          list.appendChild(row(x.meal.id, x.meal.name, wk + ' weeks ago', marks[x.meal.id]));
+        });
+      }
+    }
     let shown = 0;
     cats.forEach(function(cat){
       const inCat = all.filter(function(m){ return m.cat === cat.id && (!q || m.name.toLowerCase().indexOf(q) !== -1); });
       if(!inCat.length) return;
       list.appendChild(h('div', { class:'fhm-cat', text:cat.emoji + ' ' + cat.label }));
-      inCat.forEach(function(m){
-        const t = (FHRecipes.timeSuffix(m.id) || '').replace(/^\s*·\s*/, '');
-        list.appendChild(row(m.id, m.name, t)); shown++;
-      });
+      inCat.forEach(function(m){ list.appendChild(row(m.id, m.name, time(m.id), marks[m.id])); shown++; });
     });
     if(q && !shown) list.appendChild(h('div', { class:'fhm-empty', text:'No meals match "' + search.value.trim() + '".' }));
   };
@@ -11217,12 +11596,20 @@ function obPinClash(pins, rule){
 }
 
 /* ---------- meal plan ---------- */
+/* how the household plans (FHDays): shuffle, repeat or week; for the last two, the ticked meals are "meals you make most" */
+function obSaveMealWay(S){
+  const m = S.planMode === 'repeat' || S.planMode === 'week' ? S.planMode : 'shuffle';
+  fhSaveJSON('family-hub-meal-mode-v1', m);
+  fhSaveJSON('family-hub-rotation-weeks-v1', [1,2,4].indexOf(S.weeks) >= 0 ? S.weeks : 4);
+  fhSaveJSON('family-hub-usual-meals-v1', m === 'shuffle' ? [] : (S.selectedMeals || []).slice());
+}
 function obGeneratePlan(S, seed){
   const rng = fhMulberry(seed || 12345);
   const info = {}; obCatalogInfo().forEach(p=>info[p.id]=p);
   const allowedSet = {}; obAllowedMeals(S.diets).forEach(p=>allowedSet[p.id]=true);
   const pins = (S.pins || []).filter(r=> info[r.mealId] && allowedSet[r.mealId]);
-  const pool = S.selectedMeals.filter(id=>info[id] && (allowedSet[id] || info[id].custom));
+  const own = S.planMode === 'repeat' || S.planMode === 'week';   // the household chooses: only fixed nights are filled
+  const pool = own ? [] : S.selectedMeals.filter(id=>info[id] && (allowedSet[id] || info[id].custom));
   pins.forEach(r=>{ if(r.every>0 && pool.indexOf(r.mealId)<0) pool.push(r.mealId); });
   let N = [1,2,4].indexOf(S.weeks) >= 0 ? S.weeks : 4;
   const needW = pins.reduce((m,r)=>Math.max(m, obPinNeedsWeeks(r)), 1);
@@ -11240,7 +11627,7 @@ function obGeneratePlan(S, seed){
       if(fx){                                           // a fixed night always wins, even on a night you normally skip
         plan[w].push(fx); used[fx] = (used[fx]||0)+1; lastIdx[fx] = slot; prevProt = info[fx].mainProtein; prevMeal = fx; slot++; continue;
       }
-      if(!S.cookNights[d]){ plan[w].push(null); prevProt = null; prevMeal = null; slot++; continue; }
+      if(own || !S.cookNights[d]){ plan[w].push(null); prevProt = null; prevMeal = null; slot++; continue; }
       const isLast = (w===N && d===6);
       const firstMeal = isLast ? plan[1][0] : null;      // the rotation wraps round, so the last night must not match the first
       let cands = pool.filter(id=> id!==prevMeal && id!==firstMeal && fillOk(id,d));
@@ -11321,7 +11708,7 @@ function obApply(S){
     }
   }
   const planObj = {}; [1,2,3,4].forEach(w=>{ planObj[w] = (planIds ? planIds[w] : empty[w].map(()=>null)).map(id=>({ meal:id||null, sides:[] })); });
-  fhSaveJSON('brick-bites-plan-v1', planObj);
+  fhSaveJSON('brick-bites-plan-v1', planObj); obSaveMealWay(S);
   const starter = {}; [1,2,3,4].forEach(w=>{ starter[w] = planObj[w].map(d=>d.meal); });
   fhSaveJSON('family-hub-starter-plan-v1', starter);
   fhSaveJSON('family-hub-hidden-meals-v1', hidden);
@@ -11379,7 +11766,7 @@ function obApplyAddon(S, which){
       });
     }
     const planObj = {}; [1,2,3,4].forEach(w=>{ planObj[w] = planIds[w].map(id=>({ meal:id||null, sides:[] })); });
-    fhSaveJSON('brick-bites-plan-v1', planObj);
+    fhSaveJSON('brick-bites-plan-v1', planObj); obSaveMealWay(S);
     const starter = {}; [1,2,3,4].forEach(w=>{ starter[w] = planObj[w].map(d=>d.meal); });
     fhSaveJSON('family-hub-starter-plan-v1', starter);
     fhSaveJSON('family-hub-hidden-meals-v1', hidden);
@@ -11421,7 +11808,7 @@ const OBW = (function(){
       rewardId:'stars',
       milestones: OB_DEFAULT_MILESTONES.map(m=>Object.assign({},m)),
       diets:[], customMeals:[], weeks:4, mealsTouched:false, personRewards:{}, selectedMeals:null, cookNights:[true,true,true,true,true,true,true],
-      portionOn:false, portionG:125, pins:[], units:FHLocale.initial().units, naming:FHLocale.initial().naming,
+      portionOn:false, portionG:125, planMode:'shuffle', pins:[], units:FHLocale.initial().units, naming:FHLocale.initial().naming,
       shopDay:4, expiryOn:false, householdSize:null, seed:1
     };
   }
@@ -11500,7 +11887,9 @@ const OBW = (function(){
     const allowed = obAllowedMeals(S.diets);
     const ok = {}; allowed.forEach(p=>ok[p.id]=true);
     S.pins = (S.pins||[]).filter(r=>ok[r.mealId]);
-    if(!S.selectedMeals){ S.selectedMeals = freshSelection(allowed); }
+    const own = S.planMode === 'repeat' || S.planMode === 'week';
+    if(!S.selectedMeals){ S.selectedMeals = own ? [] : freshSelection(allowed); }
+    else if(own){ S.selectedMeals = S.selectedMeals.filter(id=>ok[id]); }
     else {
       const f = fixedIds();
       const loose = S.selectedMeals.filter(id=>ok[id] && !f[id]);
@@ -11699,6 +12088,7 @@ const OBW = (function(){
   function keep(){ const st = bodyEl ? bodyEl.scrollTop : 0; render(); if(bodyEl) bodyEl.scrollTop = st; }
   function stepMeals(){
     const allowed = ensureMeals();
+    const own = S.planMode === 'repeat' || S.planMode === 'week', wk = S.planMode === 'week';
     const nameOf = {}; allowed.forEach(p=>nameOf[p.id]=p.name);
     const fixed = fixedIds();
     const sel = {}; S.selectedMeals.forEach(id=>sel[id]=true);
@@ -11754,7 +12144,7 @@ const OBW = (function(){
       const list = groups[g.id]; if(!list) return;
       const grid = h('div',{class:'ob-meals'});
       list.forEach(p=>{
-        const isFixed = !!fixed[p.id], full = !sel[p.id] && n>=cap, pr = S.pins.find(x=>x.mealId===p.id);
+        const isFixed = !!fixed[p.id], full = !own && !sel[p.id] && n>=cap, pr = S.pins.find(x=>x.mealId===p.id);
         const row = h('label',{class:'ob-meal'+(sel[p.id]?' on':'')+(full?' dis':'')},
           h('input',{type:'checkbox',checked:!!sel[p.id],disabled:full,onChange:e=>{
             note();
@@ -11791,24 +12181,36 @@ const OBW = (function(){
     const countLine = n+' of '+cap+' meals chosen · '+(shown.length===allowed.length ? allowed.length+' available' : shown.length+' shown of '+allowed.length);
     const warn = n >= cap ? h('div',{class:'ob-hint',text:'That fills every cook night in the rotation. Untick one to swap in another.'})
       : h('div',{class:'ob-hint',text:'Pick up to '+cap+'. With fewer, some meals repeat at random, but never on back-to-back days.'});
-    return [ ...title('Meal suggestions','Tick the meals your family would eat. We’ll build a rotation from them, mixing proteins and avoiding repeats.'),
+    const way = (id, t, sub)=> h('button',{type:'button',class:'ob-way'+(S.planMode===id?' on':''),id:'obWay-'+id,'aria-pressed':S.planMode===id?'true':'false',onClick:()=>{
+        if(S.planMode===id) return;
+        const wasOwn = own; S.planMode = id; const nowOwn = id !== 'shuffle';
+        if(nowOwn !== wasOwn && !S.mealsTouched) S.selectedMeals = nowOwn ? [] : null;
+        note(); render(); }}, h('b',{text:t}), h('span',{text:sub}));
+    const ways = h('div',{class:'ob-ways',id:'obWays'},
+      way('shuffle','Plan it for me','Tick meals your family eats. We build a rotation and mix things up.'),
+      way('repeat','I’ll choose, on repeat','Pick the meal for each night of a 1, 2 or 4-week plan. It repeats until you change it.'),
+      way('week','Week by week','Choose fresh each week. We remember what you make, so it’s quick.'));
+    const ownLine = h('p',{class:'ob-label',id:'obOwnCount',text:'Meals you make most · '+S.selectedMeals.length+' ticked'});
+    return [ ...title(own ? 'Your meals' : 'Meal suggestions', own ? 'How do you like to plan dinners? You can change this later on the Meal Plan.' : 'Tick the meals your family would eat. We’ll build a rotation from them, mixing proteins and avoiding repeats.'),
+      ways,
       h('p',{class:'ob-label',text:'Food preferences and allergies'}),
       h('p',{class:'ob-hint',text:'Tap anything you want left out — those meals disappear from the list.'}), diets, vegHouse,
-      h('p',{class:'ob-label',text:'How long is your meal rotation?'}), weeksRow,
-      h('p',{class:'ob-hint',text: S.weeks===1 ? 'The same week repeats every week.' : S.weeks===2 ? 'Two different weeks, repeating.' : 'Four different weeks before anything repeats.'}),
-      h('p',{class:'ob-label',text:'Nights you cook'}), nights,
-      h('p',{class:'ob-hint',text:'Other nights are left blank for leftovers or takeaway.'}),
+      wk ? null : h('p',{class:'ob-label',text:'How long is your meal rotation?'}), wk ? null : weeksRow,
+      wk ? null : h('p',{class:'ob-hint',text: S.weeks===1 ? 'The same week repeats every week.' : S.weeks===2 ? 'Two different weeks, repeating.' : 'Four different weeks before anything repeats.'}),
+      own ? null : h('p',{class:'ob-label',text:'Nights you cook'}), own ? null : nights,
+      own ? null : h('p',{class:'ob-hint',text:'Other nights are left blank for leftovers or takeaway.'}),
+      own ? h('p',{class:'ob-hint',text:'Tick any you already cook (optional). They’ll be first when you choose a meal. Your own family recipes come on the next step. After setup, '+(wk ? 'the week starts empty: tap a day to choose its dinner.' : 'fill each night of your rotation from Today or the Meal Plan.')}) : null,
       h('p',{class:'ob-label',text:'Filter the list'}),
       FHRecipes.filterBar(()=>render(), { inline:true }),
       pinList ? h('p',{class:'ob-label',text:'📌 Fixed nights'}) : null, pinList,
       pinList ? h('div',{class:'ob-hint',id:'obSlotLine',text:'Fixed nights take '+ps+' of your '+slots+' slots, leaving '+cap+' for the other meals.'}) : null,
-      h('p',{class:'ob-label',text:countLine}),
-      h('div',{class:'ob-row'}, h('button',{type:'button',class:'ob-btn ghost',text:'Suggest for me',onClick:()=>{ note(); S.selectedMeals=freshSelection(allowed); S.mealsTouched=false; render(); }}),
+      own ? ownLine : h('p',{class:'ob-label',text:countLine}),
+      own ? null : h('div',{class:'ob-row'}, h('button',{type:'button',class:'ob-btn ghost',text:'Suggest for me',onClick:()=>{ note(); S.selectedMeals=freshSelection(allowed); S.mealsTouched=false; render(); }}),
         h('button',{type:'button',class:'ob-btn ghost',text:'Clear',onClick:()=>{ note(); S.selectedMeals=Object.keys(fixedIds()); render(); }}),
         h('button',{type:'button',class:'ob-btn ghost',text:'Select all',onClick:()=>{ note(); const f = fixedIds(); S.selectedMeals=Object.keys(f).concat(allowed.filter(p=>!f[p.id]).map(p=>p.id).sort((a,b)=>(S.customMeals.some(m=>m.id===b)?1:0)-(S.customMeals.some(m=>m.id===a)?1:0)).slice(0,freeCap())); S.mealsTouched=true; render(); }})),
       searchBox, noMatch,
       mealNote ? h('div',{class:'ob-hint',id:'obMealNote',style:'color:var(--accent-dark);font-weight:600',text:mealNote}) : null,
-      warn, h('div',{class:'ob-hint',text:'Tip: tap 📌 on any meal to fix it to a night — e.g. roast chicken every other Sunday, pizza every Friday.'}),
+      own ? null : warn, h('div',{class:'ob-hint',text:'Tip: tap 📌 on any meal to fix it to a night — e.g. roast chicken every other Sunday, pizza every Friday.'}),
       shown.length ? null : h('div',{class:'ob-hint',text:'No meals match these filters. Clear a filter to see more.'}), lib
     ];
   }
@@ -12011,8 +12413,8 @@ const OBW = (function(){
       if(F.chores && S.people.some(p=>!(p.name||'').trim())) return 'Give everyone a name so chores can be assigned.';
     }
     if(S.step==='rooms' && !S.rooms.length && !(S.pets.dog||S.pets.cat||S.pets.other)) return 'Add at least one room.';
-    if(S.step==='meals' && !S.cookNights.some(Boolean)) return 'Pick at least one night you cook.';
-    if(S.step==='meals' && !S.selectedMeals.length) return 'Choose at least one meal.';
+    if(S.step==='meals' && S.planMode==='shuffle' && !S.cookNights.some(Boolean)) return 'Pick at least one night you cook.';
+    if(S.step==='meals' && S.planMode==='shuffle' && !S.selectedMeals.length) return 'Choose at least one meal.';
     return '';
   }
   function go(delta){
@@ -12731,7 +13133,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -13746,6 +14148,7 @@ applyFeatureGating();
 })();
 try{ ChoreApp.ready.then(FHPeople.migrate, FHPeople.migrate); }catch(e){ FHPeople.migrate(); }
 try{ FHPush.init(); }catch(e){}
+try{ MealApp.ready.then(FHDays.init, FHDays.init); }catch(e){ FHDays.init(); }
 fhApplyDefaultCalView();
 showPage('today');
 if(FH_NEEDS_SETUP){
