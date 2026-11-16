@@ -1987,6 +1987,7 @@ body.kid-locked .cassignee{pointer-events:none;}
 /* ---- from scratch ---- */
 .fhs-btn{ font:inherit; font-size:.8rem; font-weight:600; margin-left:8px; padding:3px 10px; border-radius:999px; border:1px solid var(--accent,#6C4F8A); background:transparent; color:var(--accent-dark,#543A70); cursor:pointer; white-space:nowrap; }
 .shopping-item-row .fhs-btn{ margin:0 0 0 auto; align-self:center; }
+.shopping-item-row.fhsm-more .shopping-item-name{ font-weight:700; }
 .fhs-chips{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:6px 0 10px; }
 .fhs-lead{ font-size:.85rem; color:var(--muted); }
 .fhs-chip{ font:inherit; font-size:.82rem; padding:4px 10px; border-radius:999px; border:1px solid var(--panel-line); background:var(--accent-tint2,var(--accent-tint2, #EADFF5)); color:var(--ink); cursor:pointer; }
@@ -3022,6 +3023,131 @@ function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMe
     });
   }
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+
+const FH_CONV = {"plain flour":{"base":"g","per":{"tbsp":8},"approx":true},"mozzarella":{"base":"g","per":{"each":125}},"soft cheese":{"base":"g","per":{"tub":180}},"smoked bacon":{"base":"g","per":{"each":30},"say":"rasher","approx":true},"salmon fillet":{"base":"each","per":{"g":0.008333}},"red cabbage":{"base":"each","per":{"quarter":0.25,"g":0.00125}},"puff pastry sheet":{"base":"sheet","per":{"piece":1,"pack":1}}};
+/* ==================== SHOPPING LIST: one line per item, and "2 more" after a tick ====================
+   The base list keyed lines by exact name + unit, so "Potatoes 500 g" and "Potatoes 1 kg", or "Honey 1 tsp" and
+   "Honey 2 tbsp", showed twice. Here every line of an item adds up in one unit:
+   - the same-item rule fhIngKey (Egg/Eggs, Dried oregano/Oregano);
+   - unit families: kg -> g, l -> ml, tsp -> tbsp (and oz/lb, fl oz for a household's own meals);
+   - per-item conversions from lib/conversions.json (FH_CONV): 1 tbsp flour ~ 8 g, a mozzarella ball 125 g...
+   Anything that still can't convert stays on the same line: "300 g + 2".
+   Ticks remember the amount ticked ({q, at}), so if a meal added after the shop needs more of a ticked item, the
+   line comes back unticked as "2 more". Old ticks (true) and old keys ("potatoes|g") still count, so other phones on
+   an older version and this week's ticks carry on working. */
+const FHShop = (function(){
+  const FAM = { g:['g', 1], kg:['g', 1000], oz:['g', 28.3495], lb:['g', 453.592],
+                ml:['ml', 1], l:['ml', 1000], 'fl oz':['ml', 28.4131],
+                tbsp:['tbsp', 1], tsp:['tbsp', 1 / 3] };
+  const CONV = (typeof FH_CONV !== 'undefined' && FH_CONV) || {};
+  const REG = {};   // new key -> old "name|unit" keys merged into it (for ticks and use-by dates saved before)
+
+  function oldKey(line){ return String(line.name || '').trim().toLowerCase() + '|' + String(line.unit || '').trim().toLowerCase(); }
+  function key(line){ return fhIngKey(line.name || ''); }
+  function fam(u){ u = String(u || '').trim().toLowerCase(); const f = FAM[u]; return f ? { b:f[0], f:f[1] } : { b:u, f:1 }; }
+
+  /* add one recipe line's total (q, in the line's own unit) to its list entry */
+  function add(entry, line, q){
+    const k = entry.key, c = CONV[k];
+    if(entry.qb == null){ entry.qb = 0; entry.u = null; entry.xtra = {}; entry.olds = []; entry.units = {}; entry.approx = false; }
+    const ok = oldKey(line);
+    if(entry.olds.indexOf(ok) < 0) entry.olds.push(ok);
+    (REG[k] = REG[k] || {})[ok] = 1;
+    const lu = String(line.unit || '').trim().toLowerCase();
+    entry.units[lu] = 1;
+    let f = fam(lu), qb = q * f.f, ub = f.b;
+    if(c){
+      if(ub !== c.base && c.per && c.per[ub] != null){ const by = c.per[ub]; qb *= by; ub = c.base; if(by !== 1) entry.approx = true; }
+      if(c.approx && ub === c.base && lu !== c.base) entry.approx = true;
+      if(entry.u == null) entry.u = c.base;
+    }
+    if(entry.u == null) entry.u = ub;
+    if(ub === entry.u) entry.qb += qb;
+    else entry.xtra[ub] = (entry.xtra[ub] || 0) + qb;
+  }
+
+  /* base quantity -> what the list shows: kg/l from 1000, tsp when every line was tsp (or under 1 tbsp),
+     rounded grams for approximate conversions */
+  function shown(qb, u, entry){
+    if(u === 'g'){
+      if(qb >= 1000) return { q:Math.round(qb / 100) / 10, u:'kg' };
+      if(entry && entry.approx) return { q:qb < 100 ? Math.max(5, Math.round(qb / 5) * 5) : Math.round(qb / 10) * 10, u:'g' };
+      return { q:qb, u:'g' };
+    }
+    if(u === 'ml') return qb >= 1000 ? { q:Math.round(qb / 100) / 10, u:'l' } : { q:qb, u:'ml' };
+    if(u === 'tbsp'){
+      const allTsp = entry && Object.keys(entry.units).every(function(x){ return x === 'tsp'; });
+      return (allTsp || qb < 1) ? { q:qb * 3, u:'tsp' } : { q:qb, u:'tbsp' };
+    }
+    return { q:qb, u:u };
+  }
+  /* called once per entry after all lines are in: sets the display qty/unit the base renderer reads */
+  function finish(entry){
+    if(entry.qb == null) return;
+    // with no conversion, a weight or volume leads ("300 g + 2", not "2 + 300 g")
+    if(!CONV[entry.key] && entry.u !== 'g' && entry.u !== 'ml'){
+      const lead = entry.xtra.g != null ? 'g' : (entry.xtra.ml != null ? 'ml' : null);
+      if(lead){ const q = entry.xtra[lead]; delete entry.xtra[lead]; entry.xtra[entry.u] = entry.qb; entry.qb = q; entry.u = lead; }
+    }
+    const s = shown(entry.qb, entry.u, entry);
+    entry.qty = s.q; entry.unit = s.u;
+  }
+
+  function fmt(q, u, name){
+    q = Math.round(fhWholeQty(q, name || '', u) * 10) / 10;
+    if(!q) return '';
+    const loc = FHLocale.qtyText(q, u); if(loc) return loc;
+    const uu = u ? FHRecipes.plural(FHLocale.unit(u, q), q) : '';
+    return (/^(g|ml|kg|l)$/.test(u || '') ? q : FHRecipes.niceQty(q, u)) + (uu ? ' ' + uu : '');
+  }
+  /* the quantity text for a list row: "1.3 kg", "320 g", "300 g + 2", "2 more", "90 g (about 3 rashers)" */
+  function label(item, t){
+    if(t && t.s === 'more'){ const m = shown(t.more, item.u, item); return fmt(m.q, m.u, item.name) + ' more'; }
+    const parts = [];
+    const main = item.qty ? fmt(item.qty, item.unit, item.name) : '';
+    if(main) parts.push(main);
+    Object.keys(item.xtra || {}).forEach(function(u){ const m = shown(item.xtra[u], u, null); const s = fmt(m.q, m.u, item.name); if(s) parts.push(s); });
+    let out = parts.join(' + ');
+    const c = CONV[item.key];
+    if(c && c.say && item.u === c.base && c.per && c.per.each && item.qb > 0){
+      const n = Math.max(1, Math.round(item.qb / c.per.each));
+      out += ' (about ' + n + ' ' + c.say + (n === 1 ? '' : 's') + ')';
+    }
+    return out;
+  }
+
+  /* ticks and use-by dates: the new key first, then any old key that was merged into it */
+  function look(obj, k){
+    if(!obj) return undefined;
+    if(obj[k] != null) return obj[k];
+    const olds = REG[k] ? Object.keys(REG[k]) : [];
+    for(let i = 0; i < olds.length; i++){ if(obj[olds[i]] != null) return obj[olds[i]]; }
+    return undefined;
+  }
+  function forget(obj, k){ if(!obj) return; delete obj[k]; Object.keys(REG[k] || {}).forEach(function(o){ delete obj[o]; }); }
+  /* {s:'none'|'all'|'more', more, had, at} for one list entry in one shop week's ticks */
+  function tick(ck, item){
+    const v = look(ck, item.key);
+    if(!v) return { s:'none' };
+    if(v === true || typeof v !== 'object') return { s:'all' };
+    const had = +v.q || 0, need = item.qb || 0;
+    if(need > had * 1.02 + 1e-6) return { s:'more', more:need - had, had:had, at:v.at || 0 };
+    return { s:'all', had:had, at:v.at || 0 };
+  }
+  function toggle(all, cyc, item){
+    const ck = all[cyc] = all[cyc] || {};
+    const t = tick(ck, item);
+    forget(ck, item.key);
+    if(t.s !== 'all') ck[item.key] = { q:item.qb || 0, at:Date.now() };
+  }
+  /* "Ticked 3 on Thu" for a row that needs more */
+  function moreNote(t, item){
+    const h = shown(t.had, item.u, item), q = fmt(h.q, h.u, item.name);
+    const day = t.at ? new Date(t.at).toLocaleDateString(undefined, { weekday:'short' }) : '';
+    return 'Ticked ' + (q || 'some') + (day ? ' on ' + day : '');
+  }
+  return { key, oldKey, add, finish, shown, label, look, forget, tick, toggle, moreNote };
 })();
 
 /* ==================== PEOPLE: birth month/year, age and UK school year ==================== */
@@ -6682,12 +6808,12 @@ function buildShoppingList(anchor){
   days.forEach(d=>{
     if(!d.meal || !Array.isArray(d.meal.ingredients) || !Feature.on('meals')) return;
     FHScratch.expand(FHAddOns.lines(d.meal, d.date), d).forEach(line=>{
-      const key = line.name.trim().toLowerCase() + '|' + (line.unit||'').trim().toLowerCase();
+      const key = FHShop.key(line);
       if(!lineMap[key]){
         lineMap[key] = { key: key, raw: line._n0 || line.name, name: line.name, unit: line.unit, section: line.section || 'other', qty: 0, shelfLifeDays: null, uses: [] };
       }
       const entry = lineMap[key];
-      entry.qty += (line.qty || 0) * (line.abs ? 1 : (line.perPerson ? d.serves : d.scale));
+      FHShop.add(entry, line, (line.qty || 0) * (line.abs ? 1 : (line.perPerson ? d.serves : d.scale)));
       if(line.shelfLifeDays){
         entry.shelfLifeDays = entry.shelfLifeDays ? Math.min(entry.shelfLifeDays, line.shelfLifeDays) : line.shelfLifeDays;
       }
@@ -6697,6 +6823,7 @@ function buildShoppingList(anchor){
   const bySection = {};
   SHOP_SECTIONS.forEach(s=> bySection[s.id] = []);
   Object.values(lineMap).forEach(entry=>{
+    FHShop.finish(entry);
     const rounded = Math.round(fhWholeQty(entry.qty, entry.name, entry.unit)*10)/10;
     entry.qty = rounded;
     (bySection[entry.section] || bySection.other).push(entry);
@@ -6723,13 +6850,13 @@ function toggleShoppingItem(key){
 // meal's shelf-life note until then.
 function getMeatExpiry(itemKey, anchor){
   const cycle = meatExpiryDates[shoppingCycleKey(anchor)];
-  return (cycle && cycle[itemKey]) || '';
+  return (cycle && FHShop.look(cycle, itemKey)) || '';
 }
 function setMeatExpiry(itemKey, isoDate, anchor){
   const cycleKey = shoppingCycleKey(anchor);
   if(!meatExpiryDates[cycleKey]) meatExpiryDates[cycleKey] = {};
+  FHShop.forget(meatExpiryDates[cycleKey], itemKey);
   if(isoDate) meatExpiryDates[cycleKey][itemKey] = isoDate;
-  else delete meatExpiryDates[cycleKey][itemKey];
   persistMeatExpiry();
 }
 function effectiveExpiryDate(item, anchor){
@@ -6745,7 +6872,7 @@ function effectiveExpiryDate(item, anchor){
 // in. Until then it's just a plan on paper and there is nothing to warn about.
 function isMeatPurchased(item, anchor){
   const ticked = shoppingChecked[shoppingCycleKey(anchor)];
-  return !!((ticked && ticked[item.key]) || getMeatExpiry(item.key, anchor));
+  return !!(FHShop.tick(ticked, item).s !== 'none' || getMeatExpiry(item.key, anchor));
 }
 
 // Freshness conflicts — meat & fish only — for the cycle starting at
@@ -6765,7 +6892,7 @@ function buildFreshnessConflicts(anchor){
   function meatKeysForMeal(meal){
     if(!meal || !Array.isArray(meal.ingredients)) return [];
     return meal.ingredients.filter(l=> l.section === 'meat-fish')
-      .map(l=> l.name.trim().toLowerCase() + '|' + (l.unit||'').trim().toLowerCase());
+      .map(l=> FHShop.key(l));
   }
 
   const days = shopCycleDays(anchor);
@@ -6928,31 +7055,32 @@ function renderShoppingListPage(container){
     heading.textContent = section.emoji + ' ' + section.label;
     container.appendChild(heading);
     items.forEach(item=>{
-      const checked = isShoppingItemChecked(item.key);
+      const fhT = FHShop.tick(shoppingChecked[shoppingCycleKey()], item);
+      const checked = fhT.s === 'all';
       const row = document.createElement('div');
-      row.className = 'shopping-item-row' + (checked ? ' checked' : '');
+      row.className = 'shopping-item-row' + (checked ? ' checked' : '') + (fhT.s === 'more' ? ' fhsm-more' : '');
       const box = document.createElement('span');
       box.className = 'shopping-check';
       box.textContent = checked ? '✓' : '';
       box.addEventListener('click', ()=>{
-        toggleShoppingItem(item.key);
+        FHShop.toggle(shoppingChecked, shoppingCycleKey(), item); persistShoppingChecked();
         renderShoppingListPage(container);
       });
       row.appendChild(box);
       const info = document.createElement('div');
       info.className = 'shopping-item-info';
       info.addEventListener('click', ()=>{
-        toggleShoppingItem(item.key);
+        FHShop.toggle(shoppingChecked, shoppingCycleKey(), item); persistShoppingChecked();
         renderShoppingListPage(container);
       });
       const nm = document.createElement('span');
       nm.className = 'shopping-item-name';
-      const qtyText = item.qty ? (FHLocale.qtyText(item.qty, item.unit) || (function(){ const u = item.unit ? FHRecipes.plural(FHLocale.unit(item.unit, item.qty), item.qty) : ''; return (/^(g|ml|kg|l)$/.test(item.unit || '') ? item.qty : FHRecipes.niceQty(item.qty, item.unit)) + (u ? ' ' + u : ''); })()) : '';
+      const qtyText = FHShop.label(item, fhT);
       nm.textContent = item.name + (qtyText ? ' — ' + qtyText : '');
       info.appendChild(nm);
       const uses = document.createElement('span');
       uses.className = 'meta shopping-item-uses';
-      uses.textContent = Array.from(new Set(item.uses.map(u=>u.mealName))).join(', ');
+      uses.textContent = (fhT.s === 'more' ? FHShop.moreNote(fhT, item) + ' · ' : '') + Array.from(new Set(item.uses.map(u=>u.mealName))).join(', ');
       info.appendChild(uses);
       row.appendChild(info);
       { const sb = FHScratch.rowButton(item, ()=>renderShoppingListPage(container)); if(sb) row.appendChild(sb); }
@@ -6999,9 +7127,9 @@ function getShoppingSummary(){
   let total = 0, done = 0;
   const ckd = shoppingChecked[toISODateLocal(anchor)];
   const sections = SHOP_SECTIONS.map(function(sec){
-    const items = (by[sec.id] || []).map(function(i){ return { name:i.name, qty:i.qty, unit:i.unit, key:i.key }; });
+    const items = (by[sec.id] || []).map(function(i){ return { name:i.name, qty:i.qty, unit:i.unit, key:i.key, qb:i.qb, u:i.u }; });
     total += items.length;
-    items.forEach(function(i){ if(ckd && ckd[i.key]) done++; });
+    items.forEach(function(i){ if(FHShop.tick(ckd, i).s === 'all') done++; });
     return { id:sec.id, label:sec.label, emoji:sec.emoji, items:items };
   }).filter(function(sec){ return sec.items.length; });
   return { anchorISO: toISODateLocal(anchor), total: total, done: done, sections: sections };
