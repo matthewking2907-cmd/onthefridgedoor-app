@@ -2075,8 +2075,23 @@ body.kid-locked .cassignee{pointer-events:none;}
 .fhc-help{ margin-top:12px; font-size:0.9rem; }
 .fhc-help summary{ cursor:pointer; font-weight:700; color:var(--accent,#6C4F8A); }
 .fhc-help ol{ padding-left:20px; line-height:1.5; }
+.fhc-how{ border:1px solid var(--panel-line,#ddd); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--white,#fff); }
+.fhc-how summary{ min-height:28px; display:flex; align-items:center; }
+.fhc-how .ob-hint{ margin:8px 0 0; }
+.fhc-mail{ display:inline-flex; align-items:center; min-height:40px; text-decoration:none; margin-top:4px; }
+.fhc-sheet .st-card{ border:0; padding:0; box-shadow:none; background:transparent; }
 .fhx-note{ font-size:0.85rem; font-weight:600; color:var(--good,#2e7d32); min-height:0; margin:-4px 0 8px; }
 .fhx-note:empty{ display:none; }
+.fhx-many-open{ margin:-2px 0 10px; min-height:36px; }
+.fhx-many{ border:1px solid var(--panel-line,#ddd); border-radius:12px; padding:10px; margin:0 0 12px; background:var(--white,#fff); display:flex; flex-direction:column; gap:8px; }
+.fhx-many[hidden]{ display:none; }
+.fhx-many-in{ width:100%; box-sizing:border-box; font:inherit; min-height:110px; }
+.fhx-many .ob-hint{ margin:0; }
+.fhx-many-prev{ display:flex; flex-direction:column; gap:6px; }
+.fhx-many-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; border-bottom:1px solid var(--panel,#eee); }
+.fhx-many-name{ flex:1 1 140px; font-weight:600; min-width:0; overflow-wrap:anywhere; }
+.fhx-many-row .fhx-sel{ flex:0 1 170px; min-width:0; }
+.fhx-many-btns{ display:flex; gap:8px; flex-wrap:wrap; }
 .fhx-later{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 10px; padding:8px 10px; background:var(--panel,#f3f0f7); border-radius:10px; }
 .fhx-later .fhm-sub{ width:100%; margin:0 0 2px; }
 .fhx-chip{ display:inline-flex; align-items:center; gap:4px; background:var(--white,#fff); border:1px solid var(--panel-line,#ddd); border-radius:999px; padding:3px 4px 3px 10px; font-size:0.85rem; font-weight:600; }
@@ -2994,6 +3009,8 @@ const FH_NEEDS_SETUP = !Feature.isSetUp() && !fhLegacyDataExists();
 
 /* Put the cursor in a pop-up's first box only where there's a mouse: on a phone it would throw the keyboard up
    before you've decided what to do. */
+/* iPhone or iPad (iPadOS reports itself as a Mac with touch) */
+function fhIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMedia('(pointer: fine)').matches) el.focus(); }catch(e){} }
 
 /* Phone back button closes the open pop-up instead of leaving the app. Each pop-up (fhm-back sheets, the recipe
@@ -8943,13 +8960,67 @@ const FHExtras = (function(){
   function essLowNames(){ return load().filter(function(x){ return x.scope === 'carry' && x.ess && !Object.keys(x.doneIn || {}).length; }).map(function(x){ return x.name; }); }
   function isDone(x, cyc){ return !!(x.doneIn && x.doneIn[cyc]); }
   function count(cyc){ return mine(cyc).length; }
+  /* "2 x milk", "milk x2", "6 eggs", "500g mince", "2 loaves" -> { name, qty } (qty is text: "2", "500 g") */
+  const UNITS = { g:'g', gram:'g', grams:'g', kg:'kg', kilo:'kg', kilos:'kg', ml:'ml', l:'l', litre:'l', litres:'l', liter:'l', liters:'l',
+    pint:'pint', pints:'pint', pack:'pack', packs:'pack', tin:'tin', tins:'tin', can:'tin', cans:'tin', jar:'jar', jars:'jar', bag:'bag', bags:'bag',
+    bottle:'bottle', bottles:'bottle', box:'box', boxes:'box', loaf:'loaf', loaves:'loaf', bunch:'bunch', bunches:'bunch' };
+  const PLURAL = { pint:'pints', pack:'packs', tin:'tins', jar:'jars', bag:'bags', bottle:'bottles', box:'boxes', loaf:'loaves', bunch:'bunches' };
+  function cap(s){ s = String(s || '').trim().replace(/\s+/g, ' '); return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+  function parseOne(line){
+    let t = String(line || '').trim().replace(/^([-*•·]|\[ ?\]|\d+[.)])\s+/, '').replace(/\s+/g, ' ');
+    if(!t) return null;
+    t = t.replace(/(\d),(\d{3})\b/g, '$1$2');   // 1,000 g -> 1000 g
+    let m = /^(\d+(?:\.\d+)?)\s*[x×]\s*(.+)$/i.exec(t);
+    if(m) return { name:cap(m[2]), qty:m[1] };
+    m = /^(.+?)\s*[x×]\s*(\d+(?:\.\d+)?)$/i.exec(t);
+    if(m) return { name:cap(m[1]), qty:m[2] };
+    m = /^(\d+(?:\.\d+)?)\s*([a-z]+)\.?(?:\s+(?:of\s+)?(.+))?$/i.exec(t);
+    if(m && UNITS[m[2].toLowerCase()]){
+      const u = UNITS[m[2].toLowerCase()], n = +m[1];
+      const word = /^(g|kg|ml|l)$/.test(u) ? u : (n === 1 ? u : (PLURAL[u] || u));
+      return { name:cap(m[3] || (u === 'loaf' ? 'Bread' : word)), qty:m[1] + ' ' + word };
+    }
+    m = /^(\d{1,2})\s+([a-z].*)$/i.exec(t);
+    if(m) return { name:cap(m[2]), qty:m[1] };
+    return { name:cap(t), qty:'' };
+  }
+  /* one item per line; commas split too, except inside numbers ("1,000 g") */
+  function parse(text){
+    return String(text || '').split(/\n|,(?!\d{3}\b)/).map(parseOne).filter(function(x){ return x && x.name; }).map(function(x){ x.name = x.name.slice(0, 80); return x; });
+  }
+  /* quantities add up when they're plain numbers in the same unit ("2" + "1", "500 g" + "250 g"); otherwise the newer one wins */
+  function addQty(a, b){
+    if(!a) return b || ''; if(!b) return a;
+    const pa = /^(\d+(?:\.\d+)?)(?:\s+(.+))?$/.exec(a), pb = /^(\d+(?:\.\d+)?)(?:\s+(.+))?$/.exec(b);
+    if(pa && pb && (pa[2] || '') === (pb[2] || '')) return String(Math.round((+pa[1] + +pb[1]) * 100) / 100) + (pa[2] ? ' ' + pa[2] : '');
+    return b;
+  }
+  /* add one item, or merge into the same item already on this shop's list. Returns false if nothing changed. */
+  function addItem(list, cyc, it, section, scope){
+    const low = it.name.toLowerCase();
+    const same = list.find(function(x){ return x.name.toLowerCase() === low && (x.scope === 'weekly' || (x.scope === 'once' && x.cycle === cyc) || (x.scope === 'carry' && !Object.keys(x.doneIn || {}).length)); });
+    if(same){
+      if(!it.qty) return false;
+      same.qty = addQty(same.qty, it.qty); return true;
+    }
+    list.push({ id:uid(), name:it.name, qty:it.qty || '', section:section || fhGuessSection(it.name), scope:scope === 'weekly' ? 'weekly' : 'once', cycle:cyc, doneIn:{}, at:Date.now() });
+    return true;
+  }
   function add(text, section, scope, cyc){
-    const t = String(text || '').trim().replace(/\s+/g, ' ');
-    if(!t) return false;
+    const it = parseOne(text);
+    if(!it || !it.name) return false;
     const list = load(); norm(list, cyc);
-    if(mine(cyc).some(function(x){ return x.name.toLowerCase() === t.toLowerCase(); }) || mine(ck(upcomingAnchor())).some(function(x){ return x.scope === 'carry' && x.name.toLowerCase() === t.toLowerCase(); })) return false;
-    list.push({ id:uid(), name:t.slice(0, 80), section:section || fhGuessSection(t), scope:scope === 'weekly' ? 'weekly' : 'once', cycle:cyc, doneIn:{}, at:Date.now() });
-    save(list); return true;
+    const changed = addItem(list, cyc, it, section, scope);
+    if(changed) save(list);
+    return changed;
+  }
+  /* items: [{name, qty, section}] from "Add several" */
+  function addMany(items, scope, cyc){
+    const list = load(); norm(list, cyc);
+    let n = 0;
+    items.forEach(function(it){ if(addItem(list, cyc, it, it.section, scope)) n++; });
+    if(n) save(list);
+    return n;
   }
   // The add form that sits at the top of the shopping list.
   /* Changing the shop day changes which week every item is filed under. Items for the next shop stay with the next
@@ -8978,6 +9049,52 @@ const FHExtras = (function(){
       days.map(function(d, i){ return h('option', { value:i, text:d }); }));
     sel.value = String(MealApp.getShopDay());
     return h('label', { class:'fhx-shopday' }, h('span', { text:'I shop on' }), sel);
+  }
+  /* "Add several": paste or type a list, check the aisles, add them all at once */
+  let manyText = '';   // kept while the list re-renders
+  function severalBox(sections, scope, target, rerender){
+    const open = h('button', { type:'button', class:'ob-link fhx-many-open', id:'fhxManyOpen', text:'+ Add several at once' });
+    const panel = h('div', { class:'fhx-many', id:'fhxMany', hidden:manyText ? null : true });
+    const ta = h('textarea', { class:'fhe-in fhx-many-in', id:'fhxManyIn', rows:'5', 'aria-label':'Items to add, one per line',
+      placeholder:'One item per line, e.g.\n2 x milk\nbread\n6 eggs\n500g mince' });
+    ta.value = manyText;
+    const prev = h('div', { class:'fhx-many-prev', id:'fhxManyPrev' });
+    const addAll = h('button', { type:'button', class:'btn small', id:'fhxManyAdd' });
+    let items = [];
+    const draw = function(){
+      manyText = ta.value;
+      const old = {}; items.forEach(function(it){ if(it.touched) old[it.name.toLowerCase()] = it.section; });
+      items = parse(ta.value).map(function(it){ const k = it.name.toLowerCase(); return Object.assign(it, { section:old[k] || fhGuessSection(it.name), touched:!!old[k] }); });
+      prev.innerHTML = '';
+      items.forEach(function(it, i){
+        const sel = h('select', { class:'fhx-sel', 'aria-label':'Aisle for ' + it.name });
+        sections.forEach(function(s){ sel.appendChild(h('option', { value:s.id, text:s.emoji + ' ' + s.label })); });
+        sel.value = it.section;
+        sel.addEventListener('change', function(){ it.section = sel.value; it.touched = true; });
+        prev.appendChild(h('div', { class:'fhx-many-row' },
+          h('span', { class:'fhx-many-name', text:it.name + (it.qty ? ' — ' + it.qty : '') }), sel,
+          h('button', { type:'button', class:'fhx-x', 'aria-label':'Leave out ' + it.name, text:'✕', onClick:function(){
+            const lines = ta.value.split(/\n|,(?!\d{3}\b)/).filter(function(l){ const p = parseOne(l); return !(p && p.name.toLowerCase() === it.name.toLowerCase()); });
+            ta.value = lines.map(function(l){ return l.trim(); }).filter(Boolean).join('\n'); draw(); } })));
+      });
+      addAll.textContent = items.length ? 'Add all (' + items.length + ')' : 'Add all';
+      addAll.disabled = !items.length;
+    };
+    ta.addEventListener('input', draw);
+    addAll.addEventListener('click', function(){
+      if(!items.length) return;
+      const sc = scope.value;
+      addMany(items, sc === 'weekly' ? 'weekly' : 'once', target());
+      manyText = ''; rerender();
+    });
+    open.addEventListener('click', function(){ panel.hidden = !panel.hidden; if(!panel.hidden){ fhFocusIfDesktop(ta); } });
+    panel.appendChild(ta);
+    panel.appendChild(h('p', { class:'ob-hint', text:'Quantities like “2 x milk”, “milk x2”, “6 eggs” or “500g mince” are understood. Check the aisles, then add them all.' }));
+    panel.appendChild(prev);
+    panel.appendChild(h('div', { class:'fhx-many-btns' }, addAll,
+      h('button', { type:'button', class:'btn small secondary', id:'fhxManyCancel', text:'Cancel', onClick:function(){ manyText = ''; ta.value = ''; draw(); panel.hidden = true; } })));
+    draw();
+    return h('div', {}, open, panel);
   }
   function block(rerender, anchor){
     const cyc = ck(anchor);
@@ -9012,12 +9129,13 @@ const FHExtras = (function(){
       h('div', { class:'fhx-add' }, input, h('button', { type:'button', class:'btn small', text:'Add', onClick:go })),
       h('div', { class:'fhx-opts' }, sec, scope));
     wrap.appendChild(note);
+    wrap.appendChild(severalBox(sections, scope, function(){ return scope.value === 'next' ? upKey : cyc; }, rerender));
     if(!viewingUp){
       const later = mine(upKey).filter(function(x){ return x.scope !== 'weekly'; });
       if(later.length){
         const box = h('div', { class:'fhx-later' }, h('div', { class:'fhm-sub', text:'Saved for your next shop (' + dlabel(up) + ')' }));
         later.forEach(function(it){
-          box.appendChild(h('span', { class:'fhx-chip' }, it.name, h('button', { type:'button', 'aria-label':'Remove ' + it.name, text:'✕', onClick:function(){ save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } })));
+          box.appendChild(h('span', { class:'fhx-chip' }, it.name + (it.qty ? ' — ' + it.qty : ''), h('button', { type:'button', 'aria-label':'Remove ' + it.name, text:'✕', onClick:function(){ save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } })));
         });
         wrap.appendChild(box);
       }
@@ -9042,14 +9160,14 @@ const FHExtras = (function(){
       return h('div', { class:'shopping-item-row' + (done ? ' checked' : '') },
         h('span', { class:'shopping-check', text:done ? '✓' : '', onClick:toggle }),
         h('div', { class:'shopping-item-info', onClick:toggle },
-          h('span', { class:'shopping-item-name', text:it.name }),
+          h('span', { class:'shopping-item-name', text:it.name + (it.qty ? ' — ' + it.qty : '') }),
           h('span', { class:'meta shopping-item-uses', text:(it.ess ? 'Household essentials · running low' : 'Added by you') + (it.scope === 'weekly' ? ' · every week' : '') })),
         h('button', { type:'button', class:'fhx-x', 'aria-label':'Remove ' + it.name, text:'✕', onClick:function(){
           if(it.scope === 'weekly' && !confirm('Remove “' + it.name + '” from every week?')) return;
           save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } }));
     });
   }
-  return { shopDayRow:shopDayRow, moveToShopDay:moveToShopDay, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
+  return { parse:parse, addMany:addMany, shopDayRow:shopDayRow, moveToShopDay:moveToShopDay, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
 /* ==================== OCCASIONS: birthdays, anniversaries, celebrations ====================
@@ -9711,6 +9829,7 @@ const FHCal = (function(){
       if(!s || !s.configured){ box.appendChild(h('p', { class:'ob-hint', text:'Calendar import needs sync, which is not set up in this build.' })); return; }
       if(s.mode !== 'ok' || !s.household){
         box.appendChild(h('p', { class:'ob-hint', text:'Turn on “Sync across devices” first (above). Then each parent can add their Google, Outlook or iCloud calendar here and everyone sees it here. It is read-only: edit events in the original calendar.' }));
+        box.appendChild(help(s.email));
         return;
       }
       box.appendChild(h('p', { class:'ob-hint', text:'Show your Google, Outlook or iCloud calendar here. Each parent adds their own, and it appears in their colour. It is read-only: edit events in the original calendar.' }));
@@ -9750,26 +9869,102 @@ const FHCal = (function(){
         h('div', { class:'ob-row' }, addBtn,
           h('button', { type:'button', class:'ob-btn ghost', text:busy ? 'Refreshing…' : 'Refresh now', onClick:function(){ refresh(true); } })),
         msg));
-      box.appendChild(h('details', { class:'fhc-help' }, h('summary', { text:'How do I get the link?' }),
-        h('ol', {},
-          h('li', { text:'Open calendar.google.com in a browser. On a phone, use “Desktop site” in the browser menu, because the Google Calendar app does not show this.' }),
-          h('li', { text:'Tap the ⚙ settings cog, then Settings. On the left, under “Settings for my calendars”, pick your calendar.' }),
-          h('li', { text:'Scroll to “Integrate calendar” and copy “Secret address in iCal format”.' }),
-          h('li', { text:'Paste it above. Anyone with that link can read your calendar, so don’t share it. You can reset it in the same place.' })),
-        h('p', { class:'ob-hint', text:'Outlook.com: Settings → Calendar → Shared calendars → Publish a calendar → copy the ICS link. iCloud: Calendar → share icon → Public Calendar → copy link.' })));
+      box.appendChild(help(s.email));
     }
     onChange(function(){ if(document.getElementById('stCal') === box) draw(); });
     try{ FHSync.onChange(function(){ if(document.getElementById('stCal') === box) draw(); }); }catch(e){}
     draw();
     return box;
   }
+  /* ---------- "How do I get the link?" ----------
+     Most people are on phones. iCloud's link can be made in the iPhone Calendar app; Google's and Outlook's
+     can't be made in their phone apps, so those steps say "on a computer" and can be emailed to yourself. */
+  const STEPS = {
+    icloud:['Open the Calendar app on your iPhone or iPad.', 'Tap Calendars at the bottom.', 'Tap ⓘ next to the calendar you want.',
+            'Turn on Public Calendar, then tap Share Link… and Copy.', 'Come back to FridgeDoor and paste it in (Settings › Connect calendars).'],
+    google:['On a computer, go to calendar.google.com/calendar/r/settings and sign in.', 'On the left, under “Settings for my calendars”, click your calendar.',
+            'Scroll to “Integrate calendar” and copy “Secret address in iCal format”.', 'Paste it into FridgeDoor (Settings › Connect calendars), or email it to yourself and paste it on your phone.'],
+    outlook:['On a computer, go to outlook.com and open Settings (the cog).', 'Choose Calendar, then Shared calendars.',
+             'Under “Publish a calendar”, pick your calendar and “Can view all details”, then Publish.', 'Copy the ICS link and paste it into FridgeDoor (Settings › Connect calendars).']
+  };
+  function mailto(email, which){
+    const name = which === 'google' ? 'Google' : 'Outlook';
+    const body = 'Add my ' + name + ' calendar to On the FridgeDoor:\n\n' + STEPS[which].map(function(s, i){ return (i + 1) + '. ' + s; }).join('\n') +
+      '\n\nAnyone with that link can see your calendar, so only paste it into FridgeDoor.';
+    return 'mailto:' + encodeURIComponent(email || '') + '?subject=' + encodeURIComponent('Add my ' + name + ' calendar to FridgeDoor') + '&body=' + encodeURIComponent(body);
+  }
+  function help(email){
+    const ios = fhIsIOS();
+    const part = function(id, title, intro, which, open){
+      return h('details', { class:'fhc-how', id:'fhcHow-' + id, open:open ? true : null },
+        h('summary', { text:title }),
+        intro ? h('p', { class:'ob-hint', text:intro }) : null,
+        h('ol', {}, STEPS[id].map(function(t){ return h('li', { text:t }); })),
+        which ? h('a', { class:'btn small secondary fhc-mail', id:'fhcMail-' + id, href:mailto(email, which), text:'✉️ Email me these steps' }) : null);
+    };
+    return h('div', { class:'fhc-help', id:'fhcHelp' },
+      h('p', { class:'fhm-sub', text:'How do I get the link?' }),
+      part('icloud', 'iPhone or iPad (iCloud calendar)', 'This one works on the phone itself.', null, ios),
+      part('google', 'Google Calendar', 'Easiest on a computer: the Google Calendar app doesn’t show this link. Email yourself the steps and do it next time you’re at one.', 'google', false),
+      part('outlook', 'Outlook or Hotmail', 'Also easiest on a computer.', 'outlook', false),
+      h('p', { class:'ob-hint', text:'Anyone with the link can see that calendar, so only paste it here. Some work or school Google accounts have the link switched off by the company; if you can’t see it, that’s why.' }));
+  }
+
+  /* ---------- prompts: a Today card and the all-set screen ---------- */
+  const DISMISS = 'family-hub-cal-card-dismissed';   // per device, never synced
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function child(){ try{ const id = FHPush.prefs().person; const p = id && personOf(id); return !!(p && p.role === 'child'); }catch(e){ return false; } }
+  /* a parent's device that hasn't added a calendar of its own yet */
+  function needsCard(){
+    let s = null; try{ s = FHSync.summary(); }catch(e){ return false; }
+    if(!s || !s.configured || locked() || child()) return false;
+    try{ if(FHSync.isDevice()) return false; }catch(e){}
+    return !cache.feeds.some(function(f){ return f.mine; });
+  }
+  function todayCard(date){
+    const t = new Date();
+    if(date.getFullYear() !== t.getFullYear() || date.getMonth() !== t.getMonth() || date.getDate() !== t.getDate()) return null;
+    if(!needsCard() || fhRawGet(DISMISS)) return null;
+    return h('section', { class:'fhd-sec fhs-card', id:'fhcToday' },
+      h('div', { class:'fhs-card-t' }, h('b', { text:'📅 Your calendar here too' }), h('span', { text:'See your Google, Outlook or iCloud calendar alongside the family’s plans. It’s read-only: nothing changes in your calendar.' })),
+      h('div', { class:'fhs-card-b' },
+        h('button', { type:'button', class:'btn small', id:'fhcAdd', text:'Add calendar', onClick:openSheet }),
+        h('button', { type:'button', class:'btn small secondary', id:'fhcLater', text:'Not now', onClick:function(){ fhRawSet(DISMISS, '1'); try{ refreshCurrentPage(); }catch(e){} } })));
+  }
+  /* the Settings card in a sheet; sign in to sync first if it isn't on */
+  let offSync = null;
+  function openSheet(){
+    if(document.getElementById('fhCalSheet')) return;
+    const close = function(){ const m = document.getElementById('fhCalSheet'); if(m) m.remove(); if(offSync){ offSync(); offSync = null; } try{ refreshCurrentPage(); }catch(e){} };
+    const sheet = h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Add your calendar' });
+    const m = h('div', { id:'fhCalSheet', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } }, sheet);
+    let wasOn = null;
+    const draw = function(){
+      let s = null; try{ s = FHSync.summary(); }catch(e){}
+      const on = !!(s && s.mode === 'ok' && s.household);
+      if(wasOn === on && sheet.firstChild) return;
+      wasOn = on; sheet.innerHTML = '';
+      sheet.appendChild(h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'📅 Add your calendar' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })));
+      const body = h('div', { class:'fhe-form fhc-sheet' }); sheet.appendChild(body);
+      if(!on && s && s.configured){
+        body.appendChild(h('p', { class:'fhs-step', text:'First, switch on sync (free). Calendars are fetched through your household’s private sync, so it needs you signed in.' }));
+        if(typeof fhSyncCard === 'function') body.appendChild(fhSyncCard({ bare:true }));
+        return;
+      }
+      body.appendChild(card());
+      body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhcDone', text:'Done', onClick:close })));
+    };
+    try{ offSync = FHSync.onChange(function(){ if(document.getElementById('fhCalSheet')) draw(); }); }catch(e){}
+    draw(); document.body.appendChild(m);
+  }
+
   function init(){
     setTimeout(function(){ try{ refresh(false); }catch(e){} }, 1500);
     setInterval(function(){ if(document.visibilityState === 'visible') refresh(false); }, REFRESH_MS);
     document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') refresh(false); });
     try{ FHSync.onChange(function(){ if(!ready() && (cache.feeds.length)){ clear(); } else if(ready()) refresh(false); }); }catch(e){}
   }
-  return { init:init, card:card, forDay:forDay, refresh:refresh, clear:clear, onChange:onChange, parseICS:parseICS, parseWindow:parseWindow, occurrences:occurrences, _wallToMs:wallToMs, _set:function(f, d){ cache = { feeds:f, data:d }; } };
+  return { init:init, card:card, help:help, needsCard:needsCard, todayCard:todayCard, openSheet:openSheet, forDay:forDay, refresh:refresh, clear:clear, onChange:onChange, parseICS:parseICS, parseWindow:parseWindow, occurrences:occurrences, _wallToMs:wallToMs, _set:function(f, d){ cache = { feeds:f, data:d }; } };
 })();
 
 /* Shared family events: appointments, school dates, birthdays, who's working late.
@@ -10338,7 +10533,10 @@ function fhDayDash(date){
   wrap.appendChild(h('section', { class:'fhd-sec fhd-plans-sec' },
     h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Plans' + (n ? ' · ' + n : '') }), acts), body));
   // ---- bring everyone in (today only, while the plan is with one person)
-  if(typeof FHShare !== 'undefined'){ const sc = FHShare.todayCard(date); if(sc) wrap.appendChild(sc); }
+  // ---- or, once that's done or put off, add your own calendar (one prompt at a time)
+  { const sc = typeof FHShare !== 'undefined' ? FHShare.todayCard(date) : null;
+    if(sc) wrap.appendChild(sc);
+    else if(typeof FHCal !== 'undefined'){ const cc = FHCal.todayCard(date); if(cc) wrap.appendChild(cc); } }
   // ---- birthdays & occasions coming up (today only)
   if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ const oc = FHOcc.todayCard(date); if(oc) wrap.appendChild(oc); }
   // ---- dinner
@@ -12036,6 +12234,11 @@ function showAllSet(){
         h('p',{class:'ob-sub',text:'No one carries it all. Invite another parent or carer and add the children’s devices, so everyone sees their own day.'}),
         h('button',{type:'button',class:'ob-btn primary',id:'obShare',text:'Bring everyone in',onClick:()=>{ overlay.remove(); FHShare.openSheet(); }})));
     }
+    if(typeof FHCal !== 'undefined' && FHCal.needsCard()){
+      box.appendChild(h('div',{class:'fhs-done',id:'obCalCard'}, h('p',{class:'ob-label',text:'📅 Your calendar here too'}),
+        h('p',{class:'ob-sub',text:'See your Google, Outlook or iCloud calendar alongside the family’s plans. Read-only: nothing changes in your calendar.'}),
+        h('button',{type:'button',class:'ob-btn ghost',id:'obCal',text:'Add your calendar',onClick:()=>{ overlay.remove(); FHCal.openSheet(); }})));
+    }
     document.body.appendChild(overlay);
   });
 }
@@ -13176,7 +13379,7 @@ const FHPush = (function(){
     return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && (location.protocol === 'https:' || location.hostname === 'localhost');
   }
   function iosNeedsInstall(){
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const ios = fhIsIOS();
     const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
     return ios && !standalone;
   }
