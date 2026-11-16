@@ -2424,7 +2424,7 @@ body.kid-locked #manageChores{ display:none !important; }
 #weekTabs:has(.fhdy-nav){ display:block; overflow:visible; }
 .fhdy-sum{ display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--panel,#EDEAF1); border-radius:12px; padding:8px 10px; margin:0 0 8px; font-size:0.9rem; flex-wrap:wrap; }
 .fhdy-days{ display:flex; flex-direction:column; gap:6px; }
-.fhdy-day{ display:flex; align-items:center; gap:10px; background:var(--white,#fff); border:1px solid var(--panel-line,#DCD7E4); border-radius:12px; padding:8px 10px; }
+.fhdy-day{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; background:var(--white,#fff); border:1px solid var(--panel-line,#DCD7E4); border-radius:12px; padding:8px 10px; }
 .fhdy-day.today{ border-color:var(--accent,#6C4F8A); }
 .fhdy-dl{ flex:0 0 46px; display:flex; flex-direction:column; font-size:0.82rem; color:var(--muted,#777); line-height:1.2; }
 .fhdy-dl b{ color:var(--ink,#2B2530); }
@@ -2442,6 +2442,9 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhdy-plan > :last-child{ margin-bottom:16px; }
 .fhm-sheet.fhdy-plan{ overflow-y:auto; }
 .fhdy-plan > *{ flex-shrink:0; }
+.fhdy-day.drop-target{ border-color:var(--accent,#6C4F8A); box-shadow:0 0 0 2px var(--accent,#6C4F8A); }
+.fhdy-sides{ flex:1 0 100%; margin:-2px 0 0 56px; min-height:0; cursor:pointer; }
+.ob-jump{ margin:4px 0 2px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -3214,7 +3217,7 @@ const FHShop = (function(){
 
 /* ==================== DATED DINNERS: one-off nights, week-by-week plans, and what we had ====================
    The meal plan itself is a repeating rotation (plan[1..4], picked by weekForDate). This adds a dated record on top,
-   synced as family-hub-meal-days-v1: { 'YYYY-MM-DD': { meal:id|null, src:'once'|'week'|'had', at } }
+   synced as family-hub-meal-days-v1: { 'YYYY-MM-DD': { meal:id|null, src:'once'|'week'|'had', at, sides?:[own side ids] } }
    - 'once': "Just tonight" — a one-off swap that leaves the rotation alone (Change meal on Today / the calendar).
    - 'week': a week-by-week household's chosen dinner (specs/plan-your-own-meals.md, part B).
    - 'had':  what a rotation household had, written once the day has left the current shop week. Kept for good, as
@@ -3233,7 +3236,11 @@ const FHDays = (function(){
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }catch(e){ return {}; } }
   function save(v){ fhSaveJSON(KEY, v); }
   function get(date){ return load()[typeof date === 'string' ? date : iso(date)] || null; }
-  function set(date, meal, src){ const v = load(); v[iso(date)] = { meal:meal || null, src:src, at:Date.now() }; save(v); }
+  function set(date, meal, src){ const v = load(), k = iso(date), old = v[k]; v[k] = { meal:meal || null, src:src, at:Date.now() }; if(old && old.sides && old.sides.length) v[k].sides = old.sides; save(v); }
+  /* the household's own sides on a dated day (week by week, or a one-off): kept when the meal changes, like the rotation's */
+  function setSides(date, ids){ const v = load(), k = iso(date); if(!v[k]) return; if(ids && ids.length) v[k].sides = ids.slice(); else delete v[k].sides; v[k].at = Date.now(); save(v); }
+  /* a meal brick dropped or tapped onto a day of the week-by-week Meal Plan */
+  function place(day, mealId){ const d = typeof day === 'string' ? parse(day) : day; if(d && mealId) set(d, mealId, 'week'); }
   function clear(date){ const v = load(), k = iso(date); if(v[k]){ delete v[k]; save(v); } }
   /* 'shuffle' (plan it for me), 'repeat' (I'll choose, on repeat) or 'week' (week by week) */
   function mode(){ let m = fhRawGet(MODE); try{ m = JSON.parse(m); }catch(e){} return m === 'repeat' || m === 'week' ? m : 'shuffle'; }
@@ -3244,7 +3251,7 @@ const FHDays = (function(){
      Week by week shows only the rotation's fixed nights (isFixed), never its other meals. */
   function slot(date, rot, isFixed){
     const e = get(date);
-    if(e) return { meal:e.meal || null, sides:[], dated:e.src, rotMeal:rot ? rot.meal || null : null };
+    if(e) return { meal:e.meal || null, sides:e.sides || (e.src !== 'week' && rot ? rot.sides || [] : []), dated:e.src, rotMeal:rot ? rot.meal || null : null };
     if(!rot) return rot;
     if(mode() === 'week' && rot.meal && !(isFixed && isFixed(rot.meal))) return { meal:null, sides:[], dated:'', rotMeal:null };
     return { meal:rot.meal, sides:rot.sides || [], dated:'', rotMeal:rot.meal || null };
@@ -3404,8 +3411,6 @@ const FHDays = (function(){
     row.querySelector('select').value = mode();
     const anchor = document.getElementById('weekAnchorRow');
     if(anchor) anchor.style.display = mode() === 'week' ? 'none' : '';
-    const tapHint = document.getElementById('tapHint');   // "tap a meal, then tap a day" is for the Week 1-4 grid
-    if(tapHint) tapHint.style.display = mode() === 'week' ? 'none' : '';
     tabs.style.display = '';
   }
   let weekView = null;   // the Monday the week-by-week Meal Plan is showing
@@ -3439,12 +3444,18 @@ const FHDays = (function(){
     const rows = h('div', { class:'fhdy-days' });
     for(let i = 0; i < 7; i++){
       const d = addDays(mon, i), info = MealApp.getDayDisplay(d);
-      const open = function(){ fhMealSheet(d, info, onPick ? function(id){ onPick(d, id, info); } : null); };
+      const open = function(){
+        // on the Meal Plan, a meal brick or side tapped first goes straight onto the day
+        const t = !onPick && MealApp.takeSelected ? MealApp.takeSelected() : null;
+        if(t && t.meal){ place(d, t.meal); refresh(); return; }
+        if(t && t.side){ MealApp.addDateSide(d, t.side); refresh(); return; }
+        fhMealSheet(d, info, onPick ? function(id){ onPick(d, id, info); } : null); };
       rows.appendChild(h('div', { class:'fhdy-day' + (iso(d) === iso(new Date()) ? ' today' : ''), 'data-date':iso(d) },
         h('span', { class:'fhdy-dl' }, h('b', { text:d.toLocaleDateString(undefined, { weekday:'short' }) }), h('span', { text:String(d.getDate()) }),
           i === shop ? h('small', { class:'fhdy-shop', text:'Shop' }) : null),
         info.mealId ? h('button', { type:'button', class:'fhdy-meal', onClick:open }, h('span', { text:info.mealName || 'Meal' }), info.pinText ? h('small', { text:'📌 fixed night' }) : null)
-          : h('button', { type:'button', class:'fhdy-add', onClick:open, text:'+ Choose a meal' })));
+          : h('button', { type:'button', class:'fhdy-add', onClick:open, text:'+ Choose a meal' }),
+        !onPick && info.mealId && MealApp.dateSidesRow ? MealApp.dateSidesRow(d) : null));
     }
     return rows;
   }
@@ -3523,7 +3534,7 @@ const FHDays = (function(){
     document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible'){ try{ catchUp(); }catch(e){} } });
   }
   return { KEY, MODE, USUAL, iso, load, get, set, clear, mode, setMode, slot, tag, choose, ask, swapDays, weekTags, catchUp, weekMarks, usage, usual, notLately,
-           modeRow, renderWeekNav, renderWeekGrid, copyLastWeek, openPlanSheet, init };
+           modeRow, renderWeekNav, renderWeekGrid, copyLastWeek, openPlanSheet, init, setSides, place, parse };
 })();
 
 /* ==================== PEOPLE: birth month/year, age and UK school year ==================== */
@@ -6844,8 +6855,9 @@ function onPointerMove(e){
   }
 
   moveGhost(e.clientX, e.clientY);
+  fhDragScroll(e);
   const el = document.elementFromPoint(e.clientX, e.clientY);
-  const slot = el ? el.closest('.day-slot') : null;
+  const slot = el ? el.closest('.day-slot, .fhdy-day') : null;
 
   if(lastTargetSlot && lastTargetSlot !== slot){
     lastTargetSlot.classList.remove('drop-target');
@@ -6860,6 +6872,7 @@ function onPointerUp(e){
   document.removeEventListener('pointermove', onPointerMove);
   document.removeEventListener('pointerup', onPointerUp);
   document.removeEventListener('pointercancel', onPointerUp);
+  fhDragScroll(null);
   if(!activeDrag) return;
 
   if(lastTargetSlot){ lastTargetSlot.classList.remove('drop-target'); lastTargetSlot = null; }
@@ -6868,8 +6881,10 @@ function onPointerUp(e){
     // Real drag — drop wherever the pointer ended up
     ghost.style.display = 'none';
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    const slot = el ? el.closest('.day-slot') : null;
-    if(slot){
+    const slot = el ? el.closest('.day-slot, .fhdy-day') : null;
+    if(slot && slot.dataset.date){
+      FHDays.place(slot.dataset.date, activeDrag.mealId);
+    } else if(slot){
       const targetIndex = parseInt(slot.dataset.dayIndex);
       placeMeal(activeDrag, currentWeek, targetIndex);
     }
@@ -6921,7 +6936,7 @@ function handleBrickTap(tapped){
 }
 
 function handleSlotTap(dayIndex){
-  if(!selected) return;
+  if(!selected){ fhSlotChooser(dayIndex); return; }
   placeMeal(selected, currentWeek, dayIndex);
   selected = null;
   render();
@@ -7765,6 +7780,93 @@ function fhOpenSides(idx){
   });
 }
 
+/* ---------- week by week (FHDays.renderWeekGrid): a tapped brick or side goes onto a date, and each date's sides ---------- */
+function fhTakeSelected(){
+  let out = null;
+  if(selectedSide){ out = { side:selectedSide.id }; selectedSide = null; }
+  else if(selected){ out = { meal:selected.mealId }; selected = null; }
+  return out;
+}
+// the household's own sides on a date: the dated record's when there is one, otherwise the rotation slot's (a fixed night)
+function fhSidesOf(date){
+  const info = getDayDisplay(date), e = FHDays.get(date), rot = plan[info.week] && plan[info.week][info.dayIdx];
+  const list = e ? (e.sides || (e.src !== 'week' && rot ? (rot.sides || []) : [])).slice() : (rot ? (rot.sides || []).slice() : []);
+  return { info:info, list:list, save:function(l){ if(FHDays.get(date)) FHDays.setSides(date, l); else if(rot){ rot.sides = l; savePlan(); } } };
+}
+function fhAddDateSide(date, id){ const s = fhSidesOf(date); if(s.list.indexOf(id) < 0){ s.list.push(id); s.save(s.list); } }
+function fhOpenDateSides(date){
+  const s0 = fhSidesOf(date), meal = s0.info.mealId ? findMeal(s0.info.mealId) : null;
+  FHAddOns.planSheet(meal, {
+    title: date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }),
+    own: function(){ const l = fhSidesOf(date).list; return sidesLibrary.map(function(s){ return { id:s.id, name:s.name, on:l.indexOf(s.id) >= 0 }; }); },
+    toggleOwn: function(id){ const s = fhSidesOf(date), i = s.list.indexOf(id); if(i >= 0) s.list.splice(i, 1); else s.list.push(id); s.save(s.list); },
+    addOwn: function(name){
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+      const id = (slug || 'side') + '-' + Date.now().toString(36);
+      sidesLibrary.push({ id:id, name:name });
+      persistSidesLibrary(); renderSidesLibraryList();
+      fhAddDateSide(date, id);
+    },
+    done: function(){ render(); }
+  });
+}
+function fhDateSidesRow(date){
+  const s = fhSidesOf(date), meal = s.info.mealId ? findMeal(s.info.mealId) : null;
+  if(!meal) return null;
+  const row = document.createElement('div');
+  row.className = 'day-sides-row fhdy-sides';
+  const ours = FHAddOns.picked(meal.id);
+  ours.forEach(function(a){ row.appendChild(FHAddOns.planChip(a)); });
+  s.list.forEach(function(sideId){
+    const side = findSide(sideId); if(!side) return;
+    const chip = document.createElement('span');
+    chip.className = 'side-chip-attached'; chip.textContent = side.name;
+    const rm = document.createElement('button');
+    rm.className = 'side-remove-btn'; rm.textContent = '×'; rm.setAttribute('aria-label', 'Remove ' + side.name);
+    rm.addEventListener('click', function(e){ e.stopPropagation(); const t = fhSidesOf(date); t.save(t.list.filter(function(x){ return x !== sideId; })); render(); });
+    chip.appendChild(rm); row.appendChild(chip);
+  });
+  const add = document.createElement('span');
+  add.className = 'day-sides-empty fha-planadd';
+  add.textContent = selectedSide ? 'Tap to add ' + selectedSide.name : ((ours.length || s.list.length) ? '＋' : '＋ sides');
+  row.appendChild(add);
+  row.addEventListener('click', function(e){
+    if(e.target.closest('.side-remove-btn')) return;
+    if(selectedSide){ fhAddDateSide(date, selectedSide.id); selectedSide = null; render(); return; }
+    fhOpenDateSides(date);
+  });
+  return row;
+}
+
+/* ---------- dragging a brick: scroll the page while it's held near the top or bottom edge ---------- */
+let fhDragY = null, fhDragX = 0, fhDragRaf = 0;
+function fhDragScroll(e){
+  fhDragY = e ? e.clientY : null; if(e) fhDragX = e.clientX;
+  if(fhDragY !== null && !fhDragRaf) fhDragRaf = requestAnimationFrame(fhDragTick);
+}
+function fhDragTick(){
+  fhDragRaf = 0;
+  if(fhDragY === null || !activeDrag || !activeDrag.moved) return;
+  const H = window.innerHeight, zone = Math.min(120, H * 0.2);
+  let dy = 0;
+  if(fhDragY < zone) dy = -Math.ceil((zone - fhDragY) / zone * 18);
+  else if(fhDragY > H - zone) dy = Math.ceil((fhDragY - (H - zone)) / zone * 18);
+  if(dy){
+    const before = window.scrollY; window.scrollBy(0, dy);
+    if(window.scrollY !== before) onPointerMove({ clientX:fhDragX, clientY:fhDragY });   // keep the drop highlight under the finger
+  }
+  if(!fhDragRaf && fhDragY !== null) fhDragRaf = requestAnimationFrame(fhDragTick);
+}
+
+/* ---------- "Empty — tap to add" on the Week 1-4 grid: with nothing selected, open the meal chooser for that slot ---------- */
+function fhSlotChooser(idx){
+  const w = currentWeek, t = new Date(); let d = null;
+  for(let i = 0; i < 35 && !d; i++){ const x = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i); if(weekForDate(x) === w && (x.getDay() + 6) % 7 === idx) d = x; }
+  if(!d || !plan[w] || !plan[w][idx]) return;
+  const slot = plan[w][idx];
+  fhMealSheet(d, { mealId:slot.meal || null, week:w, dayIdx:idx }, function(id){ slot.meal = id || null; savePlan(); render(); });
+}
+
 const __ready = init();
 
   return {
@@ -7772,6 +7874,7 @@ const __ready = init();
     getPlannedCount: getPlannedCount, getPlanMealIds: getPlanMealIds, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
     differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, resetQuestion: resetQuestion, swapPlanned: swapPlanned,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
+    takeSelected: fhTakeSelected, addDateSide: fhAddDateSide, dateSidesRow: fhDateSidesRow,
     getDayDisplay: getDayDisplay,
     getWeekForDate: weekForDate,
     getCategoryMeta: categoryById,
@@ -9283,7 +9386,8 @@ function fhMealSheet(date, info, onPick){
   document.body.appendChild(m);
   document.addEventListener('keydown', onKey);
   draw();
-  const sel = list.querySelector('.sel'); if(sel && sel.scrollIntoView) sel.scrollIntoView({ block:'center' });
+  // with Your usual meals at the top, start at the top; otherwise show tonight's meal
+  const sel = list.querySelector('.sel'); if(sel && sel.scrollIntoView && !document.getElementById('fhmUsual')) sel.scrollIntoView({ block:'center' });
 }
 
 /* Things added to the shopping list by hand. Each has an aisle and is either for one shop week or every week.
@@ -12193,6 +12297,7 @@ const OBW = (function(){
     const ownLine = h('p',{class:'ob-label',id:'obOwnCount',text:'Meals you make most · '+S.selectedMeals.length+' ticked'});
     return [ ...title(own ? 'Your meals' : 'Meal suggestions', own ? 'How do you like to plan dinners? You can change this later on the Meal Plan.' : 'Tick the meals your family would eat. We’ll build a rotation from them, mixing proteins and avoiding repeats.'),
       ways,
+      own ? h('button',{type:'button',class:'ob-btn ghost ob-jump',id:'obJumpMeals',text:'↓ Tick the meals you make most',onClick:()=>{ const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ behavior:'smooth', block:'start' }); }}) : null,
       h('p',{class:'ob-label',text:'Food preferences and allergies'}),
       h('p',{class:'ob-hint',text:'Tap anything you want left out — those meals disappear from the list.'}), diets, vegHouse,
       wk ? null : h('p',{class:'ob-label',text:'How long is your meal rotation?'}), wk ? null : weeksRow,
@@ -12420,6 +12525,11 @@ const OBW = (function(){
   function go(delta){
     const st = steps(); let i = st.indexOf(S.step);
     if(delta > 0){ error = validate(); if(error){ render(); return; } }
+    if(delta > 0 && S.step==='meals' && S.planMode!=='shuffle' && !S.selectedMeals.length && !S.ownNudged){
+      // the own ways don't need ticks, but the list is a long way down: say so once
+      S.ownNudged = true; mealNote = 'No meals ticked yet. That’s fine: you can choose from every meal later. Tick a few you make often below, or tap Next again to carry on.';
+      render(); const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ block:'start' }); return;
+    }
     i = Math.max(0, Math.min(st.length-1, i+delta));
     S.step = st[i]; error=''; mealNote=''; openPin=''; saveDraft(); render(); if(bodyEl) bodyEl.scrollTop = 0;
   }
@@ -12634,12 +12744,12 @@ function showAllSet(){
     if(typeof FHShare !== 'undefined' && FHShare.needsSharing()){
       box.appendChild(h('div',{class:'fhs-done',id:'obShareCard'}, h('p',{class:'ob-label',text:'👪 Bring everyone in'}),
         h('p',{class:'ob-sub',text:'No one carries it all. Invite another parent or carer and add the children’s devices, so everyone sees their own day.'}),
-        h('button',{type:'button',class:'ob-btn primary',id:'obShare',text:'Bring everyone in',onClick:()=>{ overlay.remove(); FHShare.openSheet(); }})));
+        h('button',{type:'button',class:'ob-btn primary',id:'obShare',text:'Bring everyone in',onClick:()=>{ FHShare.openSheet(); }})));
     }
     if(typeof FHCal !== 'undefined' && FHCal.needsCard()){
       box.appendChild(h('div',{class:'fhs-done',id:'obCalCard'}, h('p',{class:'ob-label',text:'📅 Your calendar here too'}),
-        h('p',{class:'ob-sub',text:'See your Google, Outlook or iCloud calendar alongside the family’s plans. Read-only: nothing changes in your calendar.'}),
-        h('button',{type:'button',class:'ob-btn ghost',id:'obCal',text:'Add your calendar',onClick:()=>{ overlay.remove(); FHCal.openSheet(); }})));
+        h('p',{class:'ob-sub',text:'See your Google, Outlook or iCloud calendar alongside the family’s plans. Read-only: nothing changes in your calendar. It needs sync (free), the same sign-in as Bring everyone in.'}),
+        h('button',{type:'button',class:'ob-btn ghost',id:'obCal',text:'Add your calendar',onClick:()=>{ FHCal.openSheet(); }})));
     }
     document.body.appendChild(overlay);
   });
