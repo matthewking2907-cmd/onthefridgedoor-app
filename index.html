@@ -2445,6 +2445,13 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhdy-day.drop-target{ border-color:var(--accent,#6C4F8A); box-shadow:0 0 0 2px var(--accent,#6C4F8A); }
 .fhdy-sides{ flex:1 0 100%; margin:-2px 0 0 56px; min-height:0; cursor:pointer; }
 .ob-jump{ margin:4px 0 2px; }
+.fhe-remhint{ font-size:0.85rem; color:var(--muted,#777); margin:2px 0 6px; }
+.fhe-addrem{ align-self:flex-start; border:1.5px dashed var(--panel-line,#DCD7E4); background:transparent; color:var(--accent,#6C4F8A); font:inherit; font-weight:700; border-radius:999px; padding:8px 14px; min-height:40px; cursor:pointer; }
+.fhpush-row.fhpush-house{ flex-wrap:nowrap; align-items:flex-start; margin:8px 0; }
+.fhpush-row.fhpush-house input[type=checkbox]{ margin-top:4px; width:20px; height:20px; }
+.fhpush-row.fhpush-house > span{ display:flex; flex-direction:column; gap:2px; flex:1 1 auto; min-width:0; }
+.fhpush-house small{ color:var(--muted,#777); font-size:0.82rem; }
+.fhpush-cals{ margin:0 0 6px 26px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -10296,7 +10303,7 @@ const FHCal = (function(){
         let hit = false, allDay = !!o.a;
         if(o.a) hit = dn >= o.sd && dn < o.ed; else hit = o.s < de && (o.e > ds || (o.e === o.s && o.s >= ds));
         if(!hit) return;
-        out.push({ id:'cal:' + f.id + ':' + (o.a ? o.sd : o.s), ro:true, title:o.t || 'Busy', location:o.l || '', allDay:allDay, start:allDay ? '' : hm(Math.max(o.s, ds)), end:allDay ? '' : (o.e > o.s && o.e <= de ? hm(o.e) : ''), who:name, pid:f.who || '', color:color });
+        out.push({ id:'cal:' + f.id + ':' + (o.a ? o.sd : o.s), ro:true, title:o.t || 'Busy', location:o.l || '', allDay:allDay, start:allDay ? '' : hm(Math.max(o.s, ds)), end:allDay ? '' : (o.e > o.s && o.e <= de ? hm(o.e) : ''), who:name, pid:f.who || '', color:color, fid:f.id, busy:!!f.busy_only, s:o.a ? 0 : o.s });
       });
     });
     return out;
@@ -10447,7 +10454,8 @@ const FHCal = (function(){
     document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') refresh(false); });
     try{ FHSync.onChange(function(){ if(!ready() && (cache.feeds.length)){ clear(); } else if(ready()) refresh(false); }); }catch(e){}
   }
-  return { init:init, card:card, help:help, needsCard:needsCard, todayCard:todayCard, openSheet:openSheet, forDay:forDay, refresh:refresh, clear:clear, onChange:onChange, parseICS:parseICS, parseWindow:parseWindow, occurrences:occurrences, _wallToMs:wallToMs, _set:function(f, d){ cache = { feeds:f, data:d }; } };
+  function feeds(){ return cache.feeds.slice(); }
+  return { feeds:feeds, init:init, card:card, help:help, needsCard:needsCard, todayCard:todayCard, openSheet:openSheet, forDay:forDay, refresh:refresh, clear:clear, onChange:onChange, parseICS:parseICS, parseWindow:parseWindow, occurrences:occurrences, _wallToMs:wallToMs, _set:function(f, d){ cache = { feeds:f, data:d }; } };
 })();
 
 /* Shared family events: appointments, school dates, birthdays, who's working late.
@@ -10538,6 +10546,9 @@ const FHEvents = (function(){
   }
 
   /* ---- editor ---- */
+  /* extra reminders on an event, on top of each phone's own (FHPush): minutes before, or 'eve' = the evening before */
+  const EXTRAS = [[0, 'At the time'], [60, '1 hour before'], [120, '2 hours before'], ['eve', 'Evening before'], [1440, '1 day before'], [2880, '2 days before']];
+  function extraText(x){ const e = EXTRAS.find(function(r){ return r[0] === x; }); return e ? e[1] : (x + ' min before'); }
   function field(label, node){ return h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:label }), node); }
   function openEditor(o){
     if(document.getElementById('fhEventSheet')) return;
@@ -10568,9 +10579,26 @@ const FHEvents = (function(){
     /* everyone picked is the same as Everyone; one person is stored as a plain id so older devices still read it */
     const whoValue = function(){ return !picked.length || picked.length === named.length ? 'all' : picked.length === 1 ? picked[0] : picked.slice(); };
     drawChips();
+    // Reminders: each phone's own, plus any added here (timed events only; all-day plans get the morning summary and evening heads-up)
+    let extra = Array.isArray(ev.extra) ? ev.extra.slice() : [], adding = false;
+    const remOn = typeof FHPush !== 'undefined' && FHPush.available && FHPush.available();
+    const remBox = h('div', { class:'fhe-field', id:'fheRem' });
+    const drawRem = function(){
+      remBox.innerHTML = '';
+      let mine = ''; try{ const l = +FHPush.prefs().lead; mine = l < 60 ? l + ' min' : l === 60 ? '1 hour' : (l / 60) + ' hours'; }catch(e){}
+      remBox.appendChild(h('span', { class:'fhe-lab', text:'Reminders' }));
+      remBox.appendChild(h('div', { class:'fhe-remhint', text:'Each phone’s usual reminder' + (mine ? ' (this one: ' + mine + ' before)' : '') + (extra.length ? ', and:' : '') }));
+      if(extra.length) remBox.appendChild(h('div', { class:'fhe-chips' }, extra.map(function(x){
+        return h('button', { type:'button', class:'fhe-chip on fhe-rem', 'aria-label':'Remove ' + extraText(x), style:'--ec:var(--accent,#6C4F8A)', text:extraText(x) + ' ✕', onClick:function(){ extra = extra.filter(function(y){ return y !== x; }); drawRem(); } }); })));
+      const left = EXTRAS.filter(function(r){ return extra.indexOf(r[0]) < 0; });
+      if(adding && left.length) remBox.appendChild(h('div', { class:'fhe-chips', id:'fheRemOpts' }, left.map(function(r){
+        return h('button', { type:'button', class:'fhe-chip', style:'--ec:var(--accent,#6C4F8A)', text:r[1], onClick:function(){ extra.push(r[0]); adding = false; drawRem(); } }); })));
+      else if(left.length) remBox.appendChild(h('button', { type:'button', class:'fhe-addrem', id:'fheAddRem', text:'＋ Add a reminder', onClick:function(){ adding = true; drawRem(); } }));
+    };
+    drawRem();
     const timeRow = h('div', { class:'fhe-two' }, field('Starts', start), field('Ends', end));
     const endRow = field('Last day (for trips and holidays)', endDate);
-    const sync = function(){ timeRow.style.display = allDay.checked ? 'none' : ''; endRow.style.display = allDay.checked ? '' : 'none'; };
+    const sync = function(){ timeRow.style.display = allDay.checked ? 'none' : ''; endRow.style.display = allDay.checked ? '' : 'none'; remBox.style.display = remOn && !allDay.checked ? '' : 'none'; };
     allDay.addEventListener('change', sync); sync();
     const err = h('div', { class:'fhe-err' });
     const saveBtn = h('button', { type:'button', class:'btn', text:'Save', onClick:function(){
@@ -10581,6 +10609,8 @@ const FHEvents = (function(){
       if(!allDay.checked && end.value && start.value && end.value < start.value){ err.textContent = 'The end time is before the start.'; return; }
       const out = { id:ev.id, title:t.slice(0, 80), date:date.value, endDate:allDay.checked && endDate.value && endDate.value !== date.value ? endDate.value : '', allDay:allDay.checked,
         start:allDay.checked ? '' : (start.value || ''), end:allDay.checked ? '' : (end.value || ''), who:whoValue(), repeat:repeat.value, notes:notes.value.trim().slice(0, 300) };
+      if(!allDay.checked && extra.length) out.extra = EXTRAS.map(function(r){ return r[0]; }).filter(function(x){ return extra.indexOf(x) >= 0; });
+      else if(!remOn && Array.isArray(ev.extra) && ev.extra.length && !allDay.checked) out.extra = ev.extra.slice();   // kept when edited on a device without reminders
       const list = load(); const i = list.findIndex(function(x){ return x.id === out.id; });
       if(i >= 0) list[i] = out; else list.push(out);
       save(list); close(); refresh();
@@ -10596,7 +10626,7 @@ const FHEvents = (function(){
           field('What', title), field('Date', date),
           h('label', { class:'fhe-check' }, allDay, h('span', { text:'All day' })),
           timeRow, endRow,
-          h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Who (tap everyone it’s for)' }), chips),
+          h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Who (tap everyone it’s for)' }), chips), remBox,
           field('Repeats', repeat), notes, err,
           h('div', { class:'fhe-actions' }, saveBtn, h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }), delBtn))));
     document.body.appendChild(m);
@@ -12531,7 +12561,9 @@ const OBW = (function(){
       render(); const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ block:'start' }); return;
     }
     i = Math.max(0, Math.min(st.length-1, i+delta));
-    S.step = st[i]; error=''; mealNote=''; openPin=''; saveDraft(); render(); if(bodyEl) bodyEl.scrollTop = 0;
+    S.step = st[i]; error=''; mealNote=''; openPin='';
+    if(S.step!=='meals') S.ownNudged = false;   // the "no meals ticked" note shows once each time the meals step is visited
+    saveDraft(); render(); if(bodyEl) bodyEl.scrollTop = 0;
   }
   function finish(){
     error = validate(); if(error){ render(); return; }
@@ -12698,6 +12730,7 @@ function renderSettingsPage(){
       h('button',{type:'button',class:'ob-btn ghost',text:'⬆️ Import backup',onClick:()=>file.click()})), file, msg));
   root.appendChild(fhSyncCard());
   root.appendChild(FHPush.settingsCard(rr));
+  { const hc = FHPush.houseCard(); if(hc) root.appendChild(hc); }
   root.appendChild(FHCal.card());
   root.appendChild(feedbackCard());
   { const oc = fhOwnerCard(); if(oc) root.appendChild(oc); }
@@ -13243,7 +13276,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -13870,12 +13903,19 @@ window.addEventListener('hashchange', fhCheckInviteLink);
 /* Each device works out the household's reminders for the next 14 days from the synced events and tasks (the same
    repeat rules the calendar uses) and uploads them as one schedule. A Supabase Edge Function runs every 5 minutes and
    sends whatever is due to each device that switched reminders on, using that device's own settings (how long before,
-   morning summary, evening heads-up, whose reminders). Imported Google/Outlook/iCloud calendars stay on the device and
-   are not included. Server setup: sync/PUSH_SETUP.md. */
+   morning summary, evening heads-up, whose reminders). Connected Google/Outlook/iCloud calendars are included from this
+   device's copy: timed events as reminders to the calendar's person ("Busy" for busy-only calendars), all-day ones in the
+   morning summary; a shared device gets them in the morning summary only, and each device can switch a calendar off
+   (prefs.calOff). The household switches (synced family-hub-push-house-v1, both on unless switched off) send parents
+   each other's and the children's reminders, by widening `who` here, so the server needs nothing new. An event's
+   `extra` reminders (minutes before, or 'eve' for the evening before) add to each device's own lead.
+   Server setup: sync/PUSH_SETUP.md. */
 const FHPush = (function(){
   const PREF_KEY = 'family-hub-push-prefs';    // per device, never synced
   const HASH_KEY = 'family-hub-push-hash';     // last schedule uploaded from this device
   const DAYS = 14;
+  const HOUSE_KEY = 'family-hub-push-house-v1';   // synced: { parents:bool, children:bool }, missing = both on
+  const CAL_MAX = 400;                            // imported calendar reminders, nearest first
   /* person = whose device this is ('' = shared/family device). Chores are off unless turned on, and then only the kinds ticked. */
   const DEFAULTS = { events:true, lead:30, morning:true, morningAt:'07:30', evening:true, eveningAt:'19:00', person:'',
                      chores:false, choresAt:'16:00', choreFreqs:['weekly', 'fortnightly', 'monthly'], shop:true, name:'' };
@@ -13900,27 +13940,58 @@ const FHPush = (function(){
   function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
   function ids(who){ return Array.isArray(who) ? who.filter(Boolean) : (who && who !== 'all' ? [who] : []); }
   function names(list){ const ps = people(); return ps.filter(function(p){ return list.indexOf(p.id) >= 0; }).map(function(p){ return p.name; }).join(', '); }
+  /* the household switches: parents get each other's reminders, and the children's */
+  function house(){ let v = null; try{ v = JSON.parse(fhRawGet(HOUSE_KEY) || 'null'); }catch(e){} v = v || {}; return { parents:v.parents !== false, children:v.children !== false }; }
+  function setHouse(k, on){ const v = house(); v[k] = !!on; fhSaveJSON(HOUSE_KEY, v); soon(); }
+  function widener(){
+    const hs = house(), ps = people(), role = {}; ps.forEach(function(p){ role[p.id] = p.role; });
+    const parents = ps.filter(function(p){ return p.role === 'parent'; }).map(function(p){ return p.id; });
+    return function(who){
+      if(!who.length) return who;   // everyone already
+      const addP = (hs.parents && who.some(function(id){ return role[id] === 'parent'; })) || (hs.children && who.some(function(id){ return role[id] === 'child'; }));
+      return addP ? who.concat(parents.filter(function(id){ return who.indexOf(id) < 0; })) : who;
+    };
+  }
   function buildSchedule(from){
     from = from || new Date();
-    const items = [];
+    const items = [], widen = widener();
+    let calCount = 0;
     const tasks = (typeof FHTasks !== 'undefined' && Feature.on('tasks')) ? FHTasks.load() : [];
     for(let d = 0; d < DAYS; d++){
       const day = new Date(from.getFullYear(), from.getMonth(), from.getDate() + d), iso = FHEvents.iso(day);
-      const evs = FHEvents.forDay(day).filter(function(ev){ return !ev.ro || ev.bin || ev.occ; });   // household events and bin day, not imported calendars
+      const all = FHEvents.forDay(day);
+      const evs = all.filter(function(ev){ return !ev.ro || ev.bin || ev.occ; });   // household events, bin day, occasions
+      const cal = all.filter(function(ev){ return ev.ro && ev.fid; });               // connected calendars
       const tks = tasks.filter(function(t){ return !t.done && t.due === iso; });
       const lines = [], eve = [];
       evs.forEach(function(ev){
-        const who = ids(ev.who);
-        if(ev.allDay){ lines.push({ t:ev.title, who:who }); eve.push({ t:ev.title, who:who }); }
+        const who = ids(ev.who), to = widen(who);
+        if(ev.allDay){ lines.push({ t:ev.title, who:to }); eve.push({ t:ev.title, who:to }); }
         else if(ev.start){
-          items.push({ k:'ev', key:'ev:' + ev.id + ':' + iso, date:iso, at:ev.start, title:ev.title, names:names(who), who:who });
-          lines.push({ t:ev.start + ' ' + ev.title, who:who });
+          const it = { k:'ev', key:'ev:' + ev.id + ':' + iso, date:iso, at:ev.start, title:ev.title, names:names(who), who:to };
+          const extra = Array.isArray(ev.extra) ? ev.extra.filter(function(x){ return x === 'eve' || (typeof x === 'number' && x >= 0 && x <= 20160); }) : [];
+          if(extra.length) it.extra = extra;
+          items.push(it);
+          lines.push({ t:ev.start + ' ' + ev.title, who:to });
         }
       });
+      // connected calendars: the calendar's person (and the parents, by the switches); "Busy" for busy-only calendars.
+      // Timed events that start today get a reminder; all-day ones only go in the morning summary (work calendars are
+      // full of "Out of office"). cal:1 tells the server a shared device gets these in the morning summary only.
+      cal.forEach(function(ev){
+        const who = ev.pid ? [ev.pid] : [], to = widen(who), t = ev.busy ? 'Busy' : (ev.title || 'Busy');
+        const n = ev.pid ? names(who) : (ev.who || '');
+        if(ev.allDay){ lines.push({ t:t + (n ? ' (' + n + ')' : ''), who:to, fid:ev.fid, cal:1 }); return; }
+        if(!ev.start || (ev.s && ev.s < day.getTime())) return;   // carried over from the day before
+        lines.push({ t:ev.start + ' ' + t + (n ? ' (' + n + ')' : ''), who:to, fid:ev.fid, cal:1 });
+        if(calCount >= CAL_MAX) return;
+        calCount++;
+        items.push({ k:'ev', key:'cal:' + ev.fid + ':' + (ev.s || iso + ev.start), date:iso, at:ev.start, title:t, names:n, who:to, fid:ev.fid, cal:1 });
+      });
       tks.forEach(function(t){
-        const who = ids(t.who);
-        if(t.time) items.push({ k:'task', key:'task:' + t.id + ':' + iso, date:iso, at:t.time, title:t.title, names:names(who), who:who });
-        lines.push({ t:(t.time ? t.time + ' ' : '') + '☑ ' + t.title, who:who });
+        const who = ids(t.who), to = widen(who);
+        if(t.time) items.push({ k:'task', key:'task:' + t.id + ':' + iso, date:iso, at:t.time, title:t.title, names:names(who), who:to });
+        lines.push({ t:(t.time ? t.time + ' ' : '') + '☑ ' + t.title, who:to });
       });
       if(typeof ChoreApp !== 'undefined' && ChoreApp.choresForDay && Feature.on('chores')){
         const cs = ChoreApp.choresForDay(day).filter(function(c){ return !c.done; });
@@ -14024,18 +14095,45 @@ const FHPush = (function(){
       const choreBox = check('chores', 'Chores, one list a day at', time('choresAt'));
       const showFreqs = function(){ freqs.hidden = !p.chores; };
       choreBox.querySelector('input[type=checkbox]').addEventListener('change', showFreqs); showFreqs();
+      // connected calendars: on unless this device switches one off (a busy work calendar, say)
+      let feeds = []; try{ feeds = FHCal.feeds(); }catch(e){}
+      const calBox = feeds.length ? h('div', { class:'fhpush-cals', id:'fhpushCals' },
+        h('p', { class:'ob-hint', text:p.person ? 'Connected calendars (a reminder before each event):' : 'Connected calendars (in the morning summary on a shared device):' }),
+        feeds.map(function(f){
+          const pp = people().find(function(x){ return x.id === f.who; });
+          const c = h('input', { type:'checkbox', checked:!(p.calOff || {})[f.id], 'data-fid':f.id, onChange:function(){
+            const off = Object.assign({}, p.calOff || {}); if(c.checked) delete off[f.id]; else off[f.id] = 1; change('calOff', off); } });
+          return h('label', { class:'fhpush-row' }, c, h('span', { text:(f.label || 'Calendar') + (pp ? ' · ' + pp.name : '') }));
+        })) : null;
       card.appendChild(h('div', { class:'fhpush-opts' },
         h('label', { class:'fhpush-row' }, h('span', { text:'Whose device is this?' }), who), whoHint,
-        check('events', 'Events and timed tasks', lead),
+        check('events', 'Events and timed tasks', lead), calBox,
         check('morning', 'Morning summary at', time('morningAt')),
         check('evening', 'Evening heads-up at', time('eveningAt')),
         Feature.on('chores') ? choreBox : null, Feature.on('chores') ? freqs : null,
         Feature.on('essentials') ? check('shop', 'Essentials running low, the evening before shop day') : null));
-      card.appendChild(h('p', { class:'ob-hint', text:'The evening heads-up covers tomorrow’s all-day plans, like bin day or a school trip. Reminders come from your household’s events and tasks (not imported Google/Outlook/iCloud calendars). They are sent through your phone or browser’s own notification service, encrypted so only this device can read them.' }));
+      card.appendChild(h('p', { class:'ob-hint', text:'The evening heads-up covers tomorrow’s all-day plans, like bin day or a school trip. Reminders come from your household’s events and tasks, and connected calendars as of the last time someone opened the app (an event added in Google since then may be missed). They are sent through your phone or browser’s own notification service, encrypted so only this device can read them.' }));
       card.appendChild(h('button', { type:'button', class:'btn secondary', text:'Turn off on this device', onClick:function(){ disable().then(rerender); } }));
       card.appendChild(err);
     });
     return card;
+  }
+
+  /* ---- Settings: "Reminders for the household" (parents only, synced) ---- */
+  function houseCard(){
+    if(!vapid() || !synced()) return null;
+    const m = me(); if(m && m.role === 'child') return null;
+    try{ if(FHSync.isDevice && FHSync.isDevice()) return null; }catch(e){}
+    try{ if(FHLock.isLocked()) return null; }catch(e){}
+    const hs = house();
+    const sw = function(k, id, label, sub){
+      const c = h('input', { type:'checkbox', id:id, checked:hs[k], onChange:function(){ setHouse(k, c.checked); } });
+      return h('label', { class:'fhpush-row fhpush-house' }, c, h('span', {}, h('b', { text:label }), h('small', { text:sub })));
+    };
+    return h('div', { class:'st-card', id:'stHouseRem' }, h('h3', { text:'Reminders for the household' }),
+      sw('parents', 'fhpushParents', 'Parents get each other’s reminders', 'Mum’s dentist reminds Dad too, so no one carries it all.'),
+      sw('children', 'fhpushKids', 'Parents get the children’s reminders', 'An event just for one of the children still reminds the parents.'),
+      h('p', { class:'ob-hint', text:'For everyone in the household. Each phone still chooses its own times under Reminders on this device. To add an extra reminder to one event, open it and tap + Add a reminder.' }));
   }
 
   /* ---- nudges: a parent sends a message straight to someone's devices ---- */
@@ -14100,7 +14198,8 @@ const FHPush = (function(){
     setInterval(function(){ upload(false); }, 30 * 60000);
     try{ FHSync.onChange(soon); }catch(e){}
   }
-  return { nudgeTo:nudgeTo, savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
+  function available(){ return !!vapid() && synced(); }
+  return { available:available, house:house, setHouse:setHouse, houseCard:houseCard, nudgeTo:nudgeTo, savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
 })();
 
 /* ==================== SHARE THE LOAD: bring everyone in, who's cooking, hand it over ====================
