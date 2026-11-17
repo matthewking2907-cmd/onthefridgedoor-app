@@ -2518,6 +2518,150 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhd-next-m small{ color:var(--muted,#777); }
 @media (max-width:420px){ .fhly-txt small{ display:none; } .fhly-moves button{ width:32px; } }
 body.kid-locked .fhly-btn{ display:none !important; }
+/* Today: tiles, folding cards, Big, and editing on the page (FHLayout.placeToday) */
+.fhly-tiles{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:0 0 14px; }
+@media (min-width:820px){ .fhly-tiles{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.fhly-tile{ font:inherit; color:inherit; text-align:left; cursor:pointer; background:var(--white,#fff); border:1px solid var(--panel-line,#ddd); border-radius:18px; padding:12px 14px; min-height:124px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+.fhly-tile:hover{ border-color:var(--accent,#6C4F8A); }
+.fhly-tile:focus-visible{ outline:2px solid var(--accent,#6C4F8A); outline-offset:2px; }
+.fhly-tile-h{ display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:700; color:var(--muted,#777); }
+.fhly-tile-ico{ font-size:20px; }
+.fhly-tile-v{ font-size:1.45rem; font-weight:700; line-height:1.15; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.fhly-tile-v.long{ font-size:1.15rem; }
+.fhly-tile-s{ margin-top:auto; font-size:0.85rem; font-weight:600; color:var(--muted,#777); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fhly-bar{ display:block; height:7px; border-radius:4px; background:var(--accent-tint,#EFEAF4); overflow:hidden; }
+.fhly-bar > span{ display:block; height:100%; background:var(--accent,#6C4F8A); }
+.fhly-card{ background:var(--white,#fff); border:1px solid var(--panel-line,#ddd); border-radius:18px; margin:0 0 14px; overflow:hidden; }
+.fhly-head{ font:inherit; color:inherit; width:100%; display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:58px; background:none; border:0; text-align:left; cursor:pointer; }
+.fhly-head:disabled{ cursor:default; opacity:1; }
+.fhly-head-ico{ font-size:22px; flex:0 0 auto; }
+.fhly-head-txt{ display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
+.fhly-head-txt b{ font-size:1.02rem; }
+.fhly-head-txt small{ color:var(--muted,#777); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:none; }
+.fhly-card.folded .fhly-head-txt small{ display:block; }
+.fhly-chev{ font-size:22px; color:var(--muted,#777); transform:rotate(90deg); transition:transform .15s; }
+.fhly-card.folded .fhly-chev{ transform:none; }
+.fhly-card.folded .fhly-body{ display:none; }
+.fhly-body{ padding:0 12px 10px; }
+.fhly-body > .fhd-sec{ margin:0; border:0; padding:0; background:transparent; box-shadow:none; }
+.fhly-body .fhd-head .fhd-title{ display:none; }
+.fhly-body .fhd-head:not(:has(.fhd-acts)){ display:none; }
+.fhly-card.big .fhly-head{ padding-bottom:4px; }
+.fhly-card.big .fhly-head-txt b{ font-size:1.15rem; }
+.fhly-card.big .fhly-body{ font-size:1.06em; }
+.fhly-sheetbody{ padding:4px 2px 8px; }
+.fhly-sheetbody .fhd-sec{ margin:0; border:0; padding:0; background:transparent; }
+.fhly-sheetbody .fhd-head .fhd-title{ display:none; }
+.fhday-head .fhly-btn{ min-height:34px; padding:4px 12px; margin-left:4px; }
+/* edit mode */
+.fhly-editing{ background:var(--accent-tint,#F1ECF6); border-radius:18px; padding:10px; }
+.fhly-ebar{ display:flex; align-items:center; gap:10px; background:var(--accent,#6C4F8A); color:#fff; border-radius:14px; padding:10px 12px; margin-bottom:12px; position:sticky; top:8px; z-index:5; }
+.fhly-ebar-t{ display:flex; flex-direction:column; flex:1; }
+.fhly-ebar-t small{ opacity:.85; font-weight:600; }
+.fhly-done{ font:inherit; font-weight:700; font-size:1rem; padding:8px 20px; min-height:42px; border-radius:21px; border:0; background:#fff; color:var(--accent-dark,#543A70); cursor:pointer; }
+.fhly-lab{ display:block; font-size:0.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted,#777); margin:0 0 6px; }
+.fhly-presetrow{ margin:0 0 12px; }
+.fhly-elist{ display:flex; flex-wrap:wrap; gap:10px; }
+.fhly-eitem{ flex:1 1 100%; background:var(--white,#fff); border:2px dashed #9B85B5; border-radius:16px; padding:8px 10px; display:flex; flex-direction:column; gap:8px; box-sizing:border-box; min-width:0; touch-action:pan-y; }
+.fhly-eitem.tile{ flex:0 0 calc(50% - 5px); }
+.fhly-eitem.dragging{ border-style:solid; border-color:var(--accent,#6C4F8A); box-shadow:0 8px 22px rgba(60,40,90,.2); }
+.fhly-erow{ display:flex; align-items:center; gap:6px; min-width:0; }
+.fhly-erow2{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.fhly-ename{ flex:1 1 auto; font-weight:700; min-width:0; overflow-wrap:anywhere; line-height:1.2; }
+.fhly-eitem .fhly-grip{ touch-action:none; cursor:grab; font-size:20px; padding:6px 4px; color:var(--muted,#777); user-select:none; }
+.fhly-mv{ font:inherit; width:36px; height:36px; flex:0 0 auto; border-radius:10px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); color:inherit; cursor:pointer; }
+.fhly-mv:disabled{ opacity:.35; cursor:default; }
+.fhly-hide{ color:var(--muted,#777); }
+.fhly-seg{ display:flex; flex:1 1 150px; border:1.5px solid #D6CCE0; border-radius:10px; overflow:hidden; }
+.fhly-seg button{ font:inherit; flex:1; min-height:36px; border:0; background:transparent; color:inherit; font-size:0.85rem; font-weight:700; cursor:pointer; }
+.fhly-seg button.on{ background:var(--accent,#6C4F8A); color:#fff; }
+.fhly-fold{ display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:700; }
+.fhly-fold input{ width:20px; height:20px; accent-color:var(--accent,#6C4F8A); }
+.fhly-eitem.tile .fhly-seg{ flex-basis:100%; }
+.fhly-tmv{ justify-content:space-between; flex-wrap:nowrap; gap:4px; }
+.fhly-eitem.tile .fhly-mv{ width:32px; height:34px; }
+.fhly-eitem.tile{ padding:8px; }
+.fhly-add{ border:2px dashed #B9A9CC; border-radius:16px; padding:10px; margin-top:12px; }
+.fhly-efoot{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:12px; text-align:center; }
+@media (min-width:820px){ .fhly-eitem.tile{ flex:0 0 calc(25% - 8px); } }
+/* Routines and habits (ob_routines.js) */
+.fhrt-strip{ display:flex; flex-direction:column; }
+.fhrt-row{ font:inherit; color:inherit; display:flex; align-items:center; gap:10px; width:100%; padding:9px 2px; background:none; border:0; border-top:1px solid var(--panel-line,#eee); text-align:left; cursor:pointer; }
+.fhrt-row:first-child{ border-top:0; }
+.fhrt-av{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:var(--pc,#6C4F8A); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.fhrt-mid{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.fhrt-mid small{ color:var(--muted,#777); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fhrt-segs{ display:flex; gap:4px; }
+.fhrt-segs span{ flex:1; height:8px; border-radius:4px; background:color-mix(in srgb, var(--pc,#6C4F8A) 18%, transparent); }
+.fhrt-segs span.on{ background:var(--pc,#6C4F8A); }
+.fhrt-pill{ flex:0 0 auto; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:700; background:var(--accent-tint,#EFEAF4); color:var(--accent-dark,#543A70); }
+.fhrt-pill.soon{ background:#FBE9DC; color:#8F3F0E; }
+.fhrt-pill.late{ background:#F8DADA; color:#8E1F1F; }
+.fhrt-pill.done{ background:#E3F1E7; color:#24613D; }
+.fhrt-ok{ font:inherit; flex:0 0 auto; padding:6px 12px; min-height:36px; border-radius:12px; border:0; background:#24613D; color:#fff; font-weight:700; font-size:0.85rem; cursor:pointer; }
+.fhrt-own{ display:flex; flex-direction:column; gap:10px; padding:4px 0 8px; }
+.fhrt-ownh{ display:flex; align-items:center; gap:8px; }
+.fhrt-ownh b{ flex:1; font-size:1.05rem; }
+.fhrt-bar{ height:10px; border-radius:5px; background:color-mix(in srgb, var(--pc,#6C4F8A) 18%, transparent); overflow:hidden; }
+.fhrt-bar > span{ display:block; height:100%; background:var(--pc,#6C4F8A); }
+.fhrt-list{ display:flex; flex-direction:column; gap:8px; }
+.fhrt-step{ font:inherit; color:inherit; display:flex; align-items:center; gap:12px; min-height:50px; padding:6px 12px; border-radius:14px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); text-align:left; cursor:pointer; }
+.fhrt-list.big .fhrt-step{ min-height:56px; font-size:1.05rem; }
+.fhrt-step.on{ background:color-mix(in srgb, var(--pc,#6C4F8A) 14%, var(--white,#fff)); border-color:transparent; }
+.fhrt-step.on .fhrt-st b{ text-decoration:line-through; opacity:.8; }
+.fhrt-step.next{ border:2px solid var(--pc,#6C4F8A); }
+.fhrt-step:disabled{ cursor:default; opacity:1; }
+.fhrt-box{ flex:0 0 auto; width:28px; height:28px; border-radius:50%; border:2.5px solid var(--pc,#6C4F8A); box-sizing:border-box; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; }
+.fhrt-step.on .fhrt-box{ background:var(--pc,#6C4F8A); }
+.fhrt-st{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+.fhrt-kit{ color:var(--accent-dark,#543A70); font-weight:700; }
+.fhrt-next{ font-size:0.8rem; font-weight:700; color:var(--pc,#6C4F8A); }
+.fhrt-min{ font-size:0.8rem; font-weight:600; color:var(--muted,#777); }
+.fhrt-sbody{ padding:12px 14px 16px; overflow:auto; }
+.fhrt-habits{ display:flex; flex-direction:column; }
+.fhrt-hab{ display:flex; align-items:center; gap:10px; padding:8px 2px; border-top:1px solid var(--panel-line,#eee); }
+.fhrt-hab:first-child{ border-top:0; }
+.fhrt-hname{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+.fhrt-hname small{ color:var(--muted,#777); font-weight:600; }
+.fhrt-hab.done .fhrt-hname b{ text-decoration:line-through; opacity:.75; }
+.fhrt-count{ display:flex; gap:6px; }
+.fhrt-cbtn, .fhrt-htick{ font:inherit; width:42px; height:42px; border-radius:12px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); color:inherit; font-size:1.2rem; font-weight:700; cursor:pointer; }
+.fhrt-cbtn.plus{ background:var(--pc,#6C4F8A); border-color:transparent; color:#fff; }
+.fhrt-htick{ border:2.5px solid var(--pc,#6C4F8A); border-radius:50%; }
+.fhrt-htick.on{ background:var(--pc,#6C4F8A); color:#fff; }
+.fhrt-cbtn:disabled, .fhrt-htick:disabled{ opacity:.45; cursor:default; }
+.fhrt-k .fhk-label{ font-size:.8em; }
+.fhrt-kcols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+.fhrt-kcol{ display:flex; flex-direction:column; gap:10px; }
+.fhrt-kh{ display:flex; align-items:center; gap:10px; }
+.fhrt-kh b{ flex:1; font-size:1.2em; }
+.fhrt-card .fhrt-prog{ display:flex; align-items:center; gap:8px; font-size:0.85rem; }
+.fhrt-prog b{ width:44px; color:var(--pc,#6C4F8A); }
+.fhrt-dots{ flex:1; display:grid; grid-template-columns:repeat(20,minmax(0,1fr)); gap:2px; }
+.fhrt-dots span{ height:14px; border-radius:3px; background:color-mix(in srgb, var(--pc,#6C4F8A) 12%, transparent); }
+.fhrt-dots span.on{ background:var(--pc,#6C4F8A); }
+.fhrt-dots span.part{ background:color-mix(in srgb, var(--pc,#6C4F8A) 45%, transparent); }
+.fhrt-dots span.today{ outline:2px solid var(--pc,#6C4F8A); outline-offset:-2px; background:transparent; }
+.fhrt-prog small{ min-width:70px; text-align:right; color:var(--muted,#777); font-weight:700; }
+.fhrt-brk{ font:inherit; color:inherit; display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; margin-top:8px; border-radius:12px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); text-align:left; cursor:pointer; }
+.fhrt-brk b{ flex:1; }
+.fhrt-brk small{ color:var(--muted,#777); font-weight:600; }
+.fhrt-kitrow{ display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+.fhrt-kitrow > b{ width:56px; }
+.fhrt-form{ display:flex; flex-direction:column; gap:12px; }
+.fhrt-steps{ display:flex; flex-direction:column; gap:6px; }
+.fhrt-srow{ display:flex; align-items:center; gap:6px; }
+.fhrt-srow .fhe-in:first-child{ flex:1 1 auto; min-width:0; }
+.fhrt-smin{ flex:0 0 64px; width:64px !important; }
+.fhrt-skit{ display:flex; align-items:center; gap:4px; font-size:0.8rem; font-weight:700; }
+.fhrt-chk{ display:flex; align-items:center; gap:8px; font-weight:600; flex-wrap:wrap; }
+.fhrt-chk input[type=checkbox]{ width:20px; height:20px; accent-color:var(--accent,#6C4F8A); }
+.fhrt-chk .fhe-in{ width:auto; }
+.fhrt-rems{ display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:14px; background:var(--accent-tint,#F4F0F7); }
+.fhrt-goal{ display:flex; flex-direction:column; gap:8px; }
+.fhrt-goalrow{ display:flex; gap:8px; }
+.fhrt-goalrow .fhe-in:first-child{ flex:0 0 90px; }
+@media (max-width:380px){ .fhrt-skit span{ display:none; } .fhrt-smin{ flex-basis:54px; width:54px !important; } }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -2596,6 +2740,7 @@ var FHTheme = (function(){
     <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span><span class="nav-chev" id="navChoresChev" role="button" tabindex="0" aria-label="Show or hide Upcoming chores" aria-expanded="false">▶</span></button>
     <button class="nav-item nav-sub" data-page="tasklists"><span class="nav-icon">📋</span><span class="nav-label">Upcoming chores</span></button>
     <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
+    <button class="nav-item" data-page="routines"><span class="nav-icon">🌅</span><span class="nav-label">Routines</span></button>
     <button class="nav-item" data-page="paperwork"><span class="nav-icon">📄</span><span class="nav-label">Paperwork</span></button>
     <div class="nav-label-grp">App</div>
     <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
@@ -2923,6 +3068,10 @@ var FHTheme = (function(){
 
     <section class="page" id="page-tasks">
       <div class="app"><div id="tasksContent"></div></div>
+    </section>
+
+    <section class="page" id="page-routines">
+      <div class="app"><div id="routinesContent"></div></div>
     </section>
 
     <section class="page" id="page-paperwork">
@@ -9306,6 +9455,7 @@ const __ready = init();
     ready: __ready,
     getCounts: function(){ return { people: people.length, chores: chores.length, rooms: categories.length }; },
     choresForDay: function(date){ const dayIdx = (date.getDay()+6)%7, iso = toISODate(date), parity = parityForMonday(mondayOf(date)), ym = ymKey(date), dom = date.getDate(); return chores.filter(c=> c.freq==='daily' || (c.freq==='weekly' && c.weekday===dayIdx) || (c.freq==='fortnightly' && c.weekday===dayIdx && (c.parity||'A')===parity) || (c.freq==='monthly' && (dom===1 || dom===20))).map(c=>{ const key = c.id + '::' + (c.freq==='monthly' ? ym : iso); const who = resolveAssigneeForKey(c, date, key); return { id:c.id, name:c.name, freq:c.freq, who: who && who !== 'anyone' && personById(who) ? who : '', done: (completions[key]||0) >= (c.timesPerDay||1) }; }); },
+    addStars: function(id, n){ if(id && n) adjustStars(id, n); },
     setPersonFields: function(id, f){ const p = people.find(x=>x.id===id); if(!p) return false; Object.keys(f).forEach(k=>{ if(f[k] === undefined) delete p[k]; else p[k] = f[k]; }); saveKey(KEYS.people, people); return true; },
     buildDayBlock: buildDayBlock,
     getDaySummary: getDaySummary,
@@ -10584,6 +10734,7 @@ const FHEvents = (function(){
     if(typeof FHBins !== 'undefined'){ const bin = FHBins.event(date); if(bin) all = all.concat([bin]); }
     if(typeof FHOcc !== 'undefined') all = all.concat(FHOcc.events(date));
     if(typeof FHPaper !== 'undefined') all = all.concat(FHPaper.events(date));
+    if(typeof FHRoutines !== 'undefined') all = all.concat(FHRoutines.events(date));
     return all.sort(function(a, b){ return (a.allDay ? 0 : 1) - (b.allDay ? 0 : 1) || sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)); });
   }
   function refresh(){ try{ refreshCurrentPage(); }catch(e){} }
@@ -11126,9 +11277,11 @@ function fhDayDash(date, opts){
   // ---- birthdays & occasions coming up (today only)
   if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = FHOcc.todayCard(date); if(typeof FHPaper !== 'undefined') oc = FHPaper.todayCard(date, oc); nodes.coming = oc; }
   // ---- dinner
+  let dinfo = null;
   if(Feature.on('meals')){
     const card = buildMealCard(date);
     let info = null; try{ info = MealApp.getDayDisplay(date); }catch(e){}
+    dinfo = info;
     const ing = info && info.mealId && FHRecipes.ingLines ? FHRecipes.ingLines(info.mealId, date) : [];
     const sec = h('section', { class:'fhd-sec fhd-dinner' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Dinner' })), card);
     if(typeof FHShare !== 'undefined' && info && info.mealId){ const cr = FHShare.cookRow(date, info.mealName); if(cr) sec.appendChild(cr); }
@@ -11151,8 +11304,60 @@ function fhDayDash(date, opts){
   // blocks only a customised Today shows
   if(FHLayout.isOn('today', 'tomorrow') && Feature.on('meals')) nodes.tomorrow = fhDashNextDinner(date);
   if(FHLayout.isOn('today', 'shopping') && Feature.on('shopping')) nodes.shopping = fhDashShopping(date);
-  FHLayout.place('today', wrap, nodes);
+  FHLayout.placeToday(wrap, fhDashFaces(date, nodes, { evs:evs, tks:tks, person:person, dinner:dinfo }), opts.redraw || function(){ try{ refreshCurrentPage(); }catch(e){} });
   return wrap;
+}
+/* each block's "face" for FHLayout: the one big fact (tiles), a summary line (folded cards), and the block itself */
+function fhDashFaces(date, nodes, d){
+  const F = {}, today = FHEvents.iso(date) === FHEvents.iso(new Date());
+  const hhmm = function(t){ return t ? t.slice(0, 5) : ''; };
+  if(nodes.filter) F.filter = { node:nodes.filter };
+  if(nodes.prompts) F.prompts = { node:nodes.prompts, title:'Getting started' };
+  // plans: how many, and what's next
+  { const items = d.evs.map(function(e){ return { at:e.allDay ? '' : (e.start || ''), t:e.title }; })
+      .concat(d.tks.filter(function(t){ return !t.done; }).map(function(t){ return { at:t.time || '', t:t.title }; }));
+    const now = today ? String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0') : '';
+    const timed = items.filter(function(i){ return i.at; }).sort(function(a, b){ return a.at.localeCompare(b.at); });
+    const next = timed.find(function(i){ return i.at >= now; }) || null;
+    F.plans = { node:nodes.plans, count:items.length || '', value:items.length ? (items.length === 1 ? '1 plan' : items.length + ' plans') : 'Nothing planned',
+      sub:next ? 'Next ' + hhmm(next.at) + ' ' + next.t : items.length ? items[0].t : '' };
+  }
+  // dinner: the meal, and who's cooking
+  if(nodes.dinner){
+    const i = d.dinner || {}, cook = typeof FHShare !== 'undefined' ? FHShare.cookFor(FHEvents.iso(date)) : '';
+    const cp = cook ? fhDashPeople().find(function(p){ return p.id === cook; }) : null;
+    F.dinner = { node:nodes.dinner, value:i.mealName || 'Not planned', sub:cp ? cp.name + '’s cooking' : (i.sideNames && i.sideNames.length ? 'With ' + i.sideNames.join(', ') : '') };
+  }
+  // chores: how many left (this person's, when the name chips pick one)
+  if(nodes.chores && ChoreApp.choresForDay){
+    let cs = []; try{ cs = ChoreApp.choresForDay(date).filter(function(c){ return !d.person || !c.who || c.who === d.person; }); }catch(e){}
+    const done = cs.filter(function(c){ return c.done; }).length, left = cs.length - done;
+    F.chores = { node:nodes.chores, value:cs.length ? (left ? left + ' left' : 'All done') : 'None today', sub:cs.length ? done + ' of ' + cs.length + ' done' : '', bar:cs.length ? done / cs.length : null };
+  }
+  // shopping
+  if(nodes.shopping || FHLayout.isOn('today', 'shopping')){
+    let s = null; try{ s = MealApp.getShoppingSummary(); }catch(e){}
+    const left = s && s.total ? Math.max(0, s.total - (s.done || 0)) : 0;
+    let when = '';
+    if(s && s.anchorISO){ const p = String(s.anchorISO).split('-'), a = new Date(+p[0], +p[1] - 1, +p[2]), n = Math.round((a - new Date(date.getFullYear(), date.getMonth(), date.getDate())) / 864e5);
+      when = n === 0 ? 'Shop day today' : n === 1 ? 'Shop day tomorrow' : 'Shop day ' + a.toLocaleDateString(undefined, { weekday:'long' }); }
+    if(nodes.shopping) F.shopping = { node:nodes.shopping, value:s && s.total ? (left ? left + ' to buy' : 'All ticked') : 'Nothing yet', sub:when };
+  }
+  // coming up: birthday reminders and paperwork that need doing
+  if(today){
+    let n = 0, first = '', when = '';
+    try{ const o = FHOcc.open(date); n += o.length; if(o.length){ first = o[0].r.label; when = o[0].o.title; } }catch(e){}
+    try{ const pw = FHPaper.needs(date); if(pw.length && !first){ first = pw[0].kind === 'other' ? (pw[0].title || 'Paperwork') : FHPaper.fullName(pw[0]); } n += pw.length; }catch(e){}
+    F.coming = { node:nodes.coming || null, count:n || '', value:n ? first : 'All clear', sub:n > 1 ? '+' + (n - 1) + ' more' : (n ? when : 'Nothing to get ready for') };
+  }
+  if(typeof FHRoutines !== 'undefined'){
+    let only = d.person && (fhDashPeople().find(function(p){ return p.id === d.person; }) || {}).role === 'child' ? d.person : '';
+    if(!only){ try{ const me = fhDashPeople().find(function(p){ return p.id === FHPush.prefs().person; }); if(me && me.role === 'child') only = me.id; }catch(e){} }
+    if(FHLayout.isOn('today', 'routines')) F.routines = FHRoutines.todayFace(date, only);
+    if(FHLayout.isOn('today', 'habits')) F.habits = FHRoutines.habitsFace(date, only);
+  }
+  if(nodes.tomorrow){ const t = nodes.tomorrow.querySelector('.fhd-next-m b'); F.tomorrow = { node:nodes.tomorrow, title:nodes.tomorrow.querySelector('.fhd-title').textContent, value:t ? t.textContent : '', sub:'' }; }
+  return F;
 }
 /* "Tomorrow's dinner" (or "Wednesday's dinner" when looking at another day) */
 function fhDashNextDinner(date){
@@ -11188,13 +11393,13 @@ function fhDayPage(root, page, base){
   root.innerHTML = '';
   root.appendChild(h('div', { class:'fhday-head' },
     h('button', { type:'button', class:'fhday-arrow', 'aria-label':'Previous day', text:'‹', onClick:function(){ go(-1); } }),
-    h('div', { class:'dash-heading fhday-title', text:(rel ? rel + ' — ' : '') + date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }) }),
+    h('div', { class:'dash-heading fhday-title', text:(rel ? rel + ' — ' : '') + date.toLocaleDateString(undefined, window.innerWidth < 520 ? { weekday:'short', day:'numeric', month:'short' } : { weekday:'long', day:'numeric', month:'long' }) }),
     n !== 0 ? h('button', { type:'button', class:'fhday-today', text:'↩ Today', onClick:home }) : null,
-    h('button', { type:'button', class:'fhday-arrow', 'aria-label':'Next day', text:'›', onClick:function(){ go(1); } })));
-  const dash = fhDayDash(date, { layout:true });
+    h('button', { type:'button', class:'fhday-arrow', 'aria-label':'Next day', text:'›', onClick:function(){ go(1); } }),
+    FHLayout.editButton(function(){ fhDayPage(root, page, base); })));
+  const dash = fhDayDash(date, { layout:true, redraw:function(){ fhDayPage(root, page, base); } });
   if(root.dataset.slide){ dash.classList.add('fhday-in-' + root.dataset.slide); delete root.dataset.slide; }
   root.appendChild(dash);
-  { const cb = FHLayout.button('today', function(){ fhDayPage(root, page, base); }); if(cb) root.appendChild(h('div', { class:'fhly-foot' }, cb)); }
   if(!root.__fhSwipe){
     root.__fhSwipe = true;
     let x0 = null, y0 = 0;
@@ -11206,7 +11411,7 @@ function fhDayPage(root, page, base){
     root.addEventListener('touchend', function(e){
       if(x0 === null) return;
       const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
-      if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){ const b = root.querySelector('.fhday-arrow' + (dx < 0 ? ':last-of-type' : '')); if(b) b.click(); }
+      if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){ const b = root.querySelector('.fhday-arrow[aria-label="' + (dx < 0 ? 'Next day' : 'Previous day') + '"]'); if(b) b.click(); }
     }, { passive:true });
   }
 }
@@ -11427,26 +11632,34 @@ const FHPaper = (function(){
 })();
 
 /* ==================== BUILD YOUR OWN: Today and the kitchen display ====================
-   Per device, never synced (a kitchen tablet and Mum's phone differ): family-hub-layout-today and
-   family-hub-layout-kitchen hold { preset, list:[[blockId, on 0|1, size 'h'|'f']] } in the order chosen.
-   Nothing stored = the "standard" preset, which is the page as it always was. A block added to the app later is
-   appended, hidden, to a stored list. Half-width blocks sit two to a row on wider screens (Today from 820px, the kitchen
-   display from 700px), stacked into the shorter of two columns so tall and short blocks fit together; on a phone
-   everything is one column, in order. "✏️ Customise" opens the editor: ready-made layouts, show/hide, ↑ ↓ or drag
-   to reorder, half or full width. Hidden behind the parent lock. */
+   Per device, never synced (a kitchen tablet and Mum's phone differ):
+   - family-hub-layout-today:   { preset, list:[[blockId, on 0|1, size 'tile'|'card'|'big', folded 0|1]] }
+   - family-hub-layout-kitchen: { preset, list:[[blockId, on 0|1, size 'h'|'f']] }
+   in the order chosen. Nothing stored = the "glance" preset (Today) / "standard" (kitchen). A block added to the app
+   later is appended, hidden. Lists saved before sizes existed ('h'/'f' on Today) read as open cards.
+   Today: each block hands over a "face" { icon, title, value, sub, bar, node }:
+   - Tile: a square, two to a row on a phone (four on a wide screen), icon + one big fact; tap opens the block in a sheet.
+   - Card: a header line that still says the one thing that matters; tap folds or opens it (remembered on this device).
+   - Big: always open, larger text.
+   "Edit" on Today turns the page itself into the editor: ready-made layouts, Tile / Card / Big, folded, drag or ↑ ↓,
+   ✕ to hide, + Add a block. Kitchen display: half or full width blocks, edited in a sheet (a tablet has room).
+   Both hidden behind the parent lock. */
 const FHLayout = (function(){
   const BLOCKS = {
     today: [
-      ['filter', '👪', 'Name chips', 'Show one person’s plans and chores'],
-      ['plans', '🗓️', 'Plans', 'Events and tasks for the day'],
-      ['prompts', '💡', 'Getting started', 'Bring everyone in, add your calendar'],
-      ['coming', '🎁', 'Coming up', 'Birthday reminders and paperwork'],
+      ['filter', '👪', 'Name chips', 'Show one person’s plans and chores', 'row'],
       ['dinner', '🍽️', 'Dinner', 'With ingredients and who’s cooking'],
+      ['chores', '🧹', 'Chores', 'The day’s chores to tick off'],
+      ['shopping', '🛒', 'Shopping', 'Items left to buy and the next shop'],
+      ['coming', '🎁', 'Coming up', 'Birthday reminders and paperwork'],
+      ['plans', '🗓️', 'Plans', 'Events and tasks for the day'],
       ['tomorrow', '⏭️', 'Next day’s dinner', 'What’s for dinner the day after'],
-      ['shopping', '🛒', 'Shopping list', 'Items left to buy and the next shop'],
-      ['chores', '🧹', 'Chores', 'The day’s chores to tick off']
+      ['routines', '🌅', 'Routines', 'Each child’s routine against its time'],
+      ['habits', '⭐', 'Habits', 'Reading, homework and the like'],
+      ['prompts', '💡', 'Getting started', 'Bring everyone in, add your calendar', 'notile']
     ],
     kitchen: [
+      ['routines', '🌅', 'Routines', 'Each child’s steps, big enough to tap'],
       ['dinner', '🍽️', 'Tonight’s dinner', 'With timings and the recipe'],
       ['chores', '🧹', 'Today’s chores', 'Tick them off on the screen'],
       ['plans', '🗓️', 'Plans', 'Today’s events'],
@@ -11456,43 +11669,173 @@ const FHLayout = (function(){
       ['upcoming', '📋', 'Coming up', 'Tasks due in the next few days']
     ]
   };
-  // ready-made layouts: [id, size] in order; anything not listed is hidden
+  // ready-made layouts: [id, size, folded] in order; anything not listed is hidden
   const PRESETS = {
     today: [
-      ['standard', 'Standard', 'Everything, as it comes', [['filter', 'f'], ['plans', 'f'], ['prompts', 'f'], ['coming', 'f'], ['dinner', 'f'], ['chores', 'f']]],
-      ['busy', 'Busy parent', 'Plans first, the week’s food at a glance', [['filter', 'f'], ['plans', 'f'], ['coming', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['shopping', 'h'], ['chores', 'h']]],
-      ['kids', 'Children', 'Chores first, then dinner', [['filter', 'f'], ['chores', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['plans', 'f']]]
+      ['glance', 'At a glance', 'Tiles first, then the day', [['filter', 'card'], ['dinner', 'tile'], ['chores', 'tile'], ['shopping', 'tile'], ['coming', 'tile'], ['routines', 'card'], ['plans', 'big'], ['habits', 'card', 1], ['prompts', 'card']]],
+      ['busy', 'Busy parent', 'Plans first, food at a glance', [['filter', 'card'], ['plans', 'big'], ['routines', 'card'], ['coming', 'card'], ['dinner', 'tile'], ['tomorrow', 'tile'], ['shopping', 'tile'], ['chores', 'tile'], ['habits', 'card', 1]]],
+      ['kids', 'Children', 'Chores first, then dinner', [['filter', 'card'], ['routines', 'big'], ['habits', 'big'], ['chores', 'big'], ['dinner', 'tile'], ['tomorrow', 'tile'], ['plans', 'card', 1]]],
+      ['open', 'Everything open', 'Every block open, as before', [['filter', 'card'], ['plans', 'big'], ['prompts', 'card'], ['coming', 'big'], ['routines', 'big'], ['dinner', 'big'], ['chores', 'big'], ['habits', 'big']]]
     ],
     kitchen: [
-      ['standard', 'Kitchen', 'Dinner, chores and the day', [['dinner', 'h'], ['chores', 'h'], ['plans', 'h'], ['tasks', 'h'], ['shopping', 'h'], ['tomorrow', 'h'], ['upcoming', 'h']]],
-      ['glance', 'At a glance', 'Big dinner, then the rest', [['dinner', 'f'], ['plans', 'h'], ['chores', 'h'], ['tomorrow', 'h'], ['shopping', 'h']]],
-      ['kids', 'Children', 'Chores up top', [['chores', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['plans', 'h']]]
+      ['standard', 'Kitchen', 'Dinner, chores and the day', [['routines', 'f'], ['dinner', 'h'], ['chores', 'h'], ['plans', 'h'], ['tasks', 'h'], ['shopping', 'h'], ['tomorrow', 'h'], ['upcoming', 'h']]],
+      ['glance', 'At a glance', 'Big dinner, then the rest', [['dinner', 'f'], ['routines', 'f'], ['plans', 'h'], ['chores', 'h'], ['tomorrow', 'h'], ['shopping', 'h']]],
+      ['kids', 'Children', 'Chores up top', [['routines', 'f'], ['chores', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['plans', 'h']]]
     ]
   };
   const KEY = { today:'family-hub-layout-today', kitchen:'family-hub-layout-kitchen' };
   const WIDE = { today:820, kitchen:700 };
+  const SIZES = { today:['tile', 'card', 'big'], kitchen:['h', 'f'] };
+  const SIZE_NAME = { tile:'Tile', card:'Card', big:'Big' };
 
-  function info(kind, id){ const b = BLOCKS[kind].find(x => x[0] === id); return b ? { id:b[0], icon:b[1], name:b[2], sub:b[3] } : null; }
-  function preset(kind, pid){ return PRESETS[kind].find(p => p[0] === pid) || PRESETS[kind][0]; }
-  function fromPreset(kind, pid){
-    const p = preset(kind, pid), list = p[3].map(x => [x[0], 1, x[1]]);
-    BLOCKS[kind].forEach(b => { if(!list.some(x => x[0] === b[0])) list.push([b[0], 0, 'f']); });
-    return { preset:p[0], list };
+  /* blocks other modules add (routines, habits) */
+  function register(kind, b){ if(!BLOCKS[kind].some(x => x[0] === b[0])) BLOCKS[kind].push(b); }
+  function presetAdd(kind, pid, entry, after){
+    const p = PRESETS[kind].find(x => x[0] === pid); if(!p || p[3].some(x => x[0] === entry[0])) return;
+    const i = after ? p[3].findIndex(x => x[0] === after) : -1; p[3].splice(i >= 0 ? i + 1 : p[3].length, 0, entry);
   }
+  function info(kind, id){ const b = BLOCKS[kind].find(x => x[0] === id); return b ? { id:b[0], icon:b[1], name:b[2], sub:b[3], kind:b[4] || '' } : null; }
+  function preset(kind, pid){ return PRESETS[kind].find(p => p[0] === pid) || PRESETS[kind][0]; }
+  function fill(kind, list){ BLOCKS[kind].forEach(b => { if(!list.some(x => x[0] === b[0])) list.push([b[0], 0, SIZES[kind][kind === 'today' ? 1 : 1], 0]); }); return list; }
+  function fromPreset(kind, pid){ const p = preset(kind, pid); return { preset:p[0], list:fill(kind, p[3].map(x => [x[0], 1, x[1], x[2] ? 1 : 0])) }; }
   function load(kind){
     let v = null; try{ v = JSON.parse(fhRawGet(KEY[kind]) || 'null'); }catch(e){}
-    if(!v || !Array.isArray(v.list)) return fromPreset(kind, 'standard');
-    const list = v.list.filter(x => Array.isArray(x) && info(kind, x[0])).map(x => [x[0], x[1] ? 1 : 0, x[2] === 'h' ? 'h' : 'f']);
-    BLOCKS[kind].forEach(b => { if(!list.some(x => x[0] === b[0])) list.push([b[0], 0, 'f']); });
-    return { preset:v.preset || '', list };
+    if(!v || !Array.isArray(v.list)) return fromPreset(kind, PRESETS[kind][0][0]);
+    const list = v.list.filter(x => Array.isArray(x) && info(kind, x[0])).map(x => {
+      let size = SIZES[kind].indexOf(x[2]) >= 0 ? x[2] : (kind === 'today' ? 'card' : 'f');
+      if(info(kind, x[0]).kind === 'notile' && size === 'tile') size = 'card';
+      return [x[0], x[1] ? 1 : 0, size, x[3] ? 1 : 0];
+    });
+    return { preset:v.preset || '', list:fill(kind, list) };
   }
   function save(kind, v){ try{ fhRawSet(KEY[kind], JSON.stringify(v)); }catch(e){} }
   function reset(kind){ try{ fhRawRemove(KEY[kind]); }catch(e){ try{ fhRawSet(KEY[kind], ''); }catch(e2){} } }
-  function get(kind){ return load(kind).list.map(x => Object.assign(info(kind, x[0]), { on:!!x[1], half:x[2] === 'h' })); }
+  function get(kind){ return load(kind).list.map(x => Object.assign(info(kind, x[0]), { on:!!x[1], size:x[2], half:x[2] === 'h', folded:!!x[3] })); }
   function isOn(kind, id){ return get(kind).some(b => b.id === id && b.on); }
   function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function setOne(kind, id, fn){ const v = load(kind), x = v.list.find(i => i[0] === id); if(!x) return; fn(x); v.preset = ''; save(kind, v); }
 
-  /* put the page's blocks into `wrap` in this device's order; nodes = { blockId: element or null } */
+  /* ---------------- Today ---------------- */
+  const editing = { today:false };
+  function tile(b, f){
+    return h('button', { type:'button', class:'fhly-tile', 'data-block':b.id, 'aria-label':b.name + ': ' + [f.value, f.sub].filter(Boolean).join(', '), onClick:() => openFace(b, f) },
+      h('span', { class:'fhly-tile-h' }, h('span', { class:'fhly-tile-ico', 'aria-hidden':'true', text:f.icon || b.icon }), h('span', { text:f.title || b.name })),
+      h('span', { class:'fhly-tile-v' + (String(f.value || '').length > 14 ? ' long' : ''), text:f.value || '' }),
+      f.bar != null ? h('span', { class:'fhly-bar', 'aria-hidden':'true' }, h('span', { style:'width:' + Math.round(f.bar * 100) + '%' })) : null,
+      h('span', { class:'fhly-tile-s', text:f.sub || '' }));
+  }
+  function card(b, f){
+    const big = b.size === 'big';
+    const sum = [f.value, f.sub].filter(Boolean).join(' · ');
+    const body = h('div', { class:'fhly-body' }, f.node);
+    const head = h('button', { type:'button', class:'fhly-head', 'aria-expanded':b.folded && !big ? 'false' : 'true' },
+      h('span', { class:'fhly-head-ico', 'aria-hidden':'true', text:f.icon || b.icon }),
+      h('span', { class:'fhly-head-txt' }, h('b', { text:(f.title || b.name) + (f.count ? ' · ' + f.count : '') }), sum ? h('small', { text:sum }) : null),
+      big ? null : h('span', { class:'fhly-chev', 'aria-hidden':'true', text:'›' }));
+    const el = h('section', { class:'fhly-card' + (big ? ' big' : '') + (b.folded && !big ? ' folded' : ''), 'data-block':b.id }, head, body);
+    if(big) head.disabled = true;
+    else head.addEventListener('click', () => {
+      const fold = !el.classList.contains('folded'); el.classList.toggle('folded', fold); head.setAttribute('aria-expanded', fold ? 'false' : 'true');
+      setOne('today', b.id, x => { x[3] = fold ? 1 : 0; });
+    });
+    return el;
+  }
+  /* a tile opens its block in a sheet; closing re-draws the page (the block moves back) */
+  function openFace(b, f){
+    if(document.getElementById('fhlyFace') || !f.node) return;
+    const close = () => { const m = document.getElementById('fhlyFace'); if(m) m.remove(); try{ refreshCurrentPage(); }catch(e){} };
+    const m = h('div', { id:'fhlyFace', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':f.title || b.name },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:(f.icon || b.icon) + ' ' + (f.title || b.name) }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhly-body fhly-sheetbody' }, f.node)));
+    document.body.appendChild(m);
+  }
+  /* Today's blocks into `wrap`: faces = { blockId: face or null } */
+  function placeToday(wrap, faces, redraw){
+    if(editing.today && !locked()) return editView(wrap, faces, redraw);
+    let grid = null;
+    get('today').forEach(b => {
+      const f = faces[b.id]; if(!b.on || !f) return;
+      if(b.kind === 'row' || !f.node && b.size !== 'tile'){ grid = null; if(f.node){ f.node.setAttribute('data-block', b.id); wrap.appendChild(f.node); } return; }
+      if(b.size === 'tile' && b.kind !== 'notile'){
+        if(!grid){ grid = h('div', { class:'fhly-tiles' }); wrap.appendChild(grid); }
+        grid.appendChild(tile(b, f)); return;
+      }
+      grid = null; wrap.appendChild(card(b, f));
+    });
+  }
+
+  /* ---- Edit on the page ---- */
+  function startEdit(redraw){ editing.today = true; redraw(); }
+  function editView(wrap, faces, redraw){
+    let v = load('today');
+    const commit = (keep) => { if(!keep) v.preset = ''; save('today', v); redraw(); };
+    wrap.classList.add('fhly-editing');
+    wrap.appendChild(h('div', { class:'fhly-ebar' },
+      h('div', { class:'fhly-ebar-t' }, h('b', { text:'Editing Today' }), h('small', { text:'Just for this device' })),
+      h('button', { type:'button', class:'fhly-done', id:'fhlyDone', text:'Done', onClick:() => { editing.today = false; redraw(); } })));
+    wrap.appendChild(h('div', { class:'fhly-presetrow' }, h('span', { class:'fhly-lab', text:'Start from' }),
+      h('div', { class:'ob-chips fhly-presets' }, PRESETS.today.map(p => h('button', { type:'button', class:'ob-chip' + (v.preset === p[0] ? ' on' : ''), 'aria-pressed':v.preset === p[0] ? 'true' : 'false', 'data-preset':p[0], title:p[2], text:p[1],
+        onClick:() => { v = fromPreset('today', p[0]); commit(true); } })))));
+    const box = h('div', { class:'fhly-elist' });
+    const shown = v.list.filter(x => x[1]);
+    shown.forEach((x, i) => {
+      const b = info('today', x[0]);
+      const sizes = b.kind === 'row' ? [] : SIZES.today.filter(s => !(s === 'tile' && b.kind === 'notile'));
+      const seg = sizes.length ? h('div', { class:'fhly-seg', role:'group', 'aria-label':b.name + ' size' }, sizes.map(s => h('button', { type:'button', class:x[2] === s ? 'on' : '', 'aria-pressed':x[2] === s ? 'true' : 'false', text:SIZE_NAME[s], onClick:() => { x[2] = s; commit(); } }))) : null;
+      const fold = x[2] === 'card' && b.kind !== 'row' ? h('label', { class:'fhly-fold' }, h('input', { type:'checkbox', checked:!!x[3], onChange:e => { x[3] = e.target.checked ? 1 : 0; commit(); } }), h('span', { text:'Folded' })) : null;
+      const mv = (d) => { const a = v.list.indexOf(x), tgt = shown[i + d]; if(!tgt) return; const j = v.list.indexOf(tgt); v.list[a] = tgt; v.list[j] = x; commit(); };
+      box.appendChild(h('div', { class:'fhly-eitem' + (x[2] === 'tile' ? ' tile' : ''), 'data-id':x[0] },
+        h('div', { class:'fhly-erow' },
+          h('span', { class:'fhly-grip', 'aria-hidden':'true', text:'⠿' }),
+          h('span', { class:'fhly-ename' }, h('span', { 'aria-hidden':'true', text:b.icon + ' ' }), b.name),
+          x[2] === 'tile' ? null : h('button', { type:'button', class:'fhly-mv', 'aria-label':'Move ' + b.name + ' up', text:'↑', disabled:i === 0, onClick:() => mv(-1) }),
+          x[2] === 'tile' ? null : h('button', { type:'button', class:'fhly-mv', 'aria-label':'Move ' + b.name + ' down', text:'↓', disabled:i === shown.length - 1, onClick:() => mv(1) }),
+          x[2] === 'tile' ? null : h('button', { type:'button', class:'fhly-mv fhly-hide', 'aria-label':'Hide ' + b.name, text:'✕', onClick:() => { x[1] = 0; commit(); } })),
+        seg || fold ? h('div', { class:'fhly-erow2' }, seg, fold) : null,
+        x[2] === 'tile' ? h('div', { class:'fhly-erow2 fhly-tmv' },
+          h('button', { type:'button', class:'fhly-mv', 'aria-label':'Move ' + b.name + ' earlier', text:'←', disabled:i === 0, onClick:() => mv(-1) }),
+          h('button', { type:'button', class:'fhly-mv', 'aria-label':'Move ' + b.name + ' later', text:'→', disabled:i === shown.length - 1, onClick:() => mv(1) }),
+          h('button', { type:'button', class:'fhly-mv fhly-hide', 'aria-label':'Hide ' + b.name, text:'✕', onClick:() => { x[1] = 0; commit(); } })) : null));
+    });
+    wrap.appendChild(box);
+    const hidden = v.list.filter(x => !x[1]);
+    if(hidden.length) wrap.appendChild(h('div', { class:'fhly-add' }, h('span', { class:'fhly-lab', text:'＋ Add a block' }),
+      h('div', { class:'ob-chips' }, hidden.map(x => { const b = info('today', x[0]);
+        return h('button', { type:'button', class:'ob-chip', 'data-add':x[0], text:b.icon + ' ' + b.name, title:b.sub, onClick:() => { x[1] = 1; if(b.kind === 'notile' && x[2] === 'tile') x[2] = 'card'; commit(); } }); }))));
+    wrap.appendChild(h('div', { class:'fhly-efoot' },
+      h('p', { class:'fho-sub', text:'Hold the dots and drag, or use the arrows. Tiles sit two to a row.' }),
+      h('button', { type:'button', class:'btn secondary', id:'fhlyReset', text:'Back to the standard layout', onClick:() => { reset('today'); v = load('today'); redraw(); } })));
+    dragSort(box, order => { const rest = v.list.filter(x => !x[1]); const on = order.map(id => v.list.find(x => x[0] === id)); v.list = on.concat(rest); commit(); });
+  }
+  /* drag items (tiles and cards together) by their dots; scrolls near the screen's edges */
+  function dragSort(box, done){
+    let drag = null, raf = 0, lastY = 0;
+    const scroll = () => { if(!drag) return; const zone = Math.min(90, innerHeight * 0.15); let dy = 0;
+      if(lastY < zone) dy = -Math.ceil((zone - lastY) / 6); else if(lastY > innerHeight - zone) dy = Math.ceil((lastY - innerHeight + zone) / 6);
+      if(dy) window.scrollBy(0, dy); raf = requestAnimationFrame(scroll); };
+    box.addEventListener('pointerdown', e => {
+      const g = e.target.closest('.fhly-grip'); if(!g) return;
+      const it = g.closest('.fhly-eitem'); e.preventDefault();
+      drag = it; it.classList.add('dragging'); lastY = e.clientY; raf = requestAnimationFrame(scroll);
+      try{ g.setPointerCapture(e.pointerId); }catch(err){}
+    });
+    box.addEventListener('pointermove', e => {
+      if(!drag) return; lastY = e.clientY;
+      const over = [...box.children].find(n => { if(n === drag) return false; const r = n.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; });
+      if(!over) return;
+      const r = over.getBoundingClientRect(), before = over.classList.contains('tile') && drag.classList.contains('tile') ? e.clientX < r.left + r.width / 2 : e.clientY < r.top + r.height / 2;
+      box.insertBefore(drag, before ? over : over.nextSibling);
+    });
+    const drop = () => { if(!drag) return; cancelAnimationFrame(raf); drag.classList.remove('dragging'); drag = null; done([...box.children].map(n => n.dataset.id)); };
+    box.addEventListener('pointerup', drop); box.addEventListener('pointercancel', drop);
+  }
+  function editButton(redraw){
+    if(locked() || editing.today) return null;
+    return h('button', { type:'button', class:'fhly-btn', id:'fhlyOpen', 'aria-label':'Edit Today', text:'✏️ Edit', onClick:() => startEdit(redraw) });
+  }
+
+  /* ---------------- Kitchen display (half / full) ---------------- */
   function place(kind, wrap, nodes){
     const wide = window.innerWidth >= WIDE[kind];
     let run = null;
@@ -11511,28 +11854,19 @@ const FHLayout = (function(){
       r.__items.forEach((n, i) => { const c = t[0] <= t[1] ? 0 : 1; cols[c].appendChild(n); t[c] += hs[i] + 12; });
     }));
   }
-  /* a page re-draws itself when the screen crosses the width where halves pair up (a tablet turned round) */
-  let lastWide = null;
-  window.addEventListener('resize', () => {
-    const w = window.innerWidth >= WIDE.today; if(lastWide === null){ lastWide = w; return; }
-    if(w !== lastWide){ lastWide = w; try{ if(currentPage === 'today' || currentPage === 'tomorrow') refreshCurrentPage(); }catch(e){} }
-  });
-
   function button(kind, onDone){
     if(locked()) return null;
-    return h('button', { type:'button', class:'fhly-btn', id:'fhlyOpen' + (kind === 'kitchen' ? 'K' : ''), text:'✏️ Customise', 'aria-label':kind === 'kitchen' ? 'Customise the kitchen display' : 'Customise this page', onClick:() => editor(kind, onDone) });
+    return h('button', { type:'button', class:'fhly-btn', id:'fhlyOpen' + (kind === 'kitchen' ? 'K' : ''), text:'✏️ Customise', 'aria-label':'Customise the kitchen display', onClick:() => editor(kind, onDone) });
   }
-
-  /* ---- the editor ---- */
   function editor(kind, onDone){
     if(document.getElementById('fhlySheet')) return;
     let v = load(kind);
-    const wide = window.innerWidth >= WIDE[kind];   // half/full only means something where blocks can pair up
+    const wide = window.innerWidth >= WIDE[kind];
     const close = () => { const m = document.getElementById('fhlySheet'); if(m) m.remove(); };
     const commit = (keepPreset) => { if(!keepPreset) v.preset = ''; save(kind, v); draw(); if(onDone) onDone(); };
     const presets = h('div', { class:'ob-chips fhly-presets' });
     const list = h('ol', { class:'fhly-list', 'aria-label':'Blocks, in order' });
-    const move = (i, d) => { const j = i + d; if(j < 0 || j >= v.list.length) return; const t = v.list[i]; v.list[i] = v.list[j]; v.list[j] = t; commit(); const b = list.querySelectorAll('.fhly-row')[j]; if(b){ const q = b.querySelector(d < 0 ? '.fhly-up' : '.fhly-down'); (q && !q.disabled ? q : b.querySelector('input')).focus(); } };
+    const move = (i, d) => { const j = i + d; if(j < 0 || j >= v.list.length) return; const t = v.list[i]; v.list[i] = v.list[j]; v.list[j] = t; commit(); };
     const draw = () => {
       presets.innerHTML = '';
       PRESETS[kind].forEach(p => presets.appendChild(h('button', { type:'button', class:'ob-chip' + (v.preset === p[0] ? ' on' : ''), 'aria-pressed':v.preset === p[0] ? 'true' : 'false', 'data-preset':p[0], title:p[2], text:p[1],
@@ -11541,7 +11875,7 @@ const FHLayout = (function(){
       v.list.forEach((x, i) => {
         const b = info(kind, x[0]);
         const on = h('input', { type:'checkbox', checked:!!x[1], 'aria-label':'Show ' + b.name, onChange:e => { x[1] = e.target.checked ? 1 : 0; commit(); } });
-        const size = h('button', { type:'button', class:'fhly-size' + (x[2] === 'h' ? ' half' : ''), 'aria-pressed':x[2] === 'h' ? 'true' : 'false', 'aria-label':b.name + ': half width', title:'Half or full width on a bigger screen',
+        const size = h('button', { type:'button', class:'fhly-size' + (x[2] === 'h' ? ' half' : ''), 'aria-pressed':x[2] === 'h' ? 'true' : 'false', 'aria-label':b.name + ': half width', title:'Half or full width',
           text:x[2] === 'h' ? '◧ Half' : '▭ Full', onClick:() => { x[2] = x[2] === 'h' ? 'f' : 'h'; commit(); } });
         list.appendChild(h('li', { class:'fhly-row' + (x[1] ? '' : ' off'), 'data-id':x[0] },
           h('span', { class:'fhly-grip', 'aria-hidden':'true', text:'⠿' }),
@@ -11552,42 +11886,535 @@ const FHLayout = (function(){
             h('button', { type:'button', class:'fhly-down', 'aria-label':'Move ' + b.name + ' down', text:'↓', disabled:i === v.list.length - 1, onClick:() => move(i, 1) }))));
       });
     };
-    // drag a row by its grip (or anywhere but its controls) to reorder
     let drag = null;
     list.addEventListener('pointerdown', e => {
       const row = e.target.closest('.fhly-row'); if(!row || e.target.closest('input,button,label')) return;
-      e.preventDefault();
-      drag = { row, from:[...list.children].indexOf(row) }; row.classList.add('dragging'); row.setPointerCapture && row.setPointerCapture(e.pointerId);
+      e.preventDefault(); drag = row; row.classList.add('dragging'); try{ row.setPointerCapture(e.pointerId); }catch(err){}
     });
     list.addEventListener('pointermove', e => {
       if(!drag) return;
-      const rows = [...list.children], over = rows.find(r => { const b = r.getBoundingClientRect(); return e.clientY >= b.top && e.clientY < b.bottom; });
-      if(!over || over === drag.row) return;
-      const b = over.getBoundingClientRect();
-      if(e.clientY < b.top + b.height / 2) list.insertBefore(drag.row, over); else list.insertBefore(drag.row, over.nextSibling);
+      const over = [...list.children].find(r => { const b = r.getBoundingClientRect(); return e.clientY >= b.top && e.clientY < b.bottom; });
+      if(!over || over === drag) return;
+      const b = over.getBoundingClientRect(); list.insertBefore(drag, e.clientY < b.top + b.height / 2 ? over : over.nextSibling);
     });
-    const drop = () => {
-      if(!drag) return;
-      const order = [...list.children].map(r => r.dataset.id); drag.row.classList.remove('dragging'); drag = null;
-      v.list.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])); commit();
-    };
+    const drop = () => { if(!drag) return; const order = [...list.children].map(r => r.dataset.id); drag.classList.remove('dragging'); drag = null; v.list.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])); commit(); };
     list.addEventListener('pointerup', drop); list.addEventListener('pointercancel', drop);
     draw();
     const m = h('div', { id:'fhlySheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
-      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':kind === 'kitchen' ? 'Customise the kitchen display' : 'Customise Today' },
-        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:kind === 'kitchen' ? '✏️ Kitchen display' : '✏️ Customise Today' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Customise the kitchen display' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✏️ Kitchen display' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhe-form' },
-          h('p', { class:'fho-sub', text:'Just for this ' + (kind === 'kitchen' ? 'screen' : 'device') + '. Start from a ready-made layout, then tick what to show and move things up or down.' }),
+          h('p', { class:'fho-sub', text:'Just for this screen. Start from a ready-made layout, then tick what to show and move things up or down.' }),
           h('p', { class:'fhe-lab', text:'Ready-made' }), presets,
           h('p', { class:'fhe-lab', text:'What to show' }), list,
           wide ? h('p', { class:'fho-sub fhly-note', text:'Half-width blocks sit side by side; full-width ones go across the screen.' }) : null,
           h('div', { class:'fhe-actions' },
-            h('button', { type:'button', class:'btn secondary', id:'fhlyReset', text:'Back to standard', onClick:() => { reset(kind); v = load(kind); draw(); if(onDone) onDone(); } }),
-            h('button', { type:'button', class:'btn', id:'fhlyDone', text:'Done', onClick:close })))));
+            h('button', { type:'button', class:'btn secondary', id:'fhlyResetK', text:'Back to standard', onClick:() => { reset(kind); v = load(kind); draw(); if(onDone) onDone(); } }),
+            h('button', { type:'button', class:'btn', id:'fhlyDoneK', text:'Done', onClick:close })))));
     document.body.appendChild(m);
   }
 
-  return { BLOCKS, PRESETS, get, isOn, place, button, editor, load, reset };
+  return { BLOCKS, PRESETS, register, presetAdd, get, isOn, place, placeToday, editButton, editing, button, editor, load, reset };
+})();
+
+/* ==================== ROUTINES AND HABITS (specs/routines-and-habits.md) ====================
+   One engine: an item is a routine (steps, done by a time) or a habit (once a day, tick or count).
+   Synced family-hub-routines-v1: { items:[{ id, kind:'routine'|'habit', name, who:[personId], days:'school'|'every'|
+     'weekends', by:'08:00', until:'09:00', steps:[{ id, t, min, kit }], goal:{ type:'tick'|'count', n, unit },
+     remind:{ start, late, parents, at }, stars, ticks:'child'|'check'|'parent' }],
+     breaks:[{ id, name, from, to, kind:'school'|'away', who:[] }], kit:{ personId:[{ id, t, days:[0..6 Mon=0] }] } }
+   Synced family-hub-routine-log-v1: { 'YYYY-MM-DD': { itemId: { personId: { s:[stepId], n, done:ISO, ok:ISO, st } } } }
+   (st = stars given for it, so unticking takes them back). Kept a year.
+   School days skip school breaks and "away" dates; every day skips "away". Stars go to the chore chart
+   (ChoreApp.addStars). Who ticks: the child; the child then a parent checks; or a parent only. */
+const FHRoutines = (function(){
+  const KEY = 'family-hub-routines-v1', LOG = 'family-hub-routine-log-v1';
+  const DAYN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const TEMPLATES = [
+    { id:'morning', name:'School morning', by:'08:00', until:'09:00', days:'school', steps:[['Breakfast', 15], ['Brush teeth', 2], ['Get dressed', 10], ['Hair brushed', 3], ['Pack school bag', 5, 1]] },
+    { id:'after', name:'After school', by:'17:30', until:'18:30', days:'school', steps:[['Unpack lunchbox', 5], ['Snack', 10], ['Homework', 20]] },
+    { id:'bed', name:'Bedtime', by:'19:30', until:'21:00', days:'every', steps:[['Bath or shower', 15], ['Pyjamas on', 5], ['Brush teeth', 2], ['Bag ready for tomorrow', 5, 1], ['Story', 15]] }
+  ];
+  const IDEAS = [['Read', 'count', 20, 'min'], ['Homework', 'tick', 1, ''], ['Practise an instrument', 'count', 15, 'min'], ['Times tables', 'tick', 1, ''], ['Drink water', 'count', 6, 'times']];
+  const UNITS = [['min', 'minutes'], ['pages', 'pages'], ['times', 'times']];
+
+  /* ---- data ---- */
+  function uid(p){ return (p || 'r') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function data(){ let v = null; try{ v = JSON.parse(fhRawGet(KEY) || 'null'); }catch(e){} v = v || {}; return { items:Array.isArray(v.items) ? v.items : [], breaks:Array.isArray(v.breaks) ? v.breaks : [], kit:v.kit && typeof v.kit === 'object' ? v.kit : {} }; }
+  function saveData(d){ fhSaveJSON(KEY, d); changed(); }
+  function log(){ let v = null; try{ v = JSON.parse(fhRawGet(LOG) || 'null'); }catch(e){} return v && typeof v === 'object' ? v : {}; }
+  function saveLog(l){
+    const cut = iso(new Date(Date.now() - 366 * 864e5)); Object.keys(l).forEach(k => { if(k < cut) delete l[k]; });
+    fhSaveJSON(LOG, l); changed();
+  }
+  function changed(){ try{ refreshCurrentPage(); }catch(e){} try{ FHPush.soon(); }catch(e){} try{ if(typeof FHKitchen !== 'undefined' && FHKitchen.isOpen()) FHKitchen.refresh(); }catch(e){} }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function iso(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function mins(hhmm){ const m = /^(\d{1,2}):(\d{2})/.exec(hhmm || ''); return m ? +m[1] * 60 + +m[2] : null; }
+  function hhmm(n){ n = Math.max(0, Math.min(1439, n)); return pad(Math.floor(n / 60)) + ':' + pad(n % 60); }
+  function dow(d){ return (d.getDay() + 6) % 7; }
+  function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; } }
+  function person(id){ return people().find(p => p.id === id) || null; }
+  function parents(){ return people().filter(p => p.role !== 'child').map(p => p.id); }
+  function colorOf(id){ const p = person(id); return p && p.hue != null ? 'hsl(' + p.hue + ',55%,45%)' : 'var(--accent,#6C4F8A)'; }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  /* a child's phone or tablet, or a locked one: can't edit, and can't tick "parent only" items */
+  function childDevice(){
+    try{ if(FHSync.isDevice && FHSync.isDevice()) return true; }catch(e){}
+    if(locked()) return true;
+    try{ const p = person(FHPush.prefs().person); if(p && p.role === 'child') return true; }catch(e){}
+    return false;
+  }
+
+  /* ---- which days ---- */
+  function onBreak(date, pid, kinds){
+    const d = iso(date);
+    return data().breaks.some(b => kinds.indexOf(b.kind) >= 0 && b.from <= d && d <= (b.to || b.from) && (!b.who || !b.who.length || b.who.indexOf(pid) >= 0));
+  }
+  function activeOn(it, date, pid){
+    const w = dow(date);
+    if(onBreak(date, pid, ['away'])) return false;
+    if(it.days === 'school') return w < 5 && !onBreak(date, pid, ['school']);
+    if(it.days === 'weekends') return w >= 5;
+    if(Array.isArray(it.days)) return it.days.indexOf(w) >= 0;
+    return true;
+  }
+  function itemsFor(date, pid, kind){ return data().items.filter(it => (!kind || it.kind === kind) && (it.who || []).indexOf(pid) >= 0 && activeOn(it, date, pid)); }
+
+  /* ---- kit days: weekly kit, plus that day's events that mention kit ---- */
+  const KIT_RE = /\b(p\.?e\.?|kit|swim\w*|football|rugby|netball|games|ballet|gym\w*)\b/i;
+  function kitFor(pid, date){
+    const w = dow(date), out = [];
+    (data().kit[pid] || []).forEach(k => { if((k.days || []).indexOf(w) >= 0) out.push(k.t); });
+    try{ FHEvents.forDay(date, pid).forEach(ev => { if(!ev.ro && KIT_RE.test(ev.title || '') && out.indexOf(ev.title) < 0){ const ids = Array.isArray(ev.who) ? ev.who : (ev.who ? [ev.who] : []); if(ids.indexOf(pid) >= 0) out.push(ev.title + ' kit'); } }); }catch(e){}
+    return out;
+  }
+
+  /* ---- progress ---- */
+  function rec(l, date, it, pid, make){
+    const d = iso(date);
+    if(!l[d]){ if(!make) return {}; l[d] = {}; }
+    if(!l[d][it.id]){ if(!make) return {}; l[d][it.id] = {}; }
+    if(!l[d][it.id][pid]){ if(!make) return {}; l[d][it.id][pid] = {}; }
+    return l[d][it.id][pid];
+  }
+  function stateOf(it, date, pid){
+    const r = rec(log(), date, it, pid, false);
+    if(it.kind === 'habit'){
+      const goal = it.goal && it.goal.type === 'count' ? Math.max(1, +it.goal.n || 1) : 1, n = Math.min(+r.n || 0, 999);
+      return { n, goal, total:goal, doneN:Math.min(n, goal), complete:n >= goal, ok:!!r.ok, at:r.done || '' };
+    }
+    const s = Array.isArray(r.s) ? r.s : [], steps = it.steps || [];
+    const done = steps.filter(x => s.indexOf(x.id) >= 0).length;
+    return { s, total:steps.length, doneN:done, complete:steps.length > 0 && done === steps.length, ok:!!r.ok, at:r.done || '' };
+  }
+  function onTime(it, date, at){
+    if(it.kind !== 'routine' || !at) return true;
+    const t = new Date(at), by = mins(it.by); if(by === null) return true;
+    return iso(t) < iso(date) || (iso(t) === iso(date) && t.getHours() * 60 + t.getMinutes() <= by);
+  }
+  /* stars: earned when complete (on time for a routine) and, for "check", once a parent says OK */
+  function settle(l, it, date, pid){
+    const r = rec(l, date, it, pid, true);
+    const complete = it.kind === 'habit' ? (+r.n || 0) >= (it.goal && it.goal.type === 'count' ? Math.max(1, +it.goal.n || 1) : 1)
+      : (it.steps || []).length > 0 && (it.steps || []).every(x => (r.s || []).indexOf(x.id) >= 0);
+    if(complete && !r.done) r.done = new Date().toISOString();
+    if(!complete){ delete r.done; delete r.ok; }
+    const earned = complete && onTime(it, date, r.done) && (it.ticks !== 'check' || r.ok) ? Math.max(0, +it.stars || 0) : 0;
+    const delta = earned - (+r.st || 0);
+    if(delta){ try{ ChoreApp.addStars(pid, delta); }catch(e){} }
+    if(earned) r.st = earned; else delete r.st;
+  }
+  function canTick(it){ return !(it.ticks === 'parent' && childDevice()); }
+  function tickStep(itemId, pid, stepId, date){
+    date = date || new Date();
+    const it = data().items.find(x => x.id === itemId); if(!it || !canTick(it)) return;
+    const l = log(), r = rec(l, date, it, pid, true);
+    r.s = Array.isArray(r.s) ? r.s : [];
+    const i = r.s.indexOf(stepId); if(i >= 0) r.s.splice(i, 1); else r.s.push(stepId);
+    settle(l, it, date, pid); saveLog(l);
+  }
+  function setCount(itemId, pid, n, date){
+    date = date || new Date();
+    const it = data().items.find(x => x.id === itemId); if(!it || !canTick(it)) return;
+    const l = log(), r = rec(l, date, it, pid, true);
+    r.n = Math.max(0, Math.min(999, Math.round(n)));
+    settle(l, it, date, pid); saveLog(l);
+  }
+  function approve(itemId, pid, date){
+    date = date || new Date();
+    if(childDevice()) return;
+    const it = data().items.find(x => x.id === itemId); if(!it) return;
+    const l = log(), r = rec(l, date, it, pid, true); r.ok = new Date().toISOString();
+    settle(l, it, date, pid); saveLog(l);
+  }
+  function stepsMin(it){ return (it.steps || []).reduce((a, x) => a + (+x.min || 0), 0); }
+  function startAt(it){ const by = mins(it.by); return by === null ? null : hhmm(by - stepsMin(it)); }
+
+  /* the routine(s) on now for each child: before its "show until", the earliest one still to come */
+  function current(date, now){
+    now = now || new Date();
+    const today = iso(date) === iso(now), m = today ? now.getHours() * 60 + now.getMinutes() : -1;
+    const out = [];
+    people().forEach(p => {
+      const list = itemsFor(date, p.id, 'routine').filter(it => !today || m < (mins(it.until) !== null ? mins(it.until) : (mins(it.by) || 0) + 60))
+        .sort((a, b) => (mins(a.until) || 0) - (mins(b.until) || 0));
+      if(list.length) out.push({ it:list[0], pid:p.id });
+    });
+    return out;
+  }
+  function leftText(it, date, st, now){
+    now = now || new Date();
+    if(st.complete) return onTime(it, date, st.at) ? 'Done' : 'Done late';
+    if(iso(date) !== iso(now)) return 'by ' + it.by;
+    const left = (mins(it.by) || 0) - (now.getHours() * 60 + now.getMinutes());
+    return left < 0 ? 'Late' : left <= 90 ? left + ' min' : 'by ' + it.by;
+  }
+
+  /* ---------------- on screen ---------------- */
+  function checklist(it, pid, date, big){
+    const st = stateOf(it, date, pid), can = canTick(it), kit = kitFor(pid, date);
+    const next = (it.steps || []).find(x => st.s.indexOf(x.id) < 0);
+    const box = h('div', { class:'fhrt-list' + (big ? ' big' : ''), style:'--pc:' + colorOf(pid) });
+    (it.steps || []).forEach(x => {
+      const on = st.s.indexOf(x.id) >= 0, kitTxt = x.kit && kit.length ? kit.join(', ') + ' today' : '';
+      box.appendChild(h('button', { type:'button', class:'fhrt-step' + (on ? ' on' : '') + (x === next ? ' next' : ''), 'aria-pressed':on ? 'true' : 'false', disabled:!can,
+        'data-step':x.id, onClick:() => tickStep(it.id, pid, x.id, date) },
+        h('span', { class:'fhrt-box', 'aria-hidden':'true', text:on ? '✓' : '' }),
+        h('span', { class:'fhrt-st' }, h('b', { text:x.t }), kitTxt ? h('small', { class:'fhrt-kit', text:'🎒 ' + kitTxt }) : null),
+        x === next ? h('span', { class:'fhrt-next', text:'Next' }) : x.min ? h('span', { class:'fhrt-min', text:x.min + ' min' }) : null));
+    });
+    if(!can) box.appendChild(h('p', { class:'fho-sub', text:'A grown-up ticks these.' }));
+    return box;
+  }
+  function needsCheck(it, date, pid){ const st = stateOf(it, date, pid); return it.ticks === 'check' && st.complete && !st.ok; }
+  function checkBtn(it, pid, date){ return !childDevice() && needsCheck(it, date, pid) ? h('button', { type:'button', class:'fhrt-ok', text:'✓ OK, stars', 'aria-label':'Check ' + it.name + ' for ' + (person(pid) || {}).name, onClick:e => { e.stopPropagation(); approve(it.id, pid, date); } }) : null; }
+  function openChecklist(it, pid, date){
+    if(document.getElementById('fhrtSheet')) return;
+    const p = person(pid) || { name:'' };
+    const close = () => { const m = document.getElementById('fhrtSheet'); if(m) m.remove(); };
+    const draw = () => { const b = document.querySelector('#fhrtSheet .fhrt-sbody'); if(!b) return; b.innerHTML = ''; b.appendChild(checklist(it, pid, date, true)); };
+    const m = h('div', { id:'fhrtSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':p.name + ': ' + it.name },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:p.name + ' · ' + it.name + ' · by ' + it.by }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhrt-sbody' })));
+    document.body.appendChild(m); draw();
+    m.addEventListener('click', e => { if(e.target.closest('.fhrt-step')) setTimeout(draw, 30); });
+  }
+  /* Today: the routines strip (a row per child), or the child's own checklist on their device / name chip */
+  function todayNode(date, onlyPid){
+    const cur = current(date).filter(c => !onlyPid || c.pid === onlyPid);
+    if(!cur.length) return null;
+    const wrap = h('div', { class:'fhrt-strip' });
+    const single = onlyPid || (cur.length === 1 && childDevice());
+    cur.forEach(c => {
+      const st = stateOf(c.it, date, c.pid), p = person(c.pid), lt = leftText(c.it, date, st);
+      if(single){
+        wrap.appendChild(h('div', { class:'fhrt-own' },
+          h('div', { class:'fhrt-ownh' }, h('b', { text:c.it.name }), h('span', { class:'fhrt-pill' + (lt === 'Late' ? ' late' : st.complete ? ' done' : ''), text:lt })),
+          h('div', { class:'fhrt-bar', style:'--pc:' + colorOf(c.pid) }, h('span', { style:'width:' + Math.round(100 * st.doneN / Math.max(1, st.total)) + '%' })),
+          checklist(c.it, c.pid, date, true), checkBtn(c.it, c.pid, date)));
+        return;
+      }
+      const segs = h('span', { class:'fhrt-segs', 'aria-hidden':'true' }, (c.it.steps || []).map(x => h('span', { class:st.s.indexOf(x.id) >= 0 ? 'on' : '' })));
+      const nextStep = (c.it.steps || []).find(x => st.s.indexOf(x.id) < 0);
+      wrap.appendChild(h('button', { type:'button', class:'fhrt-row', style:'--pc:' + colorOf(c.pid), 'aria-label':p.name + ', ' + c.it.name + ': ' + st.doneN + ' of ' + st.total + ', ' + lt, onClick:() => openChecklist(c.it, c.pid, date) },
+        h('span', { class:'fhrt-av', 'aria-hidden':'true', text:p.name.charAt(0) }),
+        h('span', { class:'fhrt-mid' }, segs, h('small', { text:p.name + ' · ' + c.it.name + ' · ' + st.doneN + ' of ' + st.total + (nextStep && !st.complete ? ' · ' + nextStep.t.toLowerCase() + ' next' : '') })),
+        checkBtn(c.it, c.pid, date) || h('span', { class:'fhrt-pill' + (lt === 'Late' ? ' late' : st.complete ? ' done' : (lt.indexOf('min') > 0 ? ' soon' : '')), text:lt })));
+    });
+    return wrap;
+  }
+  function todayFace(date, onlyPid){
+    const node = todayNode(date, onlyPid); if(!node) return null;
+    const cur = current(date).filter(c => !onlyPid || c.pid === onlyPid);
+    let done = 0, total = 0; cur.forEach(c => { const st = stateOf(c.it, date, c.pid); done += st.doneN; total += st.total; });
+    const names = Array.from(new Set(cur.map(c => c.it.name)));
+    const lt = leftText(cur[0].it, date, stateOf(cur[0].it, date, cur[0].pid));
+    return { node, title:names.length === 1 ? names[0] : 'Routines', value:done + ' of ' + total, sub:cur.every(c => stateOf(c.it, date, c.pid).complete) ? 'All done' : (lt.indexOf('min') > 0 ? lt + ' left' : lt), bar:total ? done / total : null };
+  }
+  /* habits: a row per child and habit, tick or − / + */
+  function habitsNode(date, onlyPid){
+    const rows = [];
+    people().filter(p => !onlyPid || p.id === onlyPid).forEach(p => itemsFor(date, p.id, 'habit').forEach(it => rows.push({ it, p })));
+    if(!rows.length) return null;
+    const wrap = h('div', { class:'fhrt-habits' });
+    rows.forEach(x => {
+      const st = stateOf(x.it, date, x.p.id), can = canTick(x.it), count = x.it.goal && x.it.goal.type === 'count';
+      const step = count ? (x.it.goal.unit === 'min' ? 5 : 1) : 1;
+      wrap.appendChild(h('div', { class:'fhrt-hab' + (st.complete ? ' done' : ''), style:'--pc:' + colorOf(x.p.id), 'data-habit':x.it.id, 'data-person':x.p.id },
+        h('span', { class:'fhrt-av', 'aria-hidden':'true', text:x.p.name.charAt(0) }),
+        h('span', { class:'fhrt-hname' }, h('b', { text:x.it.name }), h('small', { text:x.p.name + (count ? ' · ' + st.n + ' / ' + st.goal + ' ' + (x.it.goal.unit || '') : '') })),
+        count ? h('span', { class:'fhrt-count' },
+          h('button', { type:'button', class:'fhrt-cbtn', 'aria-label':'Less ' + x.it.name + ' for ' + x.p.name, text:'−', disabled:!can || !st.n, onClick:() => setCount(x.it.id, x.p.id, st.n - step, date) }),
+          h('button', { type:'button', class:'fhrt-cbtn plus', 'aria-label':'More ' + x.it.name + ' for ' + x.p.name, text:'+', disabled:!can, onClick:() => setCount(x.it.id, x.p.id, st.n + step, date) }))
+          : h('button', { type:'button', class:'fhrt-htick' + (st.complete ? ' on' : ''), 'aria-pressed':st.complete ? 'true' : 'false', 'aria-label':x.it.name + ' done for ' + x.p.name, disabled:!can, text:st.complete ? '✓' : '', onClick:() => setCount(x.it.id, x.p.id, st.complete ? 0 : 1, date) }),
+        checkBtn(x.it, x.p.id, date)));
+    });
+    return wrap;
+  }
+  function habitsFace(date, onlyPid){
+    const node = habitsNode(date, onlyPid); if(!node) return null;
+    let done = 0, total = 0, behind = '';
+    people().filter(p => !onlyPid || p.id === onlyPid).forEach(p => itemsFor(date, p.id, 'habit').forEach(it => { total++; if(stateOf(it, date, p.id).complete) done++; else if(!behind) behind = p.name + ': ' + it.name.toLowerCase() + ' to do'; }));
+    return { node, title:'Habits', value:done + ' of ' + total, sub:done === total ? 'All done' : behind, bar:total ? done / total : null };
+  }
+  /* kitchen display: a column per child with big steps */
+  function kitchenNode(now){
+    const cur = current(now, now); if(!cur.length) return null;
+    const c0 = cur[0], st0 = stateOf(c0.it, now, c0.pid), lt = leftText(c0.it, now, st0, now);
+    const card = h('div', { class:'fhk-card fhrt-k' },
+      h('div', { class:'fhk-label', text:(cur.length > 1 ? 'Routines' : c0.it.name) + (lt.indexOf('min') > 0 ? ' · ' + lt + ' to go' : lt === 'Late' ? ' · late' : ' · by ' + c0.it.by) }));
+    const cols = h('div', { class:'fhrt-kcols' });
+    cur.forEach(c => { const p = person(c.pid), st = stateOf(c.it, now, c.pid);
+      cols.appendChild(h('div', { class:'fhrt-kcol', style:'--pc:' + colorOf(c.pid) },
+        h('div', { class:'fhrt-kh' }, h('span', { class:'fhrt-av', 'aria-hidden':'true', text:p.name.charAt(0) }), h('b', { text:p.name }), h('span', { text:st.doneN + ' of ' + st.total })),
+        checklist(c.it, c.pid, now, true))); });
+    card.appendChild(cols);
+    return card;
+  }
+
+  /* calendar: school breaks and trips as read-only all-day plans */
+  function events(date){
+    const d = iso(date);
+    return data().breaks.filter(b => b.from <= d && d <= (b.to || b.from)).map(b => ({ id:'brk:' + b.id + ':' + d, title:(b.kind === 'away' ? '🧳 ' : '🏫 ') + b.name, allDay:true, ro:true, brk:true, color:'#7A6A9A', who:'' }));
+  }
+
+  /* reminders: exact-time nudges (k:'at', needs the send-reminders function that knows them) and kit lines */
+  function pushItems(day){
+    const out = [], d = iso(day), now = new Date(), pids = parents();
+    people().forEach(p => {
+      itemsFor(day, p.id).forEach(it => {
+        const st = stateOf(it, day, p.id); if(st.complete) return;
+        const rm = it.remind || {};
+        if(it.kind === 'routine'){
+          const by = mins(it.by); if(by === null) return;
+          const start = by - stepsMin(it), left = (it.steps || []).filter(x => st.s.indexOf(x.id) < 0).map(x => x.t);
+          if(rm.start && start >= 0) out.push({ k:'at', key:'rt:' + it.id + ':' + p.id + ':' + d + ':s', date:d, at:hhmm(start), who:[p.id], title:it.name + ': time to start', body:'Done by ' + it.by + '. First: ' + ((it.steps || [])[0] || {}).t });
+          if(rm.late && by - 10 > start) out.push({ k:'at', key:'rt:' + it.id + ':' + p.id + ':' + d + ':l', date:d, at:hhmm(by - 10), who:[p.id], title:it.name + ': 10 minutes to go', body:left.length + (left.length === 1 ? ' step' : ' steps') + ' left: ' + left.slice(0, 3).join(', ') });
+          if(rm.parents && pids.length) out.push({ k:'at', key:'rt:' + it.id + ':' + p.id + ':' + d + ':p', date:d, at:it.by, who:pids, title:p.name + ': ' + it.name.toLowerCase() + ' not finished', body:left.length + ' left: ' + left.slice(0, 3).join(', ') });
+        } else if(rm.at){
+          out.push({ k:'at', key:'hb:' + it.id + ':' + p.id + ':' + d, date:d, at:rm.at, who:[p.id], title:it.name + (it.goal && it.goal.type === 'count' ? ' ' + it.goal.n + ' ' + (it.goal.unit || '') : '') + ' today?', body:'Tick it off in the app when it’s done' });
+        }
+      });
+    });
+    return d < iso(now) ? [] : out;
+  }
+  function kitLines(day){
+    const out = [], pids = parents();
+    people().filter(p => p.role === 'child').forEach(p => { const k = kitFor(p.id, day); if(k.length) out.push({ t:'🎒 ' + p.name + ': ' + k.join(', '), who:[p.id].concat(pids) }); });
+    return out;
+  }
+
+  /* ---------------- Routines page ---------------- */
+  /* the last 20 days it was on: done (on time), partly done, missed; how many done, and how many in a row.
+     Today only counts once it's done. */
+  function weekDots(it, pid){
+    const t = new Date(), list = [], since = it.created || iso(t);
+    for(let i = 0; i < 90 && list.length < 20; i++){
+      const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() - i);
+      if(iso(d) < since) break;
+      if(!activeOn(it, d, pid)) continue;
+      const st = stateOf(it, d, pid), full = st.complete && (it.kind === 'habit' || onTime(it, d, st.at));
+      list.push({ today:i === 0, full, part:!full && st.doneN > 0 });
+    }
+    const counted = list.filter(x => !x.today || x.full);
+    let run = 0; for(const x of counted){ if(x.full) run++; else break; }
+    return { days:list.slice().reverse().map(x => x.full ? 'on' : x.part ? 'part' : x.today ? 'today' : ''), n:counted.length, hit:counted.filter(x => x.full).length, run };
+  }
+  function itemCard(it){
+    const who = (it.who || []).map(person).filter(Boolean);
+    const meta = it.kind === 'routine' ? (it.steps || []).length + ' steps · by ' + it.by + ' · ' + daysLabel(it.days)
+      : (it.goal && it.goal.type === 'count' ? it.goal.n + ' ' + (it.goal.unit || '') + ' a day' : 'Tick it') + ' · ' + daysLabel(it.days);
+    return h('div', { class:'fho-card fhrt-card' },
+      h('button', { type:'button', class:'fho-card-main', onClick:() => locked() ? null : editor(it), disabled:locked() },
+        h('span', { class:'fho-emoji', text:it.kind === 'routine' ? (mins(it.by) < 720 ? '🌅' : mins(it.by) < 1080 ? '🎒' : '🌙') : '⭐' }),
+        h('span', { class:'fho-card-txt' }, h('b', { text:it.name }), h('small', { text:meta + (+it.stars ? ' · ' + it.stars + '★' : '') }))),
+      who.map(p => { const w = weekDots(it, p.id);
+        return h('div', { class:'fhrt-prog', style:'--pc:' + colorOf(p.id) }, h('b', { text:p.name }),
+          h('span', { class:'fhrt-dots', 'aria-hidden':'true' }, w.days.map(c => h('span', { class:c }))),
+          h('small', { text:w.n ? w.hit + '/' + w.n + (w.run > 2 ? ' · ' + w.run + ' in a row' : '') : 'New' })); }));
+  }
+  function daysLabel(d){ return d === 'school' ? 'school days' : d === 'weekends' ? 'weekends' : 'every day'; }
+  function render(root){
+    if(!root) return; root.innerHTML = '';
+    const d = data(), lk = locked();
+    root.appendChild(h('div', { class:'fho-headrow' },
+      h('div', {}, h('h2', { class:'fho-h', text:'Routines & habits' }),
+        h('p', { class:'fho-sub', text:'Routines are steps done by a time, like teeth and shoes by 8:00. Habits are once a day, like reading. Both can earn stars on the chore chart.' }))));
+    const group = (id, title, kind, btnText) => {
+      const list = d.items.filter(it => it.kind === kind);
+      const sec = h('section', { class:'fho-group', id }, h('div', { class:'fho-group-h' }, h('h3', { text:title }),
+        lk ? null : h('button', { type:'button', class:'btn small', id:id + 'Add', text:btnText, onClick:() => editor(null, kind) })));
+      if(list.length){ const g = h('div', { class:'fho-cards' }); list.forEach(it => g.appendChild(itemCard(it))); sec.appendChild(g); }
+      else sec.appendChild(h('p', { class:'fho-sub fho-empty', text:kind === 'routine' ? 'None yet. Start with a school morning or bedtime.' : 'None yet. Reading and homework are good ones to start with.' }));
+      root.appendChild(sec);
+    };
+    group('fhrtRoutines', '🌅 Routines', 'routine', '＋ Add a routine');
+    group('fhrtHabits', '⭐ Habits', 'habit', '＋ Add a habit');
+    // school holidays and trips
+    const today = iso(new Date());
+    const br = d.breaks.filter(b => (b.to || b.from) >= today).sort((a, b) => a.from.localeCompare(b.from));
+    const bsec = h('section', { class:'fho-group', id:'fhrtBreaks' }, h('div', { class:'fho-group-h' }, h('h3', { text:'🏫 School holidays and trips' }),
+      lk ? null : h('button', { type:'button', class:'btn small', id:'fhrtBreakAdd', text:'＋ Add dates', onClick:() => breakEditor(null) })));
+    bsec.appendChild(h('p', { class:'fho-sub', text:'School-day routines and habits pause on these dates. Trips away pause everything for whoever’s going.' }));
+    br.forEach(b => bsec.appendChild(h('button', { type:'button', class:'fhrt-brk', disabled:lk, onClick:() => breakEditor(b) },
+      h('span', { 'aria-hidden':'true', text:b.kind === 'away' ? '🧳' : '🏫' }), h('b', { text:b.name }),
+      h('small', { text:fmt(b.from) + (b.to && b.to !== b.from ? ' to ' + fmt(b.to) : '') }))));
+    root.appendChild(bsec);
+    // kit days
+    const ksec = h('section', { class:'fho-group', id:'fhrtKit' }, h('div', { class:'fho-group-h' }, h('h3', { text:'🎒 Kit days' })));
+    ksec.appendChild(h('p', { class:'fho-sub', text:'What to pack on which days. It shows on the bag step, and the evening before. Events that mention PE, swimming or kit are picked up too.' }));
+    people().filter(p => p.role === 'child').forEach(p => {
+      const ks = d.kit[p.id] || [];
+      ksec.appendChild(h('div', { class:'fhrt-kitrow', 'data-person':p.id }, h('b', { style:'color:' + colorOf(p.id), text:p.name }),
+        h('div', { class:'ob-chips' }, ks.map(k => h('button', { type:'button', class:'ob-chip', disabled:lk, text:k.t + ' · ' + (k.days || []).map(x => DAYN[x]).join(', '), onClick:() => kitEditor(p.id, k) })),
+          lk ? null : h('button', { type:'button', class:'ob-chip fhrt-kitadd', text:'＋ Kit', onClick:() => kitEditor(p.id, null) }))));
+    });
+    root.appendChild(ksec);
+  }
+  function fmt(s){ const d = parse(s); return d ? d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }) : s; }
+
+  /* ---- editors ---- */
+  function sheet(id, title, body, actions){
+    const close = () => { const m = document.getElementById(id); if(m) m.remove(); };
+    const m = h('div', { id, class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':title },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:title }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' }, body, h('div', { class:'fhe-actions' }, actions(close)))));
+    document.body.appendChild(m); return m;
+  }
+  const field = (lab, el) => h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:lab }), el);
+  function whoChips(sel){
+    const box = h('div', { class:'ob-chips fhrt-who' });
+    const draw = () => { box.innerHTML = ''; people().forEach(p => { const on = sel.indexOf(p.id) >= 0;
+      box.appendChild(h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-person':p.id, text:p.name, onClick:() => { const i = sel.indexOf(p.id); if(i >= 0) sel.splice(i, 1); else sel.push(p.id); draw(); } })); }); };
+    draw(); return box;
+  }
+  function sel(id, aria, opts, val){ const s = h('select', { class:'fhe-in', id, 'aria-label':aria }); opts.forEach(o => s.appendChild(h('option', { value:o[0], text:o[1] }))); s.value = String(val); return s; }
+  const TICKS = [['child', 'They tick it'], ['check', 'They tick, a grown-up checks'], ['parent', 'A grown-up ticks it']];
+  function editor(orig, kind){
+    if(document.getElementById('fhrtEdit')) return;
+    kind = orig ? orig.kind : kind;
+    const kids = people().filter(p => p.role === 'child').map(p => p.id);
+    const it = JSON.parse(JSON.stringify(orig || (kind === 'routine'
+      ? { id:uid(), kind, name:'', who:kids.slice(), days:'school', by:'08:00', until:'09:00', steps:[], remind:{ start:1, late:1, parents:1 }, stars:2, ticks:'child' }
+      : { id:uid('h'), kind, name:'', who:kids.slice(), days:'school', goal:{ type:'tick', n:1, unit:'' }, remind:{ at:'' }, stars:1, ticks:'child' })));
+    it.remind = it.remind || {};
+    const err = h('div', { class:'fhe-err' });
+    const name = h('input', { class:'fhe-in', id:'fhrtName', value:it.name, maxlength:'40', placeholder:kind === 'routine' ? 'e.g. School morning' : 'e.g. Read', 'aria-label':'Name' });
+    const days = sel('fhrtDays', 'Days', [['school', 'School days'], ['every', 'Every day'], ['weekends', 'Weekends']], it.days);
+    const stars = sel('fhrtStars', 'Stars', [0, 1, 2, 3, 4, 5].map(n => [n, n ? n + (n === 1 ? ' star' : ' stars') : 'No stars']), +it.stars || 0);
+    const ticks = sel('fhrtTicks', 'Who ticks', TICKS, it.ticks || 'child');
+    let body;
+    if(kind === 'routine'){
+      const by = h('input', { class:'fhe-in', id:'fhrtBy', type:'time', value:it.by }), until = h('input', { class:'fhe-in', id:'fhrtUntil', type:'time', value:it.until || '' });
+      const stepsBox = h('div', { class:'fhrt-steps' }), hint = h('p', { class:'fho-sub', id:'fhrtStartHint' });
+      const tpl = orig ? null : h('div', { class:'ob-chips' }, TEMPLATES.map(t => h('button', { type:'button', class:'ob-chip', 'data-tpl':t.id, text:t.name, onClick:() => {
+        name.value = t.name; by.value = t.by; until.value = t.until; days.value = t.days;
+        it.steps = t.steps.map(s => ({ id:uid('s'), t:s[0], min:s[1], kit:s[2] ? 1 : 0 })); drawSteps(); } })));
+      const drawHint = () => { const tot = it.steps.reduce((a, x) => a + (+x.min || 0), 0), b = mins(by.value);
+        hint.textContent = it.steps.length ? 'Steps add up to ' + tot + ' min' + (b !== null && tot ? ', so start by ' + hhmm(b - tot) : '') + '.' : ''; };
+      const drawSteps = () => {
+        stepsBox.innerHTML = '';
+        it.steps.forEach((x, i) => stepsBox.appendChild(h('div', { class:'fhrt-srow' },
+          h('input', { class:'fhe-in', value:x.t, maxlength:'40', 'aria-label':'Step ' + (i + 1), onInput:e => { x.t = e.target.value; } }),
+          h('input', { class:'fhe-in fhrt-smin', type:'number', min:'0', max:'120', value:x.min || '', placeholder:'min', 'aria-label':'Minutes for step ' + (i + 1), onInput:e => { x.min = +e.target.value || 0; drawHint(); } }),
+          h('label', { class:'fhrt-skit', title:'Show the day’s kit on this step' }, h('input', { type:'checkbox', 'aria-label':'Show the day’s kit on step ' + (i + 1), checked:!!x.kit, onChange:e => { x.kit = e.target.checked ? 1 : 0; } }), h('span', { text:'Kit' })),
+          h('button', { type:'button', class:'fhly-mv', 'aria-label':'Move step ' + (i + 1) + ' up', text:'↑', disabled:i === 0, onClick:() => { it.steps.splice(i - 1, 0, it.steps.splice(i, 1)[0]); drawSteps(); } }),
+          h('button', { type:'button', class:'fhly-mv', 'aria-label':'Remove step ' + (i + 1), text:'✕', onClick:() => { it.steps.splice(i, 1); drawSteps(); } }))));
+        stepsBox.appendChild(h('button', { type:'button', class:'fhe-add', id:'fhrtAddStep', text:'＋ Add a step', onClick:() => { it.steps.push({ id:uid('s'), t:'', min:5, kit:0 }); drawSteps(); const ins = stepsBox.querySelectorAll('.fhrt-srow input.fhe-in:not(.fhrt-smin)'); if(ins.length) ins[ins.length - 1].focus(); } }));
+        drawHint();
+      };
+      by.addEventListener('input', drawHint);
+      drawSteps();
+      const chk = (k, label) => h('label', { class:'fhrt-chk' }, h('input', { type:'checkbox', checked:!!it.remind[k], onChange:e => { it.remind[k] = e.target.checked ? 1 : 0; } }), h('span', { text:label }));
+      body = h('div', { class:'fhrt-form' },
+        tpl ? h('p', { class:'fhe-lab', text:'Start from' }) : null, tpl,
+        field('Name', name), h('p', { class:'fhe-lab', text:'Who' }), whoChips(it.who),
+        h('div', { class:'fhpw-two' }, field('Done by', by), field('Days', days)),
+        field('Show on Today until', until),
+        h('p', { class:'fhe-lab', text:'Steps' }), stepsBox, hint,
+        h('div', { class:'fhrt-rems' }, h('p', { class:'fhe-lab', text:'Reminders' }),
+          chk('start', 'Nudge them when it’s time to start'), chk('late', 'And 10 minutes before, if steps are left'), chk('parents', 'Tell the grown-ups at the time who isn’t done')),
+        h('div', { class:'fhpw-two' }, field('Stars when done on time', stars), field('Who ticks', ticks)));
+      body.__get = () => { it.by = by.value || '08:00'; it.until = until.value || hhmm((mins(it.by) || 0) + 60); };
+    } else {
+      it.goal = it.goal || { type:'tick', n:1, unit:'' };
+      const ideas = orig ? null : h('div', { class:'ob-chips' }, IDEAS.map(x => h('button', { type:'button', class:'ob-chip', 'data-idea':x[0], text:x[0], onClick:() => { name.value = x[0]; it.goal = { type:x[1], n:x[2], unit:x[3] }; drawGoal(); } })));
+      const goalBox = h('div', { class:'fhrt-goal' });
+      const drawGoal = () => {
+        goalBox.innerHTML = '';
+        goalBox.appendChild(h('div', { class:'fhly-seg', role:'group', 'aria-label':'How it’s counted' }, [['tick', 'Tick it'], ['count', 'Count it']].map(o => h('button', { type:'button', class:it.goal.type === o[0] ? 'on' : '', text:o[1],
+          onClick:() => { it.goal.type = o[0]; if(o[0] === 'count' && (+it.goal.n || 0) < 2){ it.goal.n = 20; it.goal.unit = 'min'; } drawGoal(); } }))));
+        if(it.goal.type === 'count') goalBox.appendChild(h('div', { class:'fhrt-goalrow' },
+          h('input', { class:'fhe-in', id:'fhrtGoalN', type:'number', min:'1', max:'999', value:it.goal.n, 'aria-label':'Goal', onInput:e => { it.goal.n = Math.max(1, +e.target.value || 1); } }),
+          (s => { s.addEventListener('change', e => { it.goal.unit = e.target.value; }); return s; })(sel('fhrtGoalU', 'Unit', UNITS.map(u => [u[0], u[1] + ' a day']), it.goal.unit || 'min'))));
+      };
+      drawGoal();
+      const remOn = h('input', { type:'checkbox', id:'fhrtRemOn', checked:!!it.remind.at }), remAt = h('input', { class:'fhe-in', id:'fhrtRemAt', type:'time', value:it.remind.at || '18:30', 'aria-label':'Reminder time' });
+      body = h('div', { class:'fhrt-form' },
+        ideas ? h('p', { class:'fhe-lab', text:'Ideas' }) : null, ideas,
+        field('Name', name), h('p', { class:'fhe-lab', text:'How it’s counted' }), goalBox,
+        h('p', { class:'fhe-lab', text:'Who' }), whoChips(it.who), field('Days', days),
+        h('label', { class:'fhrt-chk' }, remOn, h('span', { text:'Remind them at' }), remAt),
+        h('div', { class:'fhpw-two' }, field('Stars a day', stars), field('Who ticks', ticks)));
+      body.__get = () => { it.remind = { at:remOn.checked ? (remAt.value || '18:30') : '' }; if(it.goal.type === 'tick'){ it.goal.n = 1; it.goal.unit = ''; } };
+    }
+    body.appendChild(err);
+    sheet('fhrtEdit', orig ? it.name : kind === 'routine' ? 'Add a routine' : 'Add a habit', body, close => [
+      orig ? h('button', { type:'button', class:'btn secondary', id:'fhrtDel', text:'Delete', onClick:() => { if(!confirm('Delete “' + orig.name + '”? Its record goes too.')) return; const dd = data(); dd.items = dd.items.filter(x => x.id !== orig.id); saveData(dd); close(); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhrtSave', text:'Save', onClick:() => {
+        it.name = name.value.trim(); if(!it.name){ err.textContent = 'Give it a name.'; name.focus(); return; }
+        if(!it.who.length){ err.textContent = 'Who is it for?'; return; }
+        body.__get(); it.days = days.value; it.stars = +stars.value; it.ticks = ticks.value;
+        if(kind === 'routine'){ it.steps = it.steps.filter(x => x.t.trim()).map(x => Object.assign(x, { t:x.t.trim().slice(0, 40) })); if(!it.steps.length){ err.textContent = 'Add at least one step.'; return; } }
+        if(!it.created) it.created = iso(new Date());
+        const dd = data(), i = dd.items.findIndex(x => x.id === it.id); if(i >= 0) dd.items[i] = it; else dd.items.push(it);
+        saveData(dd); close(); } })]);
+    setTimeout(() => fhFocusIfDesktop(name), 50);
+  }
+  function breakEditor(orig){
+    if(document.getElementById('fhrtBrk')) return;
+    const b = JSON.parse(JSON.stringify(orig || { id:uid('b'), name:'', from:iso(new Date()), to:'', kind:'school', who:[] }));
+    const err = h('div', { class:'fhe-err' });
+    const name = h('input', { class:'fhe-in', id:'fhrtBrkName', value:b.name, maxlength:'40', placeholder:'e.g. Half term, Cornwall', 'aria-label':'Name' });
+    const from = h('input', { class:'fhe-in', id:'fhrtBrkFrom', type:'date', value:b.from }), to = h('input', { class:'fhe-in', id:'fhrtBrkTo', type:'date', value:b.to || b.from });
+    const kind = sel('fhrtBrkKind', 'What kind', [['school', 'School holiday'], ['away', 'Away on a trip']], b.kind);
+    const who = whoChips(b.who);
+    const whoBox = h('div', {}, h('p', { class:'fhe-lab', text:'Who’s going (none ticked = everyone)' }), who);
+    const showWho = () => { whoBox.style.display = kind.value === 'away' ? '' : 'none'; }; kind.addEventListener('change', showWho); showWho();
+    const body = h('div', { class:'fhrt-form' }, field('Name', name), field('What kind', kind), h('div', { class:'fhpw-two' }, field('From', from), field('To', to)), whoBox, err);
+    sheet('fhrtBrk', orig ? b.name : 'Add school holidays or a trip', body, close => [
+      orig ? h('button', { type:'button', class:'btn secondary', text:'Delete', onClick:() => { const dd = data(); dd.breaks = dd.breaks.filter(x => x.id !== b.id); saveData(dd); close(); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhrtBrkSave', text:'Save', onClick:() => {
+        b.name = name.value.trim() || (kind.value === 'away' ? 'Away' : 'School holiday'); b.from = from.value; b.to = to.value || from.value; b.kind = kind.value;
+        if(!parse(b.from)){ err.textContent = 'Add the first day.'; return; }
+        if(b.to < b.from){ err.textContent = 'The last day is before the first.'; return; }
+        if(b.kind !== 'away') b.who = [];
+        const dd = data(), i = dd.breaks.findIndex(x => x.id === b.id); if(i >= 0) dd.breaks[i] = b; else dd.breaks.push(b);
+        saveData(dd); close(); } })]);
+  }
+  function kitEditor(pid, orig){
+    if(document.getElementById('fhrtKitEd')) return;
+    const k = JSON.parse(JSON.stringify(orig || { id:uid('k'), t:'', days:[] }));
+    const err = h('div', { class:'fhe-err' });
+    const name = h('input', { class:'fhe-in', id:'fhrtKitName', value:k.t, maxlength:'30', placeholder:'e.g. PE kit, Swimming bag', 'aria-label':'What to pack' });
+    const dbox = h('div', { class:'ob-chips' });
+    const draw = () => { dbox.innerHTML = ''; DAYN.forEach((n, i) => { const on = k.days.indexOf(i) >= 0;
+      dbox.appendChild(h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-day':i, text:n, onClick:() => { const j = k.days.indexOf(i); if(j >= 0) k.days.splice(j, 1); else k.days.push(i); k.days.sort(); draw(); } })); }); };
+    draw();
+    sheet('fhrtKitEd', (person(pid) || {}).name + ': kit day', h('div', { class:'fhrt-form' }, field('What to pack', name), h('p', { class:'fhe-lab', text:'Which days' }), dbox, err), close => [
+      orig ? h('button', { type:'button', class:'btn secondary', text:'Delete', onClick:() => { const dd = data(); dd.kit[pid] = (dd.kit[pid] || []).filter(x => x.id !== k.id); saveData(dd); close(); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhrtKitSave', text:'Save', onClick:() => {
+        k.t = name.value.trim(); if(!k.t){ err.textContent = 'What needs packing?'; return; } if(!k.days.length){ err.textContent = 'Pick at least one day.'; return; }
+        const dd = data(); dd.kit[pid] = dd.kit[pid] || []; const i = dd.kit[pid].findIndex(x => x.id === k.id); if(i >= 0) dd.kit[pid][i] = k; else dd.kit[pid].push(k);
+        saveData(dd); close(); } })]);
+  }
+
+  return { KEY, LOG, TEMPLATES, data, log, activeOn, itemsFor, kitFor, stateOf, tickStep, setCount, approve, canTick, current, todayFace, habitsFace, kitchenNode,
+    events, pushItems, kitLines, render, editor, breakEditor, kitEditor, startAt };
 })();
 
 // Builds (or removes, if already open) an inline meal-picker under a meal
@@ -11848,7 +12675,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -11862,6 +12689,7 @@ function refreshPage(pageId){
   else if(pageId==='tasks') FHTasks.render(document.getElementById('tasksContent'));
   else if(pageId==='occasions') FHOcc.render(document.getElementById('occasionsContent'));
   else if(pageId==='paperwork') FHPaper.render(document.getElementById('paperworkContent'));
+  else if(pageId==='routines') FHRoutines.render(document.getElementById('routinesContent'));
   // mealplan / chores refresh themselves via their own module's render()
   if(typeof fhSetupBanner === 'function') fhSetupBanner(pageId);
 }
@@ -13553,7 +14381,7 @@ const FHKitchen = (function(){
     tickClock();
     const wrap = el.querySelector('.fhk-main'); wrap.innerHTML = '';
     // the screen's blocks, in this device's order and widths (FHLayout, "✏️ Customise" in the top bar)
-    const nodes = { shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
+    const nodes = { routines:(typeof FHRoutines !== 'undefined' ? FHRoutines.kitchenNode(now) : null), shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
     if(Feature.on('meals')){
       nodes.dinner = mealCard(now);
       const tm = shAddDays(now, 1); let ti = null; try{ ti = MealApp.getDayDisplay(tm); }catch(e){}
@@ -13622,7 +14450,7 @@ const FHKitchen = (function(){
   })();
   // launch straight into it if asked (not while the setup wizard is up)
   setTimeout(()=>{ if(rawGet(AUTO_KEY) === '1' && !document.getElementById('obOverlay') && !el) open(); }, 700);
-  return { open, close, isOpen };
+  return { open, close, isOpen, refresh:render };
 })();
 
 /* ==================== PARENT LOCK (PIN) ==================== */
@@ -13807,7 +14635,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-routines-v1':1, 'family-hub-routine-log-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -14530,6 +15358,7 @@ const FHPush = (function(){
       }
       try{ if(typeof FHOcc !== 'undefined') FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       try{ if(typeof FHPaper !== 'undefined') FHPaper.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
+      try{ if(typeof FHRoutines !== 'undefined'){ FHRoutines.pushItems(day).forEach(function(i){ items.push(i); }); FHRoutines.kitLines(day).forEach(function(l){ eve.push(l); }); } }catch(e){}
       try{ if(typeof FHShare !== 'undefined' && Feature.on('meals')) FHShare.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
