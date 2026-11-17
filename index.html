@@ -1939,7 +1939,9 @@ body.fhr-lock{overflow:hidden;}
 .fhk-exit{border-color:var(--accent);color:var(--accent-dark);}
 .fhk-auto{display:flex;align-items:center;gap:6px;font-size:.75em;color:var(--muted);font-weight:600;}
 .fhk-auto input{width:20px;height:20px;accent-color:var(--accent);}
-.fhk-main{flex:1;overflow:auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;padding:18px 22px 90px;align-items:start;}
+.fhk-main{flex:1;overflow:auto;display:flex;flex-direction:column;gap:18px;padding:18px 22px 90px;}
+.fhk-main .fhly-cols{gap:18px;}
+.fhk-main .fhly-col{gap:18px;}
 .fhk-main .fhk-wide{grid-column:1/-1;}
 .fhk-col{display:flex;flex-direction:column;gap:18px;min-width:0;}
 .fhk-card{background:var(--white);border:1px solid var(--panel-line);border-radius:18px;padding:18px 20px;}
@@ -2236,6 +2238,9 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhpush-row .ob-input{width:auto;}
 .fhpush-row > span{flex:0 1 auto;}
 .fhpush-row input[type=checkbox]{flex:0 0 auto;}
+.fhpush-row.solo{flex-wrap:nowrap;align-items:flex-start;}
+.fhpush-row.solo > span{flex:1 1 auto;min-width:0;}
+.fhpush-row.solo input[type=checkbox]{margin-top:4px;}
 
 .fhpush-freqs{display:flex;flex-wrap:wrap;gap:6px 14px;padding-left:24px;}
 .fhnudge-quick .fhe-chip{font-size:.85rem;padding:6px 11px;}
@@ -2451,7 +2456,11 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhpush-row.fhpush-house input[type=checkbox]{ margin-top:4px; width:20px; height:20px; }
 .fhpush-row.fhpush-house > span{ display:flex; flex-direction:column; gap:2px; flex:1 1 auto; min-width:0; }
 .fhpush-house small{ color:var(--muted,#777); font-size:0.82rem; }
-.fhpush-cals{ margin:0 0 6px 26px; }
+.fhpush-group{ display:flex; flex-direction:column; gap:4px; }
+.fhpush-group > .ob-hint{ margin:0 0 0 26px; font-size:0.85rem; }
+.fhpush-cals{ margin:4px 0 6px 26px; display:flex; flex-direction:column; gap:4px; }
+.fhpush-cals .ob-hint{ margin:0; font-size:0.85rem; }
+.fhpush-sublab{ margin:0; font-weight:700; font-size:0.9rem; }
 /* Paperwork (ob_paperwork.js) */
 .fhpw-card.open{ border-color:var(--accent,#6C4F8A); }
 .fhpw-card.late{ border-color:#C0392B; }
@@ -2462,6 +2471,53 @@ body.kid-locked #manageChores{ display:none !important; }
 .fhpw-two{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .fhpw-hint{ font-size:0.85rem; margin:-2px 0 4px; }
 @media (max-width:380px){ .fhpw-two{ grid-template-columns:1fr; } }
+/* Settings in folding sections (fhSettingsGroups in ob_settings.js) */
+.st-title{ margin:0 0 12px; font-size:1.3rem; }
+.st-group{ background:var(--white); border:1px solid var(--panel-line); border-radius:14px; margin-bottom:10px; }
+.st-group > summary{ list-style:none; display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer; border-radius:14px; }
+.st-group > summary::-webkit-details-marker{ display:none; }
+.st-group > summary:focus-visible{ outline:2px solid var(--accent,#6C4F8A); outline-offset:2px; }
+.st-g-ico{ font-size:22px; flex:0 0 auto; }
+.st-g-txt{ display:flex; flex-direction:column; gap:2px; flex:1 1 auto; min-width:0; }
+.st-g-txt small{ color:var(--muted,#777); font-size:0.85rem; overflow-wrap:anywhere; }
+.st-group > summary::after, .st-group > summary::before{ content:none !important; display:none !important; }
+.st-g-chev{ flex:0 0 auto; font-size:22px; color:var(--muted,#777); transition:transform .15s; }
+.st-group[open] > summary .st-g-chev{ transform:rotate(90deg); }
+.st-group[open] > summary{ border-bottom:1px solid var(--panel-line); border-radius:14px 14px 0 0; }
+.st-g-body{ padding:6px 10px 2px; }
+.st-g-body > .st-card{ border:0; border-bottom:1px solid var(--panel-line); border-radius:0; margin:0; padding:4px 4px 12px; background:transparent; }
+.st-g-body > .st-card:last-child{ border-bottom:0; }
+@media (prefers-reduced-motion: reduce){ .st-g-chev{ transition:none; } }
+/* Build your own Today / kitchen display (ob_layout.js) */
+.fhly-cols{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+.fhly-col{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+.fhly-col > .fhd-sec{ margin:0; }
+.fhly-foot{ display:flex; justify-content:center; margin:18px 0 8px; }
+.fhly-btn{ font:inherit; font-size:0.9rem; font-weight:700; padding:8px 16px; border-radius:20px; border:1.5px solid var(--panel-line,#ddd); background:transparent; color:var(--muted,#777); cursor:pointer; min-height:40px; }
+.fhly-btn:hover{ color:var(--accent-dark,#543A70); border-color:var(--accent,#6C4F8A); }
+#fhlySheet{ z-index:4500; }
+.fhly-presets .ob-chip{ min-height:40px; }
+.fhly-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.fhly-row{ display:flex; align-items:center; gap:8px; padding:8px 8px 8px 4px; border:1.5px solid var(--panel-line,#ddd); border-radius:12px; background:var(--white,#fff); touch-action:none; }
+.fhly-row.off{ opacity:.65; }
+.fhly-row.dragging{ border-color:var(--accent,#6C4F8A); box-shadow:0 4px 14px rgba(0,0,0,.15); }
+.fhly-grip{ cursor:grab; color:var(--muted,#777); font-size:18px; padding:0 4px; user-select:none; }
+.fhly-main{ display:flex; align-items:center; gap:8px; flex:1 1 auto; min-width:0; cursor:pointer; }
+.fhly-main input{ width:20px; height:20px; flex:0 0 auto; accent-color:var(--accent,#6C4F8A); }
+.fhly-ico{ font-size:20px; flex:0 0 auto; }
+.fhly-txt{ display:flex; flex-direction:column; min-width:0; }
+.fhly-txt small{ color:var(--muted,#777); font-size:0.8rem; }
+.fhly-size{ font:inherit; font-size:0.8rem; font-weight:700; padding:6px 8px; border-radius:10px; border:1.5px solid var(--panel-line,#ddd); background:transparent; color:inherit; cursor:pointer; flex:0 0 auto; min-height:36px; }
+.fhly-size.half{ border-color:var(--accent,#6C4F8A); color:var(--accent-dark,#543A70); }
+.fhly-moves{ display:flex; gap:4px; flex:0 0 auto; }
+.fhly-moves button{ font:inherit; width:36px; height:36px; border-radius:10px; border:1.5px solid var(--panel-line,#ddd); background:transparent; color:inherit; cursor:pointer; }
+.fhly-moves button:disabled{ opacity:.35; cursor:default; }
+.fhly-note{ font-size:0.85rem; margin-top:8px; }
+.fhd-next-m{ display:flex; flex-direction:column; gap:2px; padding:4px 2px 8px; }
+.fhd-next-m b{ font-size:1.1rem; }
+.fhd-next-m small{ color:var(--muted,#777); }
+@media (max-width:420px){ .fhly-txt small{ display:none; } .fhly-moves button{ width:32px; } }
+body.kid-locked .fhly-btn{ display:none !important; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -10333,7 +10389,7 @@ const FHCal = (function(){
       let s = null; try{ s = FHSync.summary(); }catch(e){}
       if(!s || !s.configured){ box.appendChild(h('p', { class:'ob-hint', text:'Calendar import needs sync, which is not set up in this build.' })); return; }
       if(s.mode !== 'ok' || !s.household){
-        box.appendChild(h('p', { class:'ob-hint', text:'Turn on “Sync across devices” first (above). Then each parent can add their Google, Outlook or iCloud calendar here and everyone sees it here. It is read-only: edit events in the original calendar.' }));
+        box.appendChild(h('p', { class:'ob-hint', text:'Turn on sync first (Settings › Sync & sharing). Then each parent can add their Google, Outlook or iCloud calendar here and everyone sees it here. It is read-only: edit events in the original calendar.' }));
         box.appendChild(help(s.email));
         return;
       }
@@ -10386,11 +10442,11 @@ const FHCal = (function(){
      can't be made in their phone apps, so those steps say "on a computer" and can be emailed to yourself. */
   const STEPS = {
     icloud:['Open the Calendar app on your iPhone or iPad.', 'Tap Calendars at the bottom.', 'Tap ⓘ next to the calendar you want.',
-            'Turn on Public Calendar, then tap Share Link… and Copy.', 'Come back to FridgeDoor and paste it in (Settings › Connect calendars).'],
+            'Turn on Public Calendar, then tap Share Link… and Copy.', 'Come back to FridgeDoor and paste it in (Settings › Reminders & calendars).'],
     google:['On a computer, go to calendar.google.com/calendar/r/settings and sign in.', 'On the left, under “Settings for my calendars”, click your calendar.',
-            'Scroll to “Integrate calendar” and copy “Secret address in iCal format”.', 'Paste it into FridgeDoor (Settings › Connect calendars), or email it to yourself and paste it on your phone.'],
+            'Scroll to “Integrate calendar” and copy “Secret address in iCal format”.', 'Paste it into FridgeDoor (Settings › Reminders & calendars), or email it to yourself and paste it on your phone.'],
     outlook:['On a computer, go to outlook.com and open Settings (the cog).', 'Choose Calendar, then Shared calendars.',
-             'Under “Publish a calendar”, pick your calendar and “Can view all details”, then Publish.', 'Copy the ICS link and paste it into FridgeDoor (Settings › Connect calendars).']
+             'Under “Publish a calendar”, pick your calendar and “Can view all details”, then Publish.', 'Copy the ICS link and paste it into FridgeDoor (Settings › Reminders & calendars).']
   };
   function mailto(email, which){
     const name = which === 'google' ? 'Google' : 'Outlook';
@@ -10656,7 +10712,7 @@ const FHEvents = (function(){
     const m = h('div', { id:'fhEventSheet', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog' },
         h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:ev.title || 'Busy' }), h('div', { class:'fhm-sub', text:timeText(ev) + (ev.who ? ' · ' + ev.who + '’s calendar' : '') })), h('button', { type:'button', class:'fhm-x', text:'✕', 'aria-label':'Close', onClick:close })),
-        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:ev.bin ? 'Change the day or bins in Settings › Bin day.' : ev.occ ? 'Reminders and gift ideas are on the Occasions page.' : 'Imported from a connected calendar. Edit it there.' }))));
+        h('div', { class:'fhe-form' }, ev.location ? h('div', { text:'📍 ' + ev.location }) : null, h('div', { class:'fhm-sub', text:ev.bin ? 'Change the day or bins in Settings › Your household › Bin day.' : ev.occ ? 'Reminders and gift ideas are on the Occasions page.' : 'Imported from a connected calendar. Edit it there.' }))));
     document.body.appendChild(m);
   }
   return { KEY:KEY, load:load, save:save, forDay:forDay, isFor:isFor, dayBlock:dayBlock, row:row, monthMarks:monthMarks, kitchenCard:kitchenCard, openEditor:openEditor, colorOf:colorOf, iso:iso, occursOn:occursOn };
@@ -11040,11 +11096,12 @@ function fhTimeline(date, evs, tks){
       h('div', { class:'fhd-slot-list' }, list.map(function(i){ return i.node; })));
   }).filter(Boolean);
 }
-function fhDayDash(date){
-  const wrap = h('div', { class:'fhd' });
+function fhDayDash(date, opts){
+  opts = opts || {};
+  const wrap = h('div', { class:'fhd' }), nodes = {};   // the page's blocks, placed at the end (FHLayout on Today/Tomorrow)
   const iso = FHEvents.iso(date);
   const person = fhDashPerson();
-  const filter = fhDashFilter(person); if(filter) wrap.appendChild(filter);
+  nodes.filter = fhDashFilter(person);
   // ---- plans
   const evs = FHEvents.forDay(date, person), tks = Feature.on('tasks') ? FHTasks.forDay(date).filter(function(t){ return FHTasks.isFor(t, person); }) : [];
   const acts = h('div', { class:'fhd-acts fht-admin' },
@@ -11059,15 +11116,15 @@ function fhDayDash(date){
   }
   if(!evs.length && !tks.length) body.appendChild(h('div', { class:'fhd-empty', text:person ? 'Nothing planned for ' + fhDashPeople().find(function(p){ return p.id === person; }).name + '.' : 'Nothing planned.' }));
   const n = evs.length + tks.filter(function(t){ return !t.done; }).length;
-  wrap.appendChild(h('section', { class:'fhd-sec fhd-plans-sec' },
+  nodes.plans = (h('section', { class:'fhd-sec fhd-plans-sec' },
     h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Plans' + (n ? ' · ' + n : '') }), acts), body));
   // ---- bring everyone in (today only, while the plan is with one person)
   // ---- or, once that's done or put off, add your own calendar (one prompt at a time)
   { const sc = typeof FHShare !== 'undefined' ? FHShare.todayCard(date) : null;
-    if(sc) wrap.appendChild(sc);
-    else if(typeof FHCal !== 'undefined'){ const cc = FHCal.todayCard(date); if(cc) wrap.appendChild(cc); } }
+    if(sc) nodes.prompts = sc;
+    else if(typeof FHCal !== 'undefined') nodes.prompts = FHCal.todayCard(date); }
   // ---- birthdays & occasions coming up (today only)
-  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = FHOcc.todayCard(date); if(typeof FHPaper !== 'undefined') oc = FHPaper.todayCard(date, oc); if(oc) wrap.appendChild(oc); }
+  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = FHOcc.todayCard(date); if(typeof FHPaper !== 'undefined') oc = FHPaper.todayCard(date, oc); nodes.coming = oc; }
   // ---- dinner
   if(Feature.on('meals')){
     const card = buildMealCard(date);
@@ -11083,14 +11140,40 @@ function fhDayDash(date){
       try{ if(window.matchMedia('(min-width: 900px)').matches) d.open = true; }catch(e){}
       card.appendChild(d);
     }
-    wrap.appendChild(sec);
+    nodes.dinner = sec;
   }
   // ---- chores
   if(Feature.on('chores')){
-    wrap.appendChild(h('section', { class:'fhd-sec fhd-chores' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Chores' })),
+    nodes.chores = (h('section', { class:'fhd-sec fhd-chores' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Chores' })),
       ChoreApp.buildDayBlock(date, { showHeader:false, person:person })));
   }
+  if(!opts.layout){ ['filter', 'plans', 'prompts', 'coming', 'dinner', 'chores'].forEach(function(k){ if(nodes[k]) wrap.appendChild(nodes[k]); }); return wrap; }
+  // blocks only a customised Today shows
+  if(FHLayout.isOn('today', 'tomorrow') && Feature.on('meals')) nodes.tomorrow = fhDashNextDinner(date);
+  if(FHLayout.isOn('today', 'shopping') && Feature.on('shopping')) nodes.shopping = fhDashShopping(date);
+  FHLayout.place('today', wrap, nodes);
   return wrap;
+}
+/* "Tomorrow's dinner" (or "Wednesday's dinner" when looking at another day) */
+function fhDashNextDinner(date){
+  const nd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  let info = null; try{ info = MealApp.getDayDisplay(nd); }catch(e){}
+  const today = FHEvents.iso(date) === FHEvents.iso(new Date());
+  const title = (today ? 'Tomorrow' : nd.toLocaleDateString(undefined, { weekday:'long' })) + '’s dinner';
+  return h('section', { class:'fhd-sec fhd-next' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:title })),
+    h('div', { class:'fhd-next-m' }, h('b', { text:info && info.mealName ? info.mealName : 'Nothing planned yet' }),
+      info && info.sideNames && info.sideNames.length ? h('small', { text:'With ' + info.sideNames.join(', ') }) : null));
+}
+/* the shopping list in a line: items left and the next shop day */
+function fhDashShopping(date){
+  let s = null; try{ s = MealApp.getShoppingSummary(); }catch(e){}
+  const left = s && s.total ? Math.max(0, s.total - (s.done || 0)) : 0;
+  let when = '';
+  if(s && s.anchorISO){ const p = String(s.anchorISO).split('-'), a = new Date(+p[0], +p[1] - 1, +p[2]); const d = Math.round((a - new Date(date.getFullYear(), date.getMonth(), date.getDate())) / 864e5);
+    when = d === 0 ? 'Shop day today' : d === 1 ? 'Shop day tomorrow' : 'Next shop ' + a.toLocaleDateString(undefined, { weekday:'long' }); }
+  return h('section', { class:'fhd-sec fhd-shopsum' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Shopping list' })),
+    h('div', { class:'fhd-next-m' }, h('b', { text:s && s.total ? (left ? left + (left === 1 ? ' item' : ' items') + ' to buy' : 'All ticked off') : 'Nothing on it yet' }), when ? h('small', { text:when }) : null),
+    h('button', { type:'button', class:'fhe-add', text:'Open the list', onClick:function(){ try{ MealApp.jumpToUpcomingShop(); }catch(e){} showPage('shopping'); } }));
 }
 
 /* Today and Tomorrow pages: swipe left/right (or the ‹ › buttons) to move through the days, as far as you like.
@@ -11108,9 +11191,10 @@ function fhDayPage(root, page, base){
     h('div', { class:'dash-heading fhday-title', text:(rel ? rel + ' — ' : '') + date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }) }),
     n !== 0 ? h('button', { type:'button', class:'fhday-today', text:'↩ Today', onClick:home }) : null,
     h('button', { type:'button', class:'fhday-arrow', 'aria-label':'Next day', text:'›', onClick:function(){ go(1); } })));
-  const dash = fhDayDash(date);
+  const dash = fhDayDash(date, { layout:true });
   if(root.dataset.slide){ dash.classList.add('fhday-in-' + root.dataset.slide); delete root.dataset.slide; }
   root.appendChild(dash);
+  { const cb = FHLayout.button('today', function(){ fhDayPage(root, page, base); }); if(cb) root.appendChild(h('div', { class:'fhly-foot' }, cb)); }
   if(!root.__fhSwipe){
     root.__fhSwipe = true;
     let x0 = null, y0 = 0;
@@ -11340,6 +11424,170 @@ const FHPaper = (function(){
   }
 
   return { KEY, KINDS, load, needs, events, pushLines, todayCard, render, editor, renewSheet, addYears, fullName };
+})();
+
+/* ==================== BUILD YOUR OWN: Today and the kitchen display ====================
+   Per device, never synced (a kitchen tablet and Mum's phone differ): family-hub-layout-today and
+   family-hub-layout-kitchen hold { preset, list:[[blockId, on 0|1, size 'h'|'f']] } in the order chosen.
+   Nothing stored = the "standard" preset, which is the page as it always was. A block added to the app later is
+   appended, hidden, to a stored list. Half-width blocks sit two to a row on wider screens (Today from 820px, the kitchen
+   display from 700px), stacked into the shorter of two columns so tall and short blocks fit together; on a phone
+   everything is one column, in order. "✏️ Customise" opens the editor: ready-made layouts, show/hide, ↑ ↓ or drag
+   to reorder, half or full width. Hidden behind the parent lock. */
+const FHLayout = (function(){
+  const BLOCKS = {
+    today: [
+      ['filter', '👪', 'Name chips', 'Show one person’s plans and chores'],
+      ['plans', '🗓️', 'Plans', 'Events and tasks for the day'],
+      ['prompts', '💡', 'Getting started', 'Bring everyone in, add your calendar'],
+      ['coming', '🎁', 'Coming up', 'Birthday reminders and paperwork'],
+      ['dinner', '🍽️', 'Dinner', 'With ingredients and who’s cooking'],
+      ['tomorrow', '⏭️', 'Next day’s dinner', 'What’s for dinner the day after'],
+      ['shopping', '🛒', 'Shopping list', 'Items left to buy and the next shop'],
+      ['chores', '🧹', 'Chores', 'The day’s chores to tick off']
+    ],
+    kitchen: [
+      ['dinner', '🍽️', 'Tonight’s dinner', 'With timings and the recipe'],
+      ['chores', '🧹', 'Today’s chores', 'Tick them off on the screen'],
+      ['plans', '🗓️', 'Plans', 'Today’s events'],
+      ['tasks', '☑️', 'Tasks', 'Today’s tasks'],
+      ['shopping', '🛒', 'Shopping', 'On shop day and the day before'],
+      ['tomorrow', '⏭️', 'Tomorrow', 'Tomorrow’s dinner'],
+      ['upcoming', '📋', 'Coming up', 'Tasks due in the next few days']
+    ]
+  };
+  // ready-made layouts: [id, size] in order; anything not listed is hidden
+  const PRESETS = {
+    today: [
+      ['standard', 'Standard', 'Everything, as it comes', [['filter', 'f'], ['plans', 'f'], ['prompts', 'f'], ['coming', 'f'], ['dinner', 'f'], ['chores', 'f']]],
+      ['busy', 'Busy parent', 'Plans first, the week’s food at a glance', [['filter', 'f'], ['plans', 'f'], ['coming', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['shopping', 'h'], ['chores', 'h']]],
+      ['kids', 'Children', 'Chores first, then dinner', [['filter', 'f'], ['chores', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['plans', 'f']]]
+    ],
+    kitchen: [
+      ['standard', 'Kitchen', 'Dinner, chores and the day', [['dinner', 'h'], ['chores', 'h'], ['plans', 'h'], ['tasks', 'h'], ['shopping', 'h'], ['tomorrow', 'h'], ['upcoming', 'h']]],
+      ['glance', 'At a glance', 'Big dinner, then the rest', [['dinner', 'f'], ['plans', 'h'], ['chores', 'h'], ['tomorrow', 'h'], ['shopping', 'h']]],
+      ['kids', 'Children', 'Chores up top', [['chores', 'f'], ['dinner', 'h'], ['tomorrow', 'h'], ['plans', 'h']]]
+    ]
+  };
+  const KEY = { today:'family-hub-layout-today', kitchen:'family-hub-layout-kitchen' };
+  const WIDE = { today:820, kitchen:700 };
+
+  function info(kind, id){ const b = BLOCKS[kind].find(x => x[0] === id); return b ? { id:b[0], icon:b[1], name:b[2], sub:b[3] } : null; }
+  function preset(kind, pid){ return PRESETS[kind].find(p => p[0] === pid) || PRESETS[kind][0]; }
+  function fromPreset(kind, pid){
+    const p = preset(kind, pid), list = p[3].map(x => [x[0], 1, x[1]]);
+    BLOCKS[kind].forEach(b => { if(!list.some(x => x[0] === b[0])) list.push([b[0], 0, 'f']); });
+    return { preset:p[0], list };
+  }
+  function load(kind){
+    let v = null; try{ v = JSON.parse(fhRawGet(KEY[kind]) || 'null'); }catch(e){}
+    if(!v || !Array.isArray(v.list)) return fromPreset(kind, 'standard');
+    const list = v.list.filter(x => Array.isArray(x) && info(kind, x[0])).map(x => [x[0], x[1] ? 1 : 0, x[2] === 'h' ? 'h' : 'f']);
+    BLOCKS[kind].forEach(b => { if(!list.some(x => x[0] === b[0])) list.push([b[0], 0, 'f']); });
+    return { preset:v.preset || '', list };
+  }
+  function save(kind, v){ try{ fhRawSet(KEY[kind], JSON.stringify(v)); }catch(e){} }
+  function reset(kind){ try{ fhRawRemove(KEY[kind]); }catch(e){ try{ fhRawSet(KEY[kind], ''); }catch(e2){} } }
+  function get(kind){ return load(kind).list.map(x => Object.assign(info(kind, x[0]), { on:!!x[1], half:x[2] === 'h' })); }
+  function isOn(kind, id){ return get(kind).some(b => b.id === id && b.on); }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+
+  /* put the page's blocks into `wrap` in this device's order; nodes = { blockId: element or null } */
+  function place(kind, wrap, nodes){
+    const wide = window.innerWidth >= WIDE[kind];
+    let run = null;
+    get(kind).forEach(b => {
+      const n = nodes[b.id]; if(!b.on || !n) return;
+      n.setAttribute('data-block', b.id);
+      n.classList.toggle('fhly-half', b.half && wide);
+      if(!wide || !b.half){ run = null; wrap.appendChild(n); return; }
+      if(!run){ run = h('div', { class:'fhly-cols' }, h('div', { class:'fhly-col' }), h('div', { class:'fhly-col' })); run.__items = []; wrap.appendChild(run); }
+      run.__items.push(n); run.children[(run.__items.length - 1) % 2].appendChild(n);
+    });
+    // once on screen, fill the shorter column first (in order) so a tall block isn't left beside a gap
+    requestAnimationFrame(() => wrap.querySelectorAll('.fhly-cols').forEach(r => {
+      if(!r.isConnected || !r.__items) return;
+      const hs = r.__items.map(n => n.offsetHeight), cols = r.children, t = [0, 0];
+      r.__items.forEach((n, i) => { const c = t[0] <= t[1] ? 0 : 1; cols[c].appendChild(n); t[c] += hs[i] + 12; });
+    }));
+  }
+  /* a page re-draws itself when the screen crosses the width where halves pair up (a tablet turned round) */
+  let lastWide = null;
+  window.addEventListener('resize', () => {
+    const w = window.innerWidth >= WIDE.today; if(lastWide === null){ lastWide = w; return; }
+    if(w !== lastWide){ lastWide = w; try{ if(currentPage === 'today' || currentPage === 'tomorrow') refreshCurrentPage(); }catch(e){} }
+  });
+
+  function button(kind, onDone){
+    if(locked()) return null;
+    return h('button', { type:'button', class:'fhly-btn', id:'fhlyOpen' + (kind === 'kitchen' ? 'K' : ''), text:'✏️ Customise', 'aria-label':kind === 'kitchen' ? 'Customise the kitchen display' : 'Customise this page', onClick:() => editor(kind, onDone) });
+  }
+
+  /* ---- the editor ---- */
+  function editor(kind, onDone){
+    if(document.getElementById('fhlySheet')) return;
+    let v = load(kind);
+    const wide = window.innerWidth >= WIDE[kind];   // half/full only means something where blocks can pair up
+    const close = () => { const m = document.getElementById('fhlySheet'); if(m) m.remove(); };
+    const commit = (keepPreset) => { if(!keepPreset) v.preset = ''; save(kind, v); draw(); if(onDone) onDone(); };
+    const presets = h('div', { class:'ob-chips fhly-presets' });
+    const list = h('ol', { class:'fhly-list', 'aria-label':'Blocks, in order' });
+    const move = (i, d) => { const j = i + d; if(j < 0 || j >= v.list.length) return; const t = v.list[i]; v.list[i] = v.list[j]; v.list[j] = t; commit(); const b = list.querySelectorAll('.fhly-row')[j]; if(b){ const q = b.querySelector(d < 0 ? '.fhly-up' : '.fhly-down'); (q && !q.disabled ? q : b.querySelector('input')).focus(); } };
+    const draw = () => {
+      presets.innerHTML = '';
+      PRESETS[kind].forEach(p => presets.appendChild(h('button', { type:'button', class:'ob-chip' + (v.preset === p[0] ? ' on' : ''), 'aria-pressed':v.preset === p[0] ? 'true' : 'false', 'data-preset':p[0], title:p[2], text:p[1],
+        onClick:() => { v = fromPreset(kind, p[0]); commit(true); } })));
+      list.innerHTML = '';
+      v.list.forEach((x, i) => {
+        const b = info(kind, x[0]);
+        const on = h('input', { type:'checkbox', checked:!!x[1], 'aria-label':'Show ' + b.name, onChange:e => { x[1] = e.target.checked ? 1 : 0; commit(); } });
+        const size = h('button', { type:'button', class:'fhly-size' + (x[2] === 'h' ? ' half' : ''), 'aria-pressed':x[2] === 'h' ? 'true' : 'false', 'aria-label':b.name + ': half width', title:'Half or full width on a bigger screen',
+          text:x[2] === 'h' ? '◧ Half' : '▭ Full', onClick:() => { x[2] = x[2] === 'h' ? 'f' : 'h'; commit(); } });
+        list.appendChild(h('li', { class:'fhly-row' + (x[1] ? '' : ' off'), 'data-id':x[0] },
+          h('span', { class:'fhly-grip', 'aria-hidden':'true', text:'⠿' }),
+          h('label', { class:'fhly-main' }, on, h('span', { class:'fhly-ico', text:b.icon }), h('span', { class:'fhly-txt' }, h('b', { text:b.name }), h('small', { text:b.sub }))),
+          x[1] && wide ? size : null,
+          h('span', { class:'fhly-moves' },
+            h('button', { type:'button', class:'fhly-up', 'aria-label':'Move ' + b.name + ' up', text:'↑', disabled:i === 0, onClick:() => move(i, -1) }),
+            h('button', { type:'button', class:'fhly-down', 'aria-label':'Move ' + b.name + ' down', text:'↓', disabled:i === v.list.length - 1, onClick:() => move(i, 1) }))));
+      });
+    };
+    // drag a row by its grip (or anywhere but its controls) to reorder
+    let drag = null;
+    list.addEventListener('pointerdown', e => {
+      const row = e.target.closest('.fhly-row'); if(!row || e.target.closest('input,button,label')) return;
+      e.preventDefault();
+      drag = { row, from:[...list.children].indexOf(row) }; row.classList.add('dragging'); row.setPointerCapture && row.setPointerCapture(e.pointerId);
+    });
+    list.addEventListener('pointermove', e => {
+      if(!drag) return;
+      const rows = [...list.children], over = rows.find(r => { const b = r.getBoundingClientRect(); return e.clientY >= b.top && e.clientY < b.bottom; });
+      if(!over || over === drag.row) return;
+      const b = over.getBoundingClientRect();
+      if(e.clientY < b.top + b.height / 2) list.insertBefore(drag.row, over); else list.insertBefore(drag.row, over.nextSibling);
+    });
+    const drop = () => {
+      if(!drag) return;
+      const order = [...list.children].map(r => r.dataset.id); drag.row.classList.remove('dragging'); drag = null;
+      v.list.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])); commit();
+    };
+    list.addEventListener('pointerup', drop); list.addEventListener('pointercancel', drop);
+    draw();
+    const m = h('div', { id:'fhlySheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':kind === 'kitchen' ? 'Customise the kitchen display' : 'Customise Today' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:kind === 'kitchen' ? '✏️ Kitchen display' : '✏️ Customise Today' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          h('p', { class:'fho-sub', text:'Just for this ' + (kind === 'kitchen' ? 'screen' : 'device') + '. Start from a ready-made layout, then tick what to show and move things up or down.' }),
+          h('p', { class:'fhe-lab', text:'Ready-made' }), presets,
+          h('p', { class:'fhe-lab', text:'What to show' }), list,
+          wide ? h('p', { class:'fho-sub fhly-note', text:'Half-width blocks sit side by side; full-width ones go across the screen.' }) : null,
+          h('div', { class:'fhe-actions' },
+            h('button', { type:'button', class:'btn secondary', id:'fhlyReset', text:'Back to standard', onClick:() => { reset(kind); v = load(kind); draw(); if(onDone) onDone(); } }),
+            h('button', { type:'button', class:'btn', id:'fhlyDone', text:'Done', onClick:close })))));
+    document.body.appendChild(m);
+  }
+
+  return { BLOCKS, PRESETS, get, isOn, place, button, editor, load, reset };
 })();
 
 // Builds (or removes, if already open) an inline meal-picker under a meal
@@ -12914,7 +13162,7 @@ function renderSettingsPage(){
     h('span',{class:'ob-fe-ico',text:emoji}),
     h('span',{class:'ob-fe-txt'}, h('b',{text:name}), h('small',{text:desc})),
     h('input',{type:'checkbox',checked:disabled?false:F.on(key),disabled:!!disabled,onChange:e=>{ F.set(key,e.target.checked); applyFeatureGating(); renderSettingsPage(); if(e.target.checked && (key==='chores' || key==='meals') && F.needsSetup(key)) OBW.open('addon:'+key); }}));
-  root.appendChild(h('div',{class:'st-card'},
+  root.appendChild(h('div',{class:'st-card',id:'stFeatures'},
     h('h3',{text:'Features'}),
     toggle('chores','🧹','Chore chart','Chores, upcoming chores and calendar chores'),
     toggle('rewards','⭐','Rewards','Stars and prizes', !F.on('chores')),
@@ -12942,7 +13190,7 @@ function renderSettingsPage(){
   const lp = FHLocale.get();
   const setLoc = p=>{ FHLocale.set(p); try{ MealApp.relocalise(); FHLocale.applyRecipes(); }catch(e){} renderSettingsPage(); try{ MealApp.render(); }catch(e){} try{ refreshCurrentPage(); }catch(e){} };
   const lchip = (label, on, fn)=> h('button',{type:'button',class:'ob-chip'+(on?' on':''),text:label,onClick:fn});
-  root.appendChild(h('div',{class:'st-card'}, h('h3',{text:'Units and wording'}),
+  root.appendChild(h('div',{class:'st-card',id:'stUnits'}, h('h3',{text:'Units and wording'}),
     h('p',{class:'ob-label',text:'Measurements'}),
     h('div',{class:'ob-chips'}, lchip('Metric', lp.units==='metric', ()=>setLoc({units:'metric'})), lchip('Imperial', lp.units==='imperial', ()=>setLoc({units:'imperial'}))),
     h('p',{class:'ob-label',text:'Wording and date format'}),
@@ -12950,13 +13198,13 @@ function renderSettingsPage(){
     h('p',{class:'ob-hint',text:'Recipes, meal names, dates and the shopping list update straight away. Chores and meals you wrote yourself keep your own wording. Ticked-off shopping items may untick when names change.'})));
   const snap = ChoreApp.getCounts ? ChoreApp.getCounts() : null;
   if(snap){
-    root.appendChild(h('div',{class:'st-card'}, h('h3',{text:'Your household'}),
+    root.appendChild(h('div',{class:'st-card',id:'stHousehold'}, h('h3',{text:'People, rooms and chores'}),
       h('p',{class:'ob-hint',text: snap.people+' '+(snap.people===1?'person':'people')+' · '+snap.rooms+' rooms · '+snap.chores+' chores'+(Feature.on('meals')?' · cooking for '+MealApp.getHouseholdSize():'')}),
       h('p',{class:'ob-hint',text:'Edit people, rooms and chores from the Chores page; household size and shop day from the Meal Plan page.'})));
   }
   const msg = h('p',{class:'ob-hint',id:'stMsg'});
   const file = h('input',{type:'file',accept:'.json,application/json',style:'display:none',onChange:e=>{ if(e.target.files[0]) fhImportBackup(e.target.files[0], t=>{ msg.textContent=t; }); }});
-  root.appendChild(h('div',{class:'st-card'}, h('h3',{text:'Backup'}),
+  root.appendChild(h('div',{class:'st-card',id:'stBackup'}, h('h3',{text:'Backup'}),
     h('p',{class:'ob-hint',text:'Save everything to a file, or restore from one. Handy before re-running setup or moving to a new phone.'}),
     h('div',{class:'ob-row'}, h('button',{type:'button',class:'ob-btn ghost',id:'stExport',text:'⬇️ Export backup',onClick:fhExportBackup}),
       h('button',{type:'button',class:'ob-btn ghost',text:'⬆️ Import backup',onClick:()=>file.click()})), file, msg));
@@ -12966,7 +13214,7 @@ function renderSettingsPage(){
   root.appendChild(FHCal.card());
   root.appendChild(feedbackCard());
   { const oc = fhOwnerCard(); if(oc) root.appendChild(oc); }
-  root.appendChild(h('div',{class:'st-card'}, h('h3',{text:'Setup'}),
+  root.appendChild(h('div',{class:'st-card',id:'stSetup'}, h('h3',{text:'Setup'}),
     h('p',{class:'ob-hint',text:'Run the setup questions again to start fresh with a new household, rooms, chores and meal plan.'}),
     h('div',{class:'ob-row'},
       h('button',{type:'button',class:'ob-btn ghost',id:'stRerun',text:'🔁 Run setup again',onClick:()=>OBW.open('rerun')}),
@@ -12978,6 +13226,58 @@ function renderSettingsPage(){
         try{ sessionStorage.removeItem(FH_JUST_KEY); }catch(e){}
         location.reload();
       }}))));
+  fhSettingsGroups(root);
+}
+
+/* Settings in folding sections: the cards above are moved into groups, closed to start, each with a one-line
+   summary. A group opened stays open across re-renders (fhStOpen) until the page is left. Cards that no group
+   names stay at the end, so nothing goes missing. fhSettingsOpen(cardId) opens the group holding a card. */
+const fhStOpen = {};
+function fhSettingsSummary(id){
+  const t = (f)=>{ try{ return f() || ''; }catch(e){ return ''; } };
+  if(id === 'house') return t(()=>{ const ps = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); const b = FHBins.get();
+    return [ps.length ? ps.length + (ps.length === 1 ? ' person' : ' people') : '', b.on ? 'bin day ' + ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][b.day] : '', 'food, units'].filter(Boolean).join(' · '); });
+  if(id === 'features') return t(()=>[['chores','Chores'],['meals','Meals'],['shopping','Shopping'],['tasks','Tasks'],['essentials','Essentials']].filter(f=>Feature.on(f[0])).map(f=>f[1]).join(', ') + ' on');
+  if(id === 'remind') return t(()=>{ const n = FHCal.feeds().length; return 'Times on this phone, who gets what' + (n ? ' · ' + n + (n === 1 ? ' calendar' : ' calendars') : ', calendars'); });
+  if(id === 'sync') return t(()=>{ const s = FHSync.summary(); return s.mode === 'ok' ? 'On: this device shares the family’s plans' : 'Off: share plans with the family on every phone'; });
+  if(id === 'device') return t(()=>{ const th = FHTheme.get(); return [FHTheme.palettes[th.palette] ? FHTheme.palettes[th.palette].name : '', th.mode === 'auto' ? 'auto light/dark' : th.mode, FHLock.isSet() ? 'PIN on' : 'no PIN'].filter(Boolean).join(' · '); });
+  if(id === 'backup') return 'Save to a file, restore, run setup again';
+  if(id === 'help') return 'Send feedback, privacy';
+  return '';
+}
+function fhSettingsGroups(root){
+  const GROUPS = [
+    ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stBirthdays', 'stFood', 'stBins', 'stUnits']],
+    ['features', '🧩', 'Features', ['stFeatures']],
+    ['remind', '🔔', 'Reminders & calendars', ['stReminders', 'stHouseRem', 'stCal']],
+    ['sync', '🔄', 'Sync & sharing', ['stSync']],
+    ['device', '📱', 'This device', ['stLook', 'stCalView', 'stLock']],
+    ['backup', '💾', 'Backup & setup', ['stBackup', 'stSetup']],
+    ['help', '💬', 'Help & feedback', ['stFeedbackCard', 'stOwner']]
+  ];
+  const cards = Array.prototype.slice.call(root.children);
+  const used = new Set();
+  const out = GROUPS.map(g=>{
+    const inner = g[3].map(id=>cards.find(c=>c.id === id)).filter(Boolean);
+    if(!inner.length) return null;
+    inner.forEach(c=>used.add(c));
+    const d = h('details', { class:'st-group', id:'stg-' + g[0] },
+      h('summary', {}, h('span', { class:'st-g-ico', text:g[1] }), h('span', { class:'st-g-txt' }, h('b', { text:g[2] }), h('small', { text:fhSettingsSummary(g[0]) })), h('span', { class:'st-g-chev', 'aria-hidden':'true', text:'›' })),
+      h('div', { class:'st-g-body' }, inner));
+    if(fhStOpen[g[0]]) d.open = true;
+    d.addEventListener('toggle', ()=>{ if(d.open) fhStOpen[g[0]] = 1; else delete fhStOpen[g[0]]; });
+    return d;
+  }).filter(Boolean);
+  const rest = cards.filter(c=>!used.has(c));
+  root.innerHTML = '';
+  root.appendChild(h('h2', { class:'st-title', text:'Settings' }));
+  out.forEach(d=>root.appendChild(d));
+  rest.forEach(c=>root.appendChild(c));
+}
+function fhSettingsOpen(cardId){
+  const c = document.getElementById(cardId); if(!c) return;
+  const d = c.closest('details.st-group'); if(d && !d.open) d.open = true;
+  setTimeout(()=>{ try{ c.scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){} }, 30);
 }
 
 function showAllSet(){
@@ -13194,7 +13494,7 @@ const FHKitchen = (function(){
   function onVis(){ if(el && document.visibilityState === 'visible') getWake(); }
 
   function shopCard(now){
-    if(rawGet(SHOP_KEY) === '0' || !Feature.on('shopping')) return null;
+    if(!Feature.on('shopping')) return null;
     let s = null; try{ s = MealApp.getShoppingSummary(); }catch(e){ return null; }
     if(!s || !s.total) return null;
     const p = String(s.anchorISO).split('-'); if(p.length < 3) return null;
@@ -13252,23 +13552,21 @@ const FHKitchen = (function(){
     el.querySelector('.fhk-date').textContent = now.toLocaleDateString(undefined,{ weekday:'long', day:'numeric', month:'long' });
     tickClock();
     const wrap = el.querySelector('.fhk-main'); wrap.innerHTML = '';
-    const left = mk('div','fhk-col'), right = mk('div','fhk-col');
-    const sc = shopCard(now); if(sc) left.appendChild(sc); { const ec = FHEvents.kitchenCard(now); if(ec) left.appendChild(ec); }
-    { const tc = FHTasks.kitchenCard(now); if(tc) left.appendChild(tc); }
+    // the screen's blocks, in this device's order and widths (FHLayout, "✏️ Customise" in the top bar)
+    const nodes = { shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
     if(Feature.on('meals')){
-      left.appendChild(mealCard(now));
+      nodes.dinner = mealCard(now);
       const tm = shAddDays(now, 1); let ti = null; try{ ti = MealApp.getDayDisplay(tm); }catch(e){}
       const next = mk('div','fhk-card fhk-next'); next.appendChild(mk('div','fhk-label','Tomorrow'));
       next.appendChild(mk('div','fhk-nextm', ti && ti.mealName ? ti.mealName : 'Nothing planned'));
-      left.appendChild(next);
+      nodes.tomorrow = next;
     }
-    { const up = FHTasks.kitchenUpcoming(now); if(up) left.appendChild(up); }
     if(Feature.on('chores')){
       const c = mk('div','fhk-card'); c.appendChild(mk('div','fhk-label','Today’s chores'));
       c.appendChild(ChoreApp.buildDayBlock(now, { showHeader:false }));
-      right.appendChild(c);
+      nodes.chores = c;
     }
-    wrap.appendChild(left); if(right.childNodes.length) wrap.appendChild(right); else left.classList.add('fhk-wide');
+    FHLayout.place('kitchen', wrap, nodes);
     wrap.scrollTop = st;
   }
   function tickClock(){
@@ -13290,9 +13588,10 @@ const FHKitchen = (function(){
     const auto = mk('label','fhk-auto'); const cb = document.createElement('input'); cb.type='checkbox'; cb.id='fhkAuto'; cb.checked = rawGet(AUTO_KEY) === '1';
     cb.addEventListener('change', ()=> rawSet(AUTO_KEY, cb.checked ? '1' : '0'));
     auto.appendChild(cb); auto.appendChild(mk('span',null,'Open here on launch'));
-    const shop = mk('label','fhk-auto'); const sb = document.createElement('input'); sb.type='checkbox'; sb.id='fhkShop'; sb.checked = rawGet(SHOP_KEY) !== '0';
-    sb.addEventListener('change', ()=>{ rawSet(SHOP_KEY, sb.checked ? '1' : '0'); render(); });
-    shop.appendChild(sb); shop.appendChild(mk('span',null,'Shopping reminder'));
+    // the old "Shopping reminder" switch is now the Shopping block: carry an "off" over once
+    if(rawGet(SHOP_KEY) === '0'){ try{ if(!fhRawGet('family-hub-layout-kitchen')){ const v = FHLayout.load('kitchen'); v.list.forEach(x=>{ if(x[0] === 'shopping') x[1] = 0; }); fhRawSet('family-hub-layout-kitchen', JSON.stringify(v)); } fhRawRemove(SHOP_KEY); }catch(e){} }
+    const shop = FHLayout.button('kitchen', ()=>render()) || mk('span');
+    if(shop.classList) shop.classList.add('fhk-btn');
     const x = mk('button','fhk-btn fhk-exit','✕ Exit'); x.type='button'; x.id='fhkExit'; x.addEventListener('click', close);
     top.appendChild(sm); top.appendChild(lg); top.appendChild(shop); top.appendChild(auto); top.appendChild(x);
     el.appendChild(top); el.appendChild(mk('div','fhk-main'));
@@ -13912,7 +14211,7 @@ function fhCheckInviteLink(){
   const m = /[#&]join=([A-Za-z0-9-]{8,20})/.exec(location.hash || ''); if(!m) return;
   try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
   const s = FHSync.summary(); if(!s.configured) return;
-  if(s.mode === 'ok'){ alert('This device is already part of a household, so the invite wasn’t used. To switch, leave your household first in Settings › Sync across devices › More.'); return; }
+  if(s.mode === 'ok'){ alert('This device is already part of a household, so the invite wasn’t used. To switch, leave your household first in Settings › Sync & sharing › More.'); return; }
   fhSetPending(FH_JOIN_KEY, decodeURIComponent(m[1]).toUpperCase());
   setTimeout(function(){ fhSyncSignInModal(); }, 400);
 }
@@ -13993,7 +14292,7 @@ function fhSyncCard(opts){
       } else {
         const cd = h('input', { type:'text', id:'stSyncJoinCode', placeholder:'ABCD-1234-EF56', value:fhPendingJoin(), autocapitalize:'characters', autocomplete:'off', style:'width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--panel-line,#ddd);border-radius:10px;font:inherit;margin-bottom:8px' });
         box.appendChild(cd);
-        box.appendChild(note('Find the code on a device already using the app: Settings, Sync across devices.'));
+        box.appendChild(note('Find the code on a device already using the app: Settings › Sync & sharing.'));
         box.appendChild(h('div', { class:'ob-row' },
           btn('Join household', function(){
             if(FHSync.hasLocalSetup() && !confirm('This device already has its own data. Joining replaces it with the household\'s data. Continue?')) return;
@@ -14284,7 +14583,7 @@ const FHPush = (function(){
     const card = h('div', { class:'st-card', id:'stReminders' }, h('h3', { text:'Reminders on this device' }));
     const note = function(t){ card.appendChild(h('p', { class:'ob-hint', text:t })); return card; };
     if(!vapid()) return note('Reminders are not switched on for this app yet (the server part needs setting up once).');
-    if(!synced()) return note('Reminders use your household sync. Sign in under “Sync across devices” first.');
+    if(!synced()) return note('Reminders use your household sync. Sign in under Settings › Sync & sharing first.');
     if(iosNeedsInstall()) return note('On iPhone and iPad, reminders only work in the installed app: tap Share, then “Add to Home Screen”, and open FridgeDoor from there.');
     if(!supported()) return note('This browser cannot show reminders. Try the installed app, Chrome, Edge, Firefox or Safari.');
     if(Notification.permission === 'denied') return note('Notifications are blocked for this app. Allow them in your browser or phone settings and come back here.');
@@ -14304,7 +14603,7 @@ const FHPush = (function(){
       status.textContent = 'On for this device. Each phone or tablet chooses its own reminders.';
       const p = prefs();
       const change = function(k, v){ p[k] = v; savePrefs(p); sendSub(sub).catch(function(){ err.textContent = 'Saved here, but could not reach the server. It will try again next time.'; }); };
-      const check = function(k, label, extra){ const c = h('input', { type:'checkbox', checked:!!p[k], onChange:function(){ change(k, c.checked); } }); return h('label', { class:'fhpush-row' }, c, h('span', { text:label }), extra || null); };
+      const check = function(k, label, extra){ const c = h('input', { type:'checkbox', checked:!!p[k], onChange:function(){ change(k, c.checked); } }); return h('label', { class:'fhpush-row' + (extra ? '' : ' solo') }, c, h('span', { text:label }), extra || null); };
       const lead = h('select', { class:'ob-input', 'aria-label':'How long before' }, [10, 15, 30, 60, 120].map(function(m){ const o = h('option', { value:String(m), text:m < 60 ? m + ' min before' : (m / 60) + (m === 60 ? ' hour' : ' hours') + ' before' }); if(+p.lead === m) o.selected = true; return o; }));
       lead.addEventListener('change', function(){ change('lead', +lead.value); });
       const time = function(k){ const t = h('input', { type:'time', class:'ob-input', value:p[k] }); t.addEventListener('change', function(){ if(t.value) change(k, t.value); }); return t; };
@@ -14331,16 +14630,22 @@ const FHPush = (function(){
       // connected calendars: on unless this device switches one off (a busy work calendar, say)
       let feeds = []; try{ feeds = FHCal.feeds(); }catch(e){}
       const calBox = feeds.length ? h('div', { class:'fhpush-cals', id:'fhpushCals' },
-        h('p', { class:'ob-hint', text:p.person ? 'Connected calendars (a reminder before each event):' : 'Connected calendars (in the morning summary on a shared device):' }),
+        h('p', { class:'fhpush-sublab', text:p.person ? 'Connected calendars on this phone' : 'Connected calendars (in the morning summary on a shared device)' }),
         feeds.map(function(f){
           const pp = people().find(function(x){ return x.id === f.who; });
           const c = h('input', { type:'checkbox', checked:!(p.calOff || {})[f.id], 'data-fid':f.id, onChange:function(){
             const off = Object.assign({}, p.calOff || {}); if(c.checked) delete off[f.id]; else off[f.id] = 1; change('calOff', off); } });
           return h('label', { class:'fhpush-row' }, c, h('span', { text:(f.label || 'Calendar') + (pp ? ' · ' + pp.name : '') }));
-        })) : null;
+        }),
+        h('p', { class:'ob-hint', text:'Untick one to mute it here. Extra reminders for these events are set in Google, Outlook or iCloud.' })) : null;
+      // one "before" time for everything timed, so say what it covers and where extras come from
+      const evBox = h('div', { class:'fhpush-group', id:'fhpushEvents' },
+        check('events', 'Before each timed event', lead),
+        h('p', { class:'ob-hint', text:'Family events, timed tasks' + (feeds.length && p.person ? ' and connected calendars' : '') + ': one time for all of them, chosen on each phone. Want more on one family event? Open it and tap + Add a reminder.' }),
+        calBox);
       card.appendChild(h('div', { class:'fhpush-opts' },
         h('label', { class:'fhpush-row' }, h('span', { text:'Whose device is this?' }), who), whoHint,
-        check('events', 'Events and timed tasks', lead), calBox,
+        evBox,
         check('morning', 'Morning summary at', time('morningAt')),
         check('evening', 'Evening heads-up at', time('eveningAt')),
         Feature.on('chores') ? choreBox : null, Feature.on('chores') ? freqs : null,
@@ -14484,7 +14789,7 @@ const FHShare = (function(){
         return;
       }
       const btn = (id, ico, label, sub, fn) => h('button', { type:'button', class:'fhs-big', id:id, onClick:fn }, h('span', { class:'fhs-ico', text:ico }), h('span', { class:'fhs-txt' }, h('b', { text:label }), h('small', { text:sub })));
-      const after = r => { msg = r === 'copied' ? 'Link copied: paste it into a message.' : r === 'failed' ? 'Couldn’t share the link. Use the code in Settings › Sync across devices instead.' : r === 'shared' ? 'Sent. Each link works once; come back here for another.' : ''; draw(); };
+      const after = r => { msg = r === 'copied' ? 'Link copied: paste it into a message.' : r === 'failed' ? 'Couldn’t share the link. Use the code in Settings › Sync & sharing instead.' : r === 'shared' ? 'Sent. Each link works once; come back here for another.' : ''; draw(); };
       body.appendChild(btn('fhsInvite', '📨', 'Invite another parent or carer', 'They sign in with their own email and share the same plan.', () => fhSendInvite(s.code).then(after)));
       body.appendChild(btn('fhsDevice', '📱', 'Add a child’s device', 'No email needed. They see their own day; a parent PIN keeps settings safe.', () => fhSendDeviceLink(s.code).then(after)));
       const who = [s.parents + (s.parents === 1 ? ' parent account' : ' parent accounts')].concat(s.devices.map(d => d.label || 'a child’s device'));
