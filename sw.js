@@ -1,7 +1,7 @@
 // Minimal offline cache for On the FridgeDoor — caches the app shell on install so
 // it still opens (with whatever data localStorage already has) with no
 // signal, and always tries the network first for a fresh copy when online.
-const CACHE_NAME = 'family-hub-onboarding-v74';
+const CACHE_NAME = 'family-hub-onboarding-v75';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -39,12 +39,19 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
-  // nudges come with quick-reply buttons (shown on Android, Windows and Mac; iPhone shows none and just opens the app)
-  const actions = d.reply ? [{ action: 'r:OK \ud83d\udc4d', title: 'OK \ud83d\udc4d' }, { action: 'r:On my way', title: 'On my way' }] : [];
-  event.waitUntil(self.registration.showNotification(d.title || 'On the FridgeDoor', {
-    body: d.body || '', tag: d.tag || undefined, icon: 'icon-192.png', badge: 'icon-192.png', actions: actions,
-    data: { url: d.url || './', reply: d.reply || null }
-  }));
+  // nudges come with quick-reply buttons (shown on Android, Windows and Mac; iPhone shows none and just opens the app).
+  // An urgent one stays on screen and buzzes again each time it's re-sent, until someone taps Got it.
+  const urgent = !!(d.reply && d.urgent);
+  const actions = !d.reply ? [] : urgent ? [{ action: 'r:Got it', title: 'Got it ✓' }]
+    : [{ action: 'r:OK 👍', title: 'OK 👍' }, { action: 'r:On my way', title: 'On my way' }];
+  const opts = { body: d.body || '', tag: d.tag || undefined, icon: 'icon-192.png', badge: 'icon-192.png', actions: actions,
+    data: { url: d.url || './', reply: d.reply || null, urgent: urgent } };
+  if (urgent) { opts.requireInteraction = true; opts.renotify = !!d.tag; opts.vibrate = [400, 200, 400, 200, 400]; }
+  // an open app (the kitchen display, say) shows a nudge full screen too
+  const tell = d.reply ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => list.forEach((c) => {
+    try { c.postMessage({ type: 'fh-nudge', title: d.title || '', body: d.body || '', tag: d.tag || '', urgent: urgent, reply: d.reply }); } catch (e) {}
+  })).catch(() => {}) : Promise.resolve();
+  event.waitUntil(Promise.all([self.registration.showNotification(d.title || 'On the FridgeDoor', opts), tell]));
 });
 
 self.addEventListener('notificationclick', (event) => {

@@ -2662,6 +2662,32 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhrt-goalrow{ display:flex; gap:8px; }
 .fhrt-goalrow .fhe-in:first-child{ flex:0 0 90px; }
 @media (max-width:380px){ .fhrt-skit span{ display:none; } .fhrt-smin{ flex-basis:54px; width:54px !important; } }
+/* Nudges: own quick buttons, urgent, seen by, and the full-screen nudge (ob_push.js) */
+.fhnudge-qedit{ display:inline-flex; align-items:center; gap:6px; }
+.fhnudge-qx{ font:inherit; border:0; background:transparent; color:inherit; cursor:pointer; padding:0 2px; font-weight:700; }
+.fhnudge-qadd{ display:flex; gap:6px; flex:1 1 100%; }
+.fhnudge-qadd .fhe-in{ flex:1; min-width:0; }
+.fhnudge-qtoggle{ font-size:0.85rem; }
+.fhnudge-urgent{ display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:12px; border:1.5px solid var(--panel-line,#ddd); cursor:pointer; }
+.fhnudge-urgent input{ width:22px; height:22px; margin-top:2px; accent-color:#B5561B; flex:0 0 auto; }
+.fhnudge-urgent span{ display:flex; flex-direction:column; }
+.fhnudge-urgent small{ color:var(--muted,#777); font-weight:600; }
+.fhnudge-seen{ display:flex; flex-direction:column; gap:4px; }
+.fhnudge-reply{ padding:6px 10px; border-radius:10px; background:var(--accent-tint,#EFEAF4); font-weight:600; }
+.fhnudge-reply.got{ background:#E3F1E7; color:#24613D; }
+.fhnin{ position:fixed; inset:0; z-index:5000; background:rgba(30,22,40,.72); display:flex; align-items:center; justify-content:center; padding:16px; }
+.fhnin-box{ background:var(--white,#fff); color:var(--ink,#222); border-radius:24px; padding:26px 22px; width:100%; max-width:620px; display:flex; flex-direction:column; gap:16px; text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.35); }
+.fhnin.urgent .fhnin-box{ border:4px solid #B5561B; animation:fhnin-pulse 1.2s ease-in-out infinite; }
+@keyframes fhnin-pulse{ 0%,100%{ box-shadow:0 18px 50px rgba(0,0,0,.35); } 50%{ box-shadow:0 0 0 10px rgba(181,86,27,.35); } }
+@media (prefers-reduced-motion: reduce){ .fhnin.urgent .fhnin-box{ animation:none; } }
+.fhnin-from{ font-size:1.05rem; font-weight:700; color:var(--muted,#777); }
+.fhnin-msg{ font-size:clamp(1.8rem, 6vw, 3rem); font-weight:700; line-height:1.15; overflow-wrap:anywhere; }
+.fhnin-acts{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.fhnin-btn{ font:inherit; font-size:1.15rem; font-weight:700; min-height:56px; padding:0 24px; border-radius:16px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); color:inherit; cursor:pointer; }
+.fhnin-btn.main{ background:var(--accent,#6C4F8A); border-color:transparent; color:#fff; }
+.fhnin.urgent .fhnin-btn.main{ background:#B5561B; }
+.fhnin-btn.quiet{ border-color:transparent; color:var(--muted,#777); }
+#fhNudgeSheet textarea.fhe-in{ flex:0 0 auto; min-height:64px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -14635,7 +14661,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-routines-v1':1, 'family-hub-routine-log-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-routines-v1':1, 'family-hub-nudge-quick-v1':1, 'family-hub-routine-log-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -15517,47 +15543,112 @@ const FHPush = (function(){
     try{ const sub = await current(); mine = sub ? sub.endpoint : ''; }catch(e){}
     return await FHSync.fn('send-reminders', { action:'nudge', to:to, message:String(text || '').slice(0, 120), from:m ? m.name : '', fromId:m ? m.id : '', exclude:mine }) || {};
   }
-  const QUICK = ['Dinner\u2019s ready!', 'Time for bed', 'Come downstairs please', 'Shoes on, we\u2019re leaving', 'Bath time', 'Home in 10 minutes'];
+  /* quick messages: the household's own (synced family-hub-nudge-quick-v1), editable on a parent's device */
+  const QUICK_KEY = 'family-hub-nudge-quick-v1';
+  const QUICK = ['Dinner’s ready!', 'Time for bed', 'Come downstairs please', 'Shoes on, we’re leaving', 'Homework time', 'Bath time', 'Home in 10 minutes'];
+  function quick(){ try{ const v = JSON.parse(fhRawGet(QUICK_KEY) || 'null'); if(Array.isArray(v)) return v.filter(function(x){ return typeof x === 'string' && x.trim(); }); }catch(e){} return QUICK.slice(); }
+  function setQuick(list){ fhSaveJSON(QUICK_KEY, list.slice(0, 12)); }
   function openNudge(){
     if(document.getElementById('fhNudgeSheet')) return;
     const ps = people().filter(function(x){ return x.name; }), m = me();
-    let to = 'all';
-    const close = function(){ const el = document.getElementById('fhNudgeSheet'); if(el) el.remove(); };
+    let to = 'all', urgent = false, editing = false, poll = null;
+    const close = function(){ clearInterval(poll); const el = document.getElementById('fhNudgeSheet'); if(el) el.remove(); };
     const chips = h('div', { class:'fhe-chips fhnudge-to' });
     const draw = function(){
       chips.innerHTML = '';
-      [{ id:'all', name:'Everyone', hue:null }].concat(ps.filter(function(x){ return !m || x.id !== m.id; })).forEach(function(x){
+      [{ id:'all', name:'Everyone', hue:null }, { id:'shared', name:'📺 Screens', hue:null, sub:'Shared devices, like the kitchen tablet' }].concat(ps.filter(function(x){ return !m || x.id !== m.id; })).forEach(function(x){
         const on = to === x.id;
-        chips.appendChild(h('button', { type:'button', class:'fhe-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', style:'--ec:' + (x.hue != null ? 'hsl(' + x.hue + ',55%,48%)' : 'var(--accent,#6C4F8A)'), text:x.name, onClick:function(){ to = x.id; draw(); } }));
+        chips.appendChild(h('button', { type:'button', class:'fhe-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-to':x.id, title:x.sub || '', style:'--ec:' + (x.hue != null ? 'hsl(' + x.hue + ',55%,48%)' : 'var(--accent,#6C4F8A)'), text:x.name, onClick:function(){ to = x.id; draw(); } }));
       });
     };
     draw();
     const msg = h('textarea', { class:'fhe-in', rows:'2', maxlength:'120', placeholder:'Or type a message' });
-    const quick = h('div', { class:'fhe-chips fhnudge-quick' }, QUICK.map(function(q){ return h('button', { type:'button', class:'fhe-chip', style:'--ec:var(--accent,#6C4F8A)', text:q, onClick:function(){ msg.value = q; } }); }));
+    const qbox = h('div', { class:'fhe-chips fhnudge-quick' });
+    const drawQuick = function(){
+      qbox.innerHTML = '';
+      const list = quick();
+      list.forEach(function(q, i){
+        qbox.appendChild(editing
+          ? h('span', { class:'fhe-chip fhnudge-qedit', style:'--ec:var(--accent,#6C4F8A)' }, q, h('button', { type:'button', class:'fhnudge-qx', 'aria-label':'Remove “' + q + '”', text:'✕', onClick:function(){ const l = quick(); l.splice(i, 1); setQuick(l); drawQuick(); } }))
+          : h('button', { type:'button', class:'fhe-chip', style:'--ec:var(--accent,#6C4F8A)', text:q, onClick:function(){ msg.value = q; } }));
+      });
+      if(editing){
+        const inp = h('input', { class:'fhe-in fhnudge-qin', maxlength:'40', placeholder:'New button, e.g. Teeth time', 'aria-label':'New quick message' });
+        const add = function(){ const v = inp.value.trim(); if(!v) return; const l = quick(); if(l.indexOf(v) < 0) l.push(v); setQuick(l); drawQuick(); const again = qbox.querySelector('.fhnudge-qin'); if(again) again.focus(); };
+        inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); add(); } });
+        qbox.appendChild(h('div', { class:'fhnudge-qadd' }, inp, h('button', { type:'button', class:'btn small', text:'Add', onClick:add })));
+      }
+      qbox.appendChild(h('button', { type:'button', class:'ob-link fhnudge-qtoggle', text:editing ? 'Done' : '✏️ Edit buttons', onClick:function(){ editing = !editing; drawQuick(); } }));
+    };
+    drawQuick();
+    const urg = h('label', { class:'fhnudge-urgent' }, h('input', { type:'checkbox', id:'fhNudgeUrgent', onChange:function(e){ urgent = e.target.checked; } }),
+      h('span', {}, h('b', { text:'🔔 Urgent' }), h('small', { text:'Keeps buzzing until someone taps Got it (up to 15 minutes)' })));
     const out = h('p', { class:'ob-hint fhnudge-out', role:'status' });
+    const seen = h('div', { class:'fhnudge-seen', 'aria-live':'polite' });
+    const who = function(){ return to === 'all' ? 'everyone' : to === 'shared' ? 'the screens' : (ps.find(function(x){ return x.id === to; }) || {}).name; };
+    /* how it's going: replies and "Got it" as they come in, while the sheet is open */
+    const watch = function(id, isUrgent){
+      let tries = 0;
+      const look = async function(){
+        tries++; if(tries > 45 || !document.getElementById('fhNudgeSheet')){ clearInterval(poll); return; }
+        let r = null; try{ r = await FHSync.fn('send-reminders', { action:'status', id:id }); }catch(e){ return; }
+        if(!r) return;
+        seen.innerHTML = '';
+        (r.replies || []).forEach(function(x){ seen.appendChild(h('div', { class:'fhnudge-reply' + (x.t === 'Got it' ? ' got' : '') }, h('b', { text:x.n }), ' ' + (x.t === 'Got it' ? 'saw it ✓' : x.t))); });
+        if(r.acked_by){ clearInterval(poll); seen.appendChild(h('p', { class:'ob-hint', text:'Seen by ' + r.acked_by + '. It won’t buzz again.' })); }
+        else if(isUrgent) seen.appendChild(h('p', { class:'ob-hint', text:'Buzzing until someone taps Got it…' }));
+        else if(!(r.replies || []).length) seen.appendChild(h('p', { class:'ob-hint', text:'Waiting for a reply…' }));
+      };
+      clearInterval(poll); poll = setInterval(look, 4000); look();
+    };
     const send = h('button', { type:'button', class:'btn', text:'Send', onClick:async function(){
       const text = msg.value.trim(); if(!text){ out.textContent = 'Pick or type a message first.'; msg.focus(); return; }
-      send.disabled = true; out.textContent = 'Sending\u2026';
+      send.disabled = true; out.textContent = 'Sending…'; seen.innerHTML = '';
       let mine = ''; try{ const sub = await current(); mine = sub ? sub.endpoint : ''; }catch(e){}
       try{
-        const r = await FHSync.fn('send-reminders', { action:'nudge', to:to, message:text, from:m ? m.name : '', fromId:m ? m.id : '', exclude:mine }) || {};
-        const who = to === 'all' ? 'everyone' : (ps.find(function(x){ return x.id === to; }) || {}).name;
-        if(r.via === 'person' || r.via === 'all') out.textContent = 'Sent to ' + who + (r.sent > 1 ? ' (' + r.sent + ' devices)' : '') + '.';
-        else if(r.via === 'shared') out.textContent = who + ' hasn\u2019t turned reminders on yet, so it went to the shared device' + (r.sent > 1 ? 's' : '') + '.';
-        else out.textContent = 'Nobody has reminders turned on' + (to === 'all' ? '' : ' for ' + who) + ' yet. Turn them on in Settings on their device.';
-        if(r.sent) setTimeout(close, 1500);
+        const r = await FHSync.fn('send-reminders', { action:'nudge', to:to, message:text, urgent:urgent, from:m ? m.name : '', fromId:m ? m.id : '', exclude:mine }) || {};
+        const w = who();
+        if(r.via === 'person' || r.via === 'all' || (r.via === 'shared' && to === 'shared')) out.textContent = 'Sent to ' + w + (r.sent > 1 ? ' (' + r.sent + ' devices)' : '') + '.';
+        else if(r.via === 'shared') out.textContent = w + ' hasn’t turned reminders on yet, so it went to the shared device' + (r.sent > 1 ? 's' : '') + '.';
+        else out.textContent = to === 'shared' ? 'No shared screen has reminders turned on yet. Turn them on in Settings on the kitchen tablet.' : 'Nobody has reminders turned on' + (to === 'all' ? '' : ' for ' + w) + ' yet. Turn them on in Settings on their device.';
+        if(r.sent && r.id) watch(r.id, urgent);
       }catch(e){ out.textContent = e.message || 'Could not send. Check the connection and try again.'; }
       send.disabled = false;
     } });
     const sheet = h('div', { id:'fhNudgeSheet', class:'fhm-back', onClick:function(e){ if(e.target === sheet) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Send a nudge' },
-        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'\ud83d\udce3 Send a nudge' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'\u2715', onClick:close })),
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'📣 Send a nudge' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhe-form' },
           h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'To' }), chips),
-          h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Message' }), quick), msg, out,
-          h('div', { class:'fhe-actions' }, send, h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close })))));
+          h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Message' }), qbox), msg, urg, out, seen,
+          h('div', { class:'fhe-actions' }, send, h('button', { type:'button', class:'btn secondary', text:'Close', onClick:close })))));
     document.body.appendChild(sheet);
   }
+
+  /* a nudge that arrives while the app is open (the kitchen display, say): full screen, with the reply buttons.
+     The service worker passes it on (pwa/sw.js); replying also clears the notification. */
+  function showIncoming(d){
+    if(!d || !d.reply) return;
+    const old = document.getElementById('fhNudgeIn'); if(old) old.remove();
+    const close = function(){ const el = document.getElementById('fhNudgeIn'); if(el) el.remove(); };
+    const answer = async function(text){
+      close();
+      try{
+        const sub = await current();
+        await fetch(d.reply.url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ action:'reply', token:d.reply.token, reply:text, endpoint:sub ? sub.endpoint : '' }) });
+      }catch(e){}
+      try{ const reg = await registration(); const ns = await reg.getNotifications(d.tag ? { tag:d.tag } : {}); ns.forEach(function(n){ n.close(); }); }catch(e){}
+    };
+    const btn = function(t, label, main){ return h('button', { type:'button', class:'fhnin-btn' + (main ? ' main' : ''), text:label, onClick:function(){ answer(t); } }); };
+    document.body.appendChild(h('div', { id:'fhNudgeIn', class:'fhnin' + (d.urgent ? ' urgent' : ''), role:'alertdialog', 'aria-label':d.title || 'Nudge' },
+      h('div', { class:'fhnin-box' },
+        h('div', { class:'fhnin-from', text:(d.urgent ? '🔔 ' : '📣 ') + (d.title || 'Nudge') }),
+        h('div', { class:'fhnin-msg', text:d.body || '' }),
+        h('div', { class:'fhnin-acts' }, d.urgent ? btn('Got it', 'Got it ✓', true) : [btn('OK 👍', 'OK 👍', true), btn('On my way', 'On my way')],
+          d.urgent ? null : h('button', { type:'button', class:'fhnin-btn quiet', text:'Close', onClick:close })))));
+    try{ if(navigator.vibrate) navigator.vibrate(d.urgent ? [400, 200, 400] : 200); }catch(e){}
+  }
+  try{ if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function(e){ if(e.data && e.data.type === 'fh-nudge') showIncoming(e.data); }); }catch(e){}
 
   function init(){
     if(!vapid()) return;
@@ -15566,7 +15657,7 @@ const FHPush = (function(){
     try{ FHSync.onChange(soon); }catch(e){}
   }
   function available(){ return !!vapid() && synced(); }
-  return { available:available, house:house, setHouse:setHouse, houseCard:houseCard, nudgeTo:nudgeTo, savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, disable:disable, DEFAULTS:DEFAULTS };
+  return { available:available, house:house, setHouse:setHouse, houseCard:houseCard, nudgeTo:nudgeTo, savePrefs:savePrefs, buildSchedule:buildSchedule, upload:upload, soon:soon, settingsCard:settingsCard, prefs:prefs, init:init, canNudge:canNudge, openNudge:openNudge, showIncoming:showIncoming, quick:quick, disable:disable, DEFAULTS:DEFAULTS };
 })();
 
 /* ==================== SHARE THE LOAD: bring everyone in, who's cooking, hand it over ====================
