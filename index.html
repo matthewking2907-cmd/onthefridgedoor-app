@@ -2799,6 +2799,25 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhnd-person{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--panel-line,#DCD7E4)}
 .fhnd-sum{flex:1;min-width:120px;font-size:.9rem;color:var(--muted,#7A7284)}
 .fhnd-sev.on{background:#B3261E;border-color:#B3261E;color:#fff}
+/* shop tags (ob_shoptags.js) */
+.fhst-btn{ flex:0 0 auto; width:34px; height:34px; border-radius:8px; border:0; background:transparent; color:var(--muted,#888); font-size:1.1rem; font-weight:700; cursor:pointer; align-self:center; line-height:1; }
+.shopping-item-row .fhs-btn + .fhst-btn{ margin-left:0; }
+.shopping-item-row .shopping-item-info + .fhst-btn{ margin-left:auto; }
+.fhst-btn:active{ background:var(--panel,#eee); }
+.fhst-btn + .fhx-x{ margin-left:0; }
+.fhst-tag{ display:inline-block; margin-top:3px; font-size:0.68rem; font-weight:700; padding:1px 8px; border-radius:999px; background:var(--panel,#eee); color:var(--ink,#333); }
+.fhst-wrap{ margin:4px 0 10px; }
+.fhst-chips{ gap:6px; }
+.fhst-chip{ font-size:0.8rem; }
+.fhst-hint{ margin:2px 0 8px; }
+.fhst-sheet{ overflow-y:auto; }
+.fhst-body{ padding:0 16px 18px; }
+.fhst-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+.fhst-row{ display:flex; align-items:center; gap:6px; border:1px solid var(--panel-line,#ddd); border-radius:12px; padding:2px 4px 2px 2px; }
+.fhst-row.on{ border-color:var(--accent,#7a5af8); background:var(--panel,#f4f1ff); }
+.fhst-pick{ flex:1; min-width:0; text-align:left; border:0; background:transparent; color:inherit; font:inherit; font-weight:600; padding:10px 12px; cursor:pointer; }
+.fhst-del{ margin-left:0; }
+.fhst-sug{ margin-top:8px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -5258,7 +5277,21 @@ const FHNeeds = (function(){
     else fhSaveJSON(KEY, out);
   }
   function consented(){ const d = load(); return !!(d.consent && d.consent.at); }
-  function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; } }
+  let setupPeople = null;   // setup's people (ids like 't1') until setup saves them
+  function people(){
+    if(setupPeople) return setupPeople;
+    try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; }
+  }
+  function usePeople(list){ setupPeople = list || null; }
+  /* setup gives everyone their lasting id when it finishes: move their needs across; anyone no longer there is dropped */
+  function remapPeople(map){
+    setupPeople = null;
+    const d = load(), ids = Object.keys(d.people || {});
+    if(!ids.length) return;
+    const out = {};
+    ids.forEach(id => { if(map[id]) out[map[id]] = d.people[id]; });
+    d.people = out; save(d);
+  }
   function of(pid){ const n = load().people[pid]; return n || null; }
   function allergensOf(n){
     if(!n) return [];
@@ -5458,7 +5491,7 @@ const FHNeeds = (function(){
   }
 
   return { KEY:KEY, LOCAL:LOCAL, load:load, of:of, any:any, has:has, allergensOf:allergensOf, check:check, clashes:clashes, forMeal:forMeal, mark:mark, suits:suits, blocksPlan:blocksPlan,
-    rows:rows, settingsCard:settingsCard, editor:editor, consentSheet:consentSheet, move:move, deleteAll:deleteAll, summary:summary, canEdit:canEdit };
+    rows:rows, settingsCard:settingsCard, editor:editor, consentSheet:consentSheet, consented:consented, usePeople:usePeople, remapPeople:remapPeople, move:move, deleteAll:deleteAll, summary:summary, canEdit:canEdit };
 })();
 
 // ==================== MEAL PLAN MODULE ====================
@@ -8210,9 +8243,12 @@ function renderShoppingListPage(container){
     return;
   }
 
+  { const fhCk = shoppingChecked[shoppingCycleKey()];
+    const fhEnt = [].concat.apply([], Object.values(bySection)).map(it=>({ name: it.raw || it.name, left: FHShop.tick(fhCk, it).s !== 'all' })).concat(FHExtras.entries(FHExtras.ck(anchor)));
+    const st = FHShopTags.chips(fhEnt, ()=>renderShoppingListPage(container)); if(st) container.appendChild(st); }
   { const sc = FHScratch.chips(()=>renderShoppingListPage(container)); if(sc) container.appendChild(sc); }
   SHOP_SECTIONS.forEach(section=>{
-    const items = bySection[section.id];
+    const items = bySection[section.id].filter(it=> FHShopTags.shows(it.raw || it.name));
     const xrows = FHExtras.rows(section.id, anchor, ()=>renderShoppingListPage(container));
     if(!items.length && !xrows.length) return;
     const heading = document.createElement('h3');
@@ -8249,6 +8285,7 @@ function renderShoppingListPage(container){
       info.appendChild(uses);
       row.appendChild(info);
       { const sb = FHScratch.rowButton(item, ()=>renderShoppingListPage(container)); if(sb) row.appendChild(sb); }
+      { const tl = FHShopTags.label(item.raw || item.name); if(tl) info.appendChild(tl); row.appendChild(FHShopTags.button(item.raw || item.name, item.name, ()=>renderShoppingListPage(container))); }
 
       if(section.id === 'meat-fish'){
         const expiryWrap = document.createElement('label');
@@ -10335,6 +10372,7 @@ const FHExtras = (function(){
   function addItem(list, cyc, it, section, scope){
     const low = it.name.toLowerCase();
     const same = list.find(function(x){ return x.name.toLowerCase() === low && (x.scope === 'weekly' || (x.scope === 'once' && x.cycle === cyc) || (x.scope === 'carry' && !Object.keys(x.doneIn || {}).length)); });
+    if(typeof FHShopTags !== 'undefined') FHShopTags.onAdd(it.name);   // added while a shop's chip is on: for that shop
     if(same){
       if(!it.qty) return false;
       same.qty = addQty(same.qty, it.qty); return true;
@@ -10484,7 +10522,8 @@ const FHExtras = (function(){
   // Rows for one aisle, in the same style as the meal-based rows.
   function rows(sectionId, anchor, rerender){
     const cyc = ck(anchor);
-    return mine(cyc).filter(function(x){ return (x.section || 'store-cupboard') === sectionId; }).map(function(it){
+    const tags = typeof FHShopTags !== 'undefined' ? FHShopTags : null;
+    return mine(cyc).filter(function(x){ return (x.section || 'store-cupboard') === sectionId && (!tags || tags.shows(x.name)); }).map(function(it){
       const done = isDone(it, cyc);
       const toggle = function(){
         const l = load(); const x = l.find(function(y){ return y.id === it.id; });
@@ -10497,13 +10536,17 @@ const FHExtras = (function(){
         h('span', { class:'shopping-check', text:done ? '✓' : '', onClick:toggle }),
         h('div', { class:'shopping-item-info', onClick:toggle },
           h('span', { class:'shopping-item-name', text:it.name + (it.qty ? ' — ' + it.qty : '') }),
-          h('span', { class:'meta shopping-item-uses', text:(it.ess ? 'Household essentials · running low' : 'Added by you') + (it.scope === 'weekly' ? ' · every week' : '') })),
+          h('span', { class:'meta shopping-item-uses', text:(it.ess ? 'Household essentials · running low' : 'Added by you') + (it.scope === 'weekly' ? ' · every week' : '') }),
+          tags ? tags.label(it.name) : null),
+        tags ? tags.button(it.name, it.name, rerender) : null,
         h('button', { type:'button', class:'fhx-x', 'aria-label':'Remove ' + it.name, text:'✕', onClick:function(){
           if(it.scope === 'weekly' && !confirm('Remove “' + it.name + '” from every week?')) return;
           save(load().filter(function(y){ return y.id !== it.id; })); rerender(); } }));
     });
   }
-  return { parse:parse, addMany:addMany, shopDayRow:shopDayRow, moveToShopDay:moveToShopDay, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
+  /* everything hand-added on this shop's list, for the shop chips' counts: [{ name, left }] */
+  function entries(cyc){ return mine(cyc).map(function(x){ return { name:x.name, left:!isDone(x, cyc) }; }); }
+  return { entries:entries, parse:parse, addMany:addMany, shopDayRow:shopDayRow, moveToShopDay:moveToShopDay, essLow:essLow, essLowCount:essLowCount, essLowNames:essLowNames, nextShopDate:nextShopDate, setEssLow:setEssLow, nextShopLabel:nextShopLabel, ck:ck, load:load, add:add, block:block, rows:rows, count:count, KEY:KEY };
 })();
 
 /* ==================== OCCASIONS: birthdays, anniversaries, celebrations ====================
@@ -13026,6 +13069,135 @@ const FHRoutines = (function(){
     events, pushItems, kitLines, render, editor, breakEditor, kitEditor, startAt };
 })();
 
+/* ==================== SHOP TAGS on the shopping list (FHShopTags) ==================== */
+/* specs/shopping-lists.md part 3: one list, but any item can say where it's bought ("Aldi"). Remembered per item
+   (fhIngKey of the app's own name), so it sticks week after week. Synced family-hub-shop-tags-v1:
+   { shops:['Tesco','Aldi'], items:{ '<fhIngKey>':'Aldi' } }. The filter chip (All · Tesco · Aldi · No shop) is per
+   device: family-hub-shop-filter ('' = all, '-' = no shop, otherwise a shop name). */
+const FHShopTags = (function(){
+  const KEY = 'family-hub-shop-tags-v1', FILTER = 'family-hub-shop-filter';
+  const UK_SHOPS = ['Tesco', 'Sainsbury’s', 'Asda', 'Aldi', 'Lidl', 'Morrisons', 'Co-op', 'Iceland', 'M&S', 'Waitrose', 'Home Bargains', 'B&M'];
+  function load(){
+    try{
+      const v = JSON.parse(fhRawGet(KEY) || 'null') || {};
+      return { shops:Array.isArray(v.shops) ? v.shops.filter(s => typeof s === 'string' && s) : [], items:v.items && typeof v.items === 'object' ? v.items : {} };
+    }catch(e){ return { shops:[], items:{} }; }
+  }
+  function save(d){ fhSaveJSON(KEY, { shops:d.shops, items:d.items }); }
+  const k = name => fhIngKey(String(name || ''));
+  const clean = s => String(s || '').trim().replace(/\s+/g, ' ').slice(0, 30);
+  function shops(){ return load().shops; }
+  function of(name){ const d = load(), s = d.items[k(name)]; return s && d.shops.indexOf(s) >= 0 ? s : ''; }
+  function set(name, shop){
+    const d = load(), key = k(name);
+    if(!key) return;
+    if(shop){ if(d.shops.indexOf(shop) < 0) d.shops.push(shop); d.items[key] = shop; }
+    else delete d.items[key];
+    save(d);
+  }
+  function addShop(name){
+    const s = clean(name); if(!s) return '';
+    const d = load(), same = d.shops.find(x => x.toLowerCase() === s.toLowerCase());
+    if(same) return same;
+    d.shops.push(s); save(d); return s;
+  }
+  function removeShop(shop){
+    const d = load();
+    d.shops = d.shops.filter(s => s !== shop);
+    Object.keys(d.items).forEach(x => { if(d.items[x] === shop) delete d.items[x]; });
+    save(d);
+    if(filter() === shop) setFilter('');
+  }
+  function filter(){
+    const f = fhRawGet(FILTER) || '';
+    if(f === '-' ) return shops().length ? '-' : '';
+    return shops().indexOf(f) >= 0 ? f : '';
+  }
+  function setFilter(f){ fhRawSet(FILTER, f || ''); }
+  /* does this item show under the current filter chip? */
+  function shows(name){
+    const f = filter();
+    if(!f) return true;
+    const s = of(name);
+    return f === '-' ? !s : s === f;
+  }
+  /* something typed in while a shop's chip is on is for that shop */
+  function onAdd(name){ const f = filter(); if(f && f !== '-' && !of(name)) set(name, f); }
+
+  /* the small "Aldi" label on a row, and the ⋯ button that opens Buy at… */
+  function label(name){
+    const s = of(name);
+    return s ? h('span', { class:'fhst-tag', text:s }) : null;
+  }
+  function button(name, shown, redo){
+    return h('button', { type:'button', class:'fhst-btn', 'aria-label':'Where do you buy ' + (shown || name) + '?', title:'Buy at…', text:'⋯',
+      onClick:e => { e.stopPropagation(); sheet(name, shown || name, redo); } });
+  }
+
+  /* Buy at… : pick a shop, no shop, or add a new one */
+  function sheet(name, shown, redo){
+    const close = () => { const m = document.getElementById('fhstSheet'); if(m) m.remove(); };
+    const pick = s => { set(name, s); close(); if(redo) redo(); };
+    const body = h('div', { class:'fhst-body' });
+    const draw = () => {
+      body.innerHTML = '';
+      const cur = of(name), list = shops();
+      if(list.length){
+        body.appendChild(h('div', { class:'fhst-list' },
+          list.map(s => h('div', { class:'fhst-row' + (s === cur ? ' on' : '') },
+            h('button', { type:'button', class:'fhst-pick', 'data-shop':s, 'aria-pressed':s === cur ? 'true' : 'false', text:(s === cur ? '✓ ' : '') + s, onClick:() => pick(s) }),
+            h('button', { type:'button', class:'fhx-x fhst-del', 'aria-label':'Remove the shop ' + s, text:'✕', onClick:() => {
+              if(!confirm('Remove “' + s + '”? Items tagged with it go back to no shop.')) return;
+              removeShop(s); draw(); if(redo) redo();
+            } }))),
+          h('div', { class:'fhst-row' + (!cur ? ' on' : '') },
+            h('button', { type:'button', class:'fhst-pick', id:'fhstNone', 'aria-pressed':!cur ? 'true' : 'false', text:(!cur ? '✓ ' : '') + 'No particular shop', onClick:() => pick('') }))));
+      }
+      const inp = h('input', { type:'text', class:'fhx-input', id:'fhstNew', maxlength:'30', autocomplete:'off', enterkeyhint:'done', placeholder:list.length ? 'Another shop' : 'e.g. Aldi', 'aria-label':'A new shop' });
+      const go = () => { const s = addShop(inp.value); if(s) pick(s); };
+      inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); go(); } });
+      body.appendChild(h('p', { class:'ob-label', text:list.length ? 'Or a new shop' : 'Which shop?' }));
+      body.appendChild(h('div', { class:'fhx-add' }, inp, h('button', { type:'button', class:'btn small', id:'fhstAdd', text:'Add', onClick:go })));
+      let uk = true; try{ uk = FHLocale.get().naming !== 'us'; }catch(e){}
+      const sug = uk ? UK_SHOPS.filter(s => !list.some(x => x.toLowerCase() === s.toLowerCase())) : [];
+      if(sug.length) body.appendChild(h('div', { class:'ob-chips fhst-sug' }, sug.map(s => h('button', { type:'button', class:'ob-chip', text:s, onClick:() => pick(addShop(s)) }))));
+      body.appendChild(h('p', { class:'ob-hint', text:'It stays tagged every week. Use the shop buttons at the top of the list to see one shop at a time.' }));
+    };
+    draw();
+    close();
+    const m = h('div', { id:'fhstSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet fhst-sheet', role:'dialog', 'aria-label':'Where do you buy ' + shown + '?' },
+        h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:'Buy at…' }), h('div', { class:'fhm-sub', text:shown })),
+          h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        body));
+    document.body.appendChild(m);
+  }
+
+  /* the chips at the top of the list. entries: [{ name, left }] for everything on this shop's list */
+  function chips(entries, redo){
+    const list = shops();
+    if(!list.length){
+      return entries.length ? h('p', { class:'ob-hint fhst-hint', id:'fhstHint', text:'Shop in more than one place? Tap ⋯ on an item to say where you buy it.' }) : null;
+    }
+    const f = filter(), cnt = { '':0, '-':0 };
+    list.forEach(s => { cnt[s] = 0; });
+    entries.forEach(e => { if(!e.left) return; cnt['']++; const s = of(e.name); if(s) cnt[s]++; else cnt['-']++; });
+    const chip = (val, text) => h('button', { type:'button', class:'ob-chip fhst-chip' + (f === val ? ' on' : ''), 'data-filter':val || 'all', 'aria-pressed':f === val ? 'true' : 'false',
+      text:text + (cnt[val] ? ' · ' + cnt[val] : ''), onClick:() => { setFilter(val); if(redo) redo(); } });
+    const row = h('div', { class:'ob-chips fhst-chips', id:'fhstChips', role:'group', 'aria-label':'Show one shop' },
+      chip('', 'All'), list.map(s => chip(s, s)), chip('-', 'No shop'));
+    const wrap = h('div', { class:'fhst-wrap' }, row);
+    if(f){
+      const any = entries.some(e => { const s = of(e.name); return f === '-' ? !s : s === f; });
+      wrap.appendChild(h('p', { class:'ob-hint', id:'fhstNote', text:!any ? (f === '-' ? 'Everything on this list has a shop.' : 'Nothing on this list is tagged ' + f + ' yet. Tap ⋯ on an item to add it.')
+        : (f === '-' ? 'Showing items with no shop.' : 'Showing ' + f + ' only. New items you add now are tagged ' + f + '.') }));
+    }
+    return wrap;
+  }
+  return { KEY:KEY, load:load, shops:shops, of:of, set:set, addShop:addShop, removeShop:removeShop, filter:filter, setFilter:setFilter, shows:shows, onAdd:onAdd,
+    label:label, button:button, sheet:sheet, chips:chips };
+})();
+
 /* ==================== RECIPES: every meal in one place (FHBook) ====================
    The Recipes page (menu: Meals & shopping) holds the library, so the Meal plan page is for planning only.
    - Meals: search, Our usual / Ours / Changed / Under 30 min / a main ingredient; a card per meal opens the recipe
@@ -14084,6 +14256,7 @@ function obApply(S){
     reward: (function(){ const r = OB_REWARD_CHOICES.find(x=>x.id===(S.personRewards||{})[p.id]) || OB_REWARD_CHOICES[0]; return { presetId:r.id, icon:r.icon, label:r.label }; })() }));
   const idMap = {}; S.people.forEach((p,i)=>idMap[p.id]=people[i].id);
   const remap = v=> idMap[v] || v;
+  try{ if(typeof FHNeeds !== 'undefined') FHNeeds.remapPeople(idMap); }catch(e){}   // food needs added during setup
 
   // ---- chores module ----
   fhSaveJSON('chore-chart-people-v1', people.map(p=>{ const o={id:p.id,name:p.name,hue:p.hue,role:p.role}; if(p.born) o.born=p.born; else if(p.age) o.age=p.age; if(F.rewards && F.chores) o.reward=p.reward; return o; }));
@@ -14623,6 +14796,7 @@ const OBW = (function(){
       own ? h('button',{type:'button',class:'ob-btn ghost ob-jump',id:'obJumpMeals',text:'↓ Tick the meals you make most',onClick:()=>{ const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ behavior:'smooth', block:'start' }); }}) : null,
       h('p',{class:'ob-label',text:'Food preferences and allergies'}),
       h('p',{class:'ob-hint',text:'Tap anything you want left out — those meals disappear from the list.'}), diets, vegHouse,
+      needsBox(),
       wk ? null : h('p',{class:'ob-label',text:'How long is your meal rotation?'}), wk ? null : weeksRow,
       wk ? null : h('p',{class:'ob-hint',text: S.weeks===1 ? 'The same week repeats every week.' : S.weeks===2 ? 'Two different weeks, repeating.' : 'Four different weeks before anything repeats.'}),
       own ? null : h('p',{class:'ob-label',text:'Nights you cook'}), own ? null : nights,
@@ -14884,7 +15058,24 @@ const OBW = (function(){
     footEl.appendChild(h('button',{type:'button',class:'ob-btn primary',id:'obNext',text: S.step==='welcome' ? 'Let’s start' : (last ? (mode==='addon' ? 'Save' : 'Set up my hub') : 'Next'),onClick:()=> last ? finish() : go(1)}));
     saveDraft();
   }
-  function close(){ if(root){ root.remove(); root = null; } document.body.classList.remove('ob-open'); }
+  function close(){ if(root){ root.remove(); root = null; } document.body.classList.remove('ob-open'); try{ FHNeeds.usePeople(null); }catch(e){} }
+  /* the meals step: "Anyone with allergies or food needs?" person by person (FHNeeds: consent first, then the editor).
+     Saved under setup's own ids until setup finishes (obApply moves them across). */
+  function needsBox(){
+    if(typeof FHNeeds === 'undefined' || !FHNeeds.canEdit()) return null;
+    const ps = namedPeople();
+    FHNeeds.usePeople(ps);
+    const d = FHNeeds.load();
+    const open = p=>{ FHNeeds.usePeople(namedPeople()); const then = ()=>FHNeeds.editor(p, ()=>render()); if(FHNeeds.consented()) then(); else FHNeeds.consentSheet(then); };
+    return h('div',{class:'ob-needs',id:'obNeeds'},
+      h('p',{class:'ob-label',text:'Anyone with allergies or food needs?'}),
+      h('p',{class:'ob-hint',text:'Optional, and you can add them later in Settings. Meals that don’t suit someone are marked, and we leave out any that a swap can’t fix.'}),
+      h('div',{class:'ob-chips'}, ps.map(p=>{
+        const n = d.people[p.id], has = FHNeeds.has(n);
+        return h('button',{type:'button',class:'ob-chip'+(has?' on':''),'data-person':p.id,'aria-label':'Food needs for '+p.name,
+          text: has ? p.name+': '+FHNeeds.summary(n) : '＋ '+p.name, onClick:()=>open(p)});
+      })));
+  }
   function open(m){
     addon = '';
     if(m && m.indexOf('addon:') === 0){ addon = m.slice(6); m = 'addon'; }
@@ -15624,7 +15815,7 @@ const FHSync = (function(){
   const ST_KEY  = 'fhsync:state';     // sign-in + sync bookkeeping; never exported in backups, never synced
   const BUILD = (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.url) ? FH_SYNC_BUILD : null;
   const SHARED_EXACT = { 'family-hub-config-v1':1, 'family-hub-locale-v1':1, 'family-hub-meal-rules-v1':1,
-                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-needs-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-routines-v1':1, 'family-hub-nudge-quick-v1':1, 'family-hub-routine-log-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
+                         'family-hub-hidden-meals-v1':1, 'family-hub-diets-v1':1, 'family-hub-needs-v1':1, 'family-hub-shop-tags-v1':1, 'family-hub-bins-v1':1, 'family-hub-occasions-v1':1, 'family-hub-paperwork-v1':1, 'family-hub-routines-v1':1, 'family-hub-nudge-quick-v1':1, 'family-hub-routine-log-v1':1, 'family-hub-cooks-v1':1, 'family-hub-meal-addons-v1':1, 'family-hub-meal-days-v1':1, 'family-hub-push-house-v1':1, 'family-hub-meal-mode-v1':1, 'family-hub-usual-meals-v1':1, 'family-hub-rotation-weeks-v1':1, 'family-hub-occ-prefs-v1':1, 'family-hub-scratch-v1':1, 'family-hub-starter-chores-v1':1, 'family-hub-starter-plan-v1':1, 'family-hub-events-v1':1, 'family-hub-tasks-v1':1 };
   // Per-device settings (parent PIN, theme, kitchen display, running timers, setup draft) are deliberately NOT shared.
   function eligible(k){ return !!SHARED_EXACT[k] || k.indexOf('brick-bites-') === 0 || k.indexOf('chore-chart-') === 0; }
 
@@ -16352,14 +16543,32 @@ const FHPush = (function(){
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
     }
-    // essentials running low, the evening before the next shop
+    // "Shopping tomorrow", the evening before the next shop: essentials running low, and (week by week households)
+    // the dinners in that shop week not chosen yet, as empty:['Fri','Sat']
     try{
-      if(Feature.on('essentials') && typeof FHExtras !== 'undefined'){
-        const low = FHExtras.essLowNames(), shopDay = FHExtras.nextShopDate(), siso = FHEvents.iso(shopDay);
-        if(low.length) items.push({ k:'shop', key:'shop:' + siso, date:siso, lines:low.map(function(n){ return { t:n, who:[] }; }) });
+      if(typeof FHExtras !== 'undefined'){
+        const shopDay = FHExtras.nextShopDate(), siso = FHEvents.iso(shopDay);
+        const low = Feature.on('essentials') ? FHExtras.essLowNames() : [];
+        const empty = emptyNights(shopDay);
+        if(low.length || empty.length){
+          const it = { k:'shop', key:'shop:' + siso, date:siso, lines:low.map(function(n){ return { t:n, who:[] }; }) };
+          if(empty.length) it.empty = empty;
+          items.push(it);
+        }
       }
     }catch(e){}
     return items;
+  }
+  /* week by week: the shop week's nights with no dinner yet (the other ways leave nights empty on purpose) */
+  function emptyNights(shopDay){
+    if(!Feature.on('meals') || typeof FHDays === 'undefined' || FHDays.mode() !== 'week') return [];
+    const out = [];
+    for(let i = 0; i < 7; i++){
+      const d = new Date(shopDay.getFullYear(), shopDay.getMonth(), shopDay.getDate() + i);
+      let info = null; try{ info = MealApp.getDayDisplay(d); }catch(e){}
+      if(info && !info.mealId) out.push(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]);
+    }
+    return out;
   }
   function hash(s){ let h = 0; for(let i = 0; i < s.length; i++){ h = (h * 31 + s.charCodeAt(i)) | 0; } return String(h); }
   let timer = null;
@@ -16467,7 +16676,7 @@ const FHPush = (function(){
         check('morning', 'Morning summary at', time('morningAt')),
         check('evening', 'Evening heads-up at', time('eveningAt')),
         Feature.on('chores') ? choreBox : null, Feature.on('chores') ? freqs : null,
-        Feature.on('essentials') ? check('shop', 'Essentials running low, the evening before shop day') : null));
+        (Feature.on('essentials') || Feature.on('meals')) ? check('shop', 'Shopping tomorrow, the evening before shop day: ' + [Feature.on('essentials') ? 'essentials running low' : '', Feature.on('meals') ? 'dinners not chosen yet' : ''].filter(Boolean).join(', ')) : null));
       card.appendChild(h('p', { class:'ob-hint', text:'The evening heads-up covers tomorrow’s all-day plans, like bin day or a school trip. Reminders come from your household’s events and tasks, and connected calendars as of the last time someone opened the app (an event added in Google since then may be missed). They are sent through your phone or browser’s own notification service, encrypted so only this device can read them.' }));
       card.appendChild(h('button', { type:'button', class:'btn secondary', text:'Turn off on this device', onClick:function(){ disable().then(rerender); } }));
       card.appendChild(err);
