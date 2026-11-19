@@ -10780,12 +10780,28 @@ const FHOcc = (function(){
     if(unknown.length) root.appendChild(h('p', { class:'fho-sub', text:'Dates not known yet for: ' + unknown.join(', ') + '. Update the app to get them.' }));
   }
 
+  function defaultRemind(kind){
+    return kind === 'other' ? [{ id:uid('r'), label:'Buy presents', days:14, done:{} }]
+      : [{ id:uid('r'), label:'Buy a present', days:28, done:{} }, { id:uid('r'), label:'Send a card', days:7, done:{} }];
+  }
+  /* Quick add: a dated birthday, anniversary or celebration ({title, kind, date:'MM-DD', year}), with the editor's usual
+     reminders. False if the same one is already there. */
+  function addFrom(x){
+    const kind = ['birthday', 'anniversary', 'other'].indexOf(x.kind) >= 0 ? x.kind : 'other';
+    const title = shortTitle({ kind, title:String(x.title || '').trim() }).slice(0, 60);
+    if(!title || !/^\d{2}-\d{2}$/.test(x.date || '')) return false;
+    const list = load();
+    if(list.some(o => o.kind === kind && o.date === x.date && shortTitle(o).toLowerCase() === title.toLowerCase())) return false;
+    const y = /^\d{4}$/.test(x.year || '') && +x.year >= 1900 && +x.year <= new Date().getFullYear() ? x.year : '';
+    const o = { id:uid(), title, kind, date:x.date, year:kind === 'other' ? '' : y, remind:defaultRemind(kind), ideas:[], names:[] };
+    if(kind === 'other') o.emoji = CUSTOM_EMOJI[0];
+    list.push(o); save(list); return true;
+  }
   function editor(orig, newKind){
     if(document.getElementById('fhOccSheet')) return;
     const isFest = !!(orig && orig.kind === 'festival'), f = isFest ? fest(orig.fid) : null;
     const o = JSON.parse(JSON.stringify(orig || { id:uid(), title:'', kind:newKind || 'birthday', date:'', year:'', remind:null, ideas:[], names:[] }));
-    if(!o.remind) o.remind = o.kind === 'other' ? [{ id:uid('r'), label:'Buy presents', days:14, done:{} }]
-      : [{ id:uid('r'), label:'Buy a present', days:28, done:{} }, { id:uid('r'), label:'Send a card', days:7, done:{} }];
+    if(!o.remind) o.remind = defaultRemind(o.kind);
     const K = o.kind, NOUN = { birthday:'birthday', anniversary:'anniversary', other:'celebration' }[K];
     o.names = o.names || []; o.ideas = o.ideas || [];
     const close = () => { const m = document.getElementById('fhOccSheet'); if(m) m.remove(); };
@@ -10910,7 +10926,7 @@ const FHOcc = (function(){
             h('button', { type:'button', class:'btn', id:'fhoSave', text:'Save', onClick:doSave })))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(title || document.getElementById('fhoIdea')), 50);
   }
-  return { KEY, FESTIVALS, load, next, open, events, todayCard, pushLines, render, editor, tick, setFest, festDate, easter };
+  return { KEY, FESTIVALS, load, addFrom, next, open, events, todayCard, pushLines, render, editor, tick, setFest, festDate, easter };
 })();
 
 /* ==================== BIN DAY: which day, and which bins if they alternate ====================
@@ -17055,8 +17071,11 @@ const FHShare = (function(){
    checked against fh_admins on the server). Nothing is saved until the parent has seen the list, unticked anything
    wrong, and pressed Add. Sent: the text, today's date, the time, and the household's first names and ids. */
 const FHQuick = (function(){
-  const ICON = { event:'📅', task:'✅', shopping:'🛒', paperwork:'📄' };
-  const LABEL = { event:'Event', task:'Task', shopping:'Shopping', paperwork:'Paperwork' };
+  const ICON = { event:'📅', task:'✅', shopping:'🛒', paperwork:'📄', occasion:'🎂' };
+  const LABEL = { event:'Event', task:'Task', shopping:'Shopping', paperwork:'Paperwork', occasion:'Occasion' };
+  const OCC = { birthday:'Birthday', anniversary:'Anniversary', other:'Celebration' };
+  function label(x){ return x.type === 'occasion' ? OCC[x.kind] : LABEL[x.type]; }
+  function icon(x){ return x.type === 'occasion' ? { birthday:'🎂', anniversary:'💍', other:'⭐' }[x.kind] : ICON[x.type]; }
   function pad(n){ return (n < 10 ? '0' : '') + n; }
   function iso(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function okDate(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s || '') && !isNaN(new Date(s + 'T00:00:00')); }
@@ -17074,7 +17093,7 @@ const FHQuick = (function(){
       people:people().map(p => ({ id:p.id, name:p.name, child:p.role === 'child' })), kinds:kinds() };
   }
   function whoNames(ids){ const ps = people(); return (ids || []).map(id => (ps.find(p => p.id === id) || {}).name).filter(Boolean); }
-  function niceDate(s){ return okDate(s) ? new Date(s + 'T00:00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }) : ''; }
+  function niceDate(s){ if(!okDate(s)) return ''; const d = new Date(s + 'T00:00:00'); return d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short', year:d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined }); }
   function niceTime(s){ if(!okTime(s)) return ''; const p = s.split(':'); return new Date(2000, 0, 1, +p[0], +p[1]).toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' }); }
 
   /* tidy what came back: only known people, real dates and times; an event without a date becomes a task */
@@ -17083,10 +17102,27 @@ const FHQuick = (function(){
     const x = { type:LABEL[it.type] ? it.type : 'task', title:String(it.title || '').trim().slice(0, 80), date:okDate(it.date) ? it.date : '',
       endDate:okDate(it.endDate) ? it.endDate : '', start:okTime(it.start) ? it.start : '', end:okTime(it.end) ? it.end : '',
       who:(Array.isArray(it.who) ? it.who : []).filter(id => ids.indexOf(id) >= 0), qty:String(it.qty || '').trim().slice(0, 20),
-      kind:String(it.kind || ''), repeat:['weekly', 'fortnightly', 'monthly', 'yearly'].indexOf(it.repeat) >= 0 ? it.repeat : 'none', notes:String(it.notes || '').trim().slice(0, 300) };
+      kind:String(it.kind || ''), year:/^\d{4}$/.test(it.year || '') ? it.year : '', repeat:['weekly', 'fortnightly', 'monthly', 'yearly'].indexOf(it.repeat) >= 0 ? it.repeat : 'none', notes:String(it.notes || '').trim().slice(0, 300) };
+    // a birthday or anniversary that came back as a yearly task or event is an occasion (smaller models do this):
+    // "Nan's 80th birthday" -> Nan, born 80 years before. Never a party: its date isn't the birthday.
+    if((x.type === 'task' || x.type === 'event') && x.date && x.repeat === 'yearly' && /\b(birthday|anniversary)\b/i.test(x.title) && !/\bparty\b/i.test(x.title + ' ' + x.notes)){
+      const nth = /\b(\d{1,3})(?:st|nd|rd|th)\b/i.exec(x.title + ' ' + x.notes);
+      let t = x.title.replace(/\b\d{1,3}(?:st|nd|rd|th)\b/ig, '').replace(/[’']s\b/g, '').replace(/\b(birthday|anniversary)\b/ig, '').replace(/\s+/g, ' ').trim();
+      if(!t && x.who.length) t = (people().find(p => p.id === x.who[0]) || {}).name || '';
+      if(t){
+        x.kind = /anniversary/i.test(x.title) ? 'anniversary' : 'birthday';
+        if(!x.year && nth && +nth[1] > 0 && +nth[1] < 120) x.year = String(+x.date.slice(0, 4) - +nth[1]);
+        x.type = 'occasion'; x.title = t;
+      }
+    }
+    if(x.type !== 'event') x.repeat = 'none';   // only events repeat; a task can't keep "every year"
     if(x.type === 'event' && !x.date) x.type = 'task';
     if(x.type === 'paperwork' && !x.date) x.type = 'task';
+    if(x.type === 'occasion' && !x.date) x.type = 'task';
+    if(x.type === 'occasion'){ if(!OCC[x.kind]) x.kind = 'other'; x.who = []; x.start = x.end = x.endDate = ''; x.repeat = 'none'; }
     if(x.type === 'paperwork' && !kinds().some(k => k.id === x.kind)) x.kind = 'other';
+    // only a person's paperwork (passport, licence, phone, something else) keeps a name: don't show one that won't be saved
+    if(x.type === 'paperwork'){ const k = (FHPaper.KINDS || []).find(k => k.id === x.kind); x.who = k && k.per ? x.who.slice(0, 1) : []; }
     if(x.endDate && x.endDate <= x.date) x.endDate = '';
     if(x.end && x.start && x.end <= x.start) x.end = '';
     return x.title ? x : null;
@@ -17095,6 +17131,12 @@ const FHQuick = (function(){
     const bits = [];
     if(x.type === 'shopping') bits.push(x.qty ? x.qty + ' · next shop' : 'Next shop');
     if(x.type === 'paperwork'){ const k = (FHPaper.KINDS || []).find(k => k.id === x.kind); if(k && k.id !== 'other') bits.push(k.name); }
+    if(x.type === 'occasion'){
+      bits.push(new Date(x.date + 'T00:00:00').toLocaleDateString(undefined, { day:'numeric', month:'long' }) + ', every year');
+      if(x.year) bits.push((x.kind === 'birthday' ? 'born ' : 'since ') + x.year);
+      bits.push(x.kind === 'other' ? 'reminder to buy presents' : 'reminders: present, card');
+      return bits.join(' · ');
+    }
     if(x.date) bits.push(niceDate(x.date) + (x.endDate ? ' – ' + niceDate(x.endDate) : ''));
     if(x.start) bits.push(niceTime(x.start) + (x.end ? '–' + niceTime(x.end) : ''));
     else if(x.type === 'event') bits.push('All day');
@@ -17106,7 +17148,7 @@ const FHQuick = (function(){
 
   /* save the ticked entries into the app's own lists */
   function apply(list){
-    const n = { event:0, task:0, shopping:0, paperwork:0 };
+    const n = { event:0, task:0, shopping:0, paperwork:0, occasion:0, already:0 };
     const evs = FHEvents.load(), tasks = FHTasks.load(), papers = FHPaper.load(), shop = [];
     list.forEach(x => {
       if(x.type === 'event'){
@@ -17114,6 +17156,8 @@ const FHQuick = (function(){
           who:x.who.length > 1 ? x.who.slice() : x.who.length ? x.who[0] : 'all', repeat:x.repeat, notes:x.notes }); n.event++;
       } else if(x.type === 'task'){
         tasks.push({ id:uid('t'), title:x.title, notes:x.notes, who:x.who[0] || '', due:x.date, time:x.date ? x.start : '', done:'', created:new Date().toISOString() }); n.task++;
+      } else if(x.type === 'occasion'){
+        if(FHOcc.addFrom({ title:x.title, kind:x.kind, date:x.date.slice(5), year:x.year })) n.occasion++; else n.already++;
       } else if(x.type === 'shopping'){
         shop.push({ name:x.title, qty:x.qty }); n.shopping++;
       } else if(x.type === 'paperwork'){
@@ -17137,9 +17181,10 @@ const FHQuick = (function(){
     const p = [];
     if(n.event) p.push(n.event + (n.event === 1 ? ' event' : ' events'));
     if(n.task) p.push(n.task + (n.task === 1 ? ' task' : ' tasks'));
+    if(n.occasion) p.push(n.occasion + (n.occasion === 1 ? ' occasion' : ' occasions'));
     if(n.shopping) p.push(n.shopping + ' on the shopping list');
     if(n.paperwork) p.push(n.paperwork + ' paperwork ' + (n.paperwork === 1 ? 'date' : 'dates'));
-    return p.length ? 'Added ' + p.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.' : 'Nothing added.';
+    return (p.length ? 'Added ' + p.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.' : 'Nothing added.') + (n.already ? ' ' + (n.already === 1 ? 'One occasion was' : n.already + ' occasions were') + ' already on Occasions.' : '');
   }
 
   function sheet(){
@@ -17157,12 +17202,14 @@ const FHQuick = (function(){
       status.textContent = items.length ? 'Check these, untick anything wrong, then add.' : '';
       items.forEach((x, i) => {
         const cb = h('input', { type:'checkbox', class:'fhqa-cb', checked:true, 'aria-label':'Add ' + x.title });
+        const shown = x.type === 'occasion' && x.kind !== 'other' ? x.title.replace(/[’']s (birthday|anniversary)$/i, '') : x.title;
+        if(shown !== x.title) x.title = shown;
         cb.addEventListener('change', () => { x.off = !cb.checked; row.classList.toggle('off', x.off); count(); });
-        const title = h('input', { class:'fhqa-title', value:x.title, maxlength:'80', 'aria-label':LABEL[x.type] + ' name' });
+        const title = h('input', { class:'fhqa-title', value:x.title, maxlength:'80', 'aria-label':x.type === 'occasion' && x.kind !== 'other' ? 'Whose ' + label(x).toLowerCase() : label(x) + ' name' });
         title.addEventListener('input', () => { x.title = title.value.trim(); });
         const row = h('label', { class:'fhqa-item', 'data-type':x.type, 'data-i':String(i) }, cb,
-          h('span', { class:'fhqa-icon', 'aria-hidden':'true', text:ICON[x.type] }),
-          h('span', { class:'fhqa-body' }, h('small', { class:'fhqa-type', text:LABEL[x.type] }), title, h('small', { class:'fhqa-meta', text:detail(x) })));
+          h('span', { class:'fhqa-icon', 'aria-hidden':'true', text:icon(x) }),
+          h('span', { class:'fhqa-body' }, h('small', { class:'fhqa-type', text:label(x) }), title, h('small', { class:'fhqa-meta', text:detail(x) })));
         results.appendChild(row);
       });
       if((unsure || []).length) results.appendChild(h('div', { class:'fhqa-unsure', id:'fhqaUnsure' }, h('b', { text:'Not sure where these go: ' }), unsure.map(String).join('; ')));
@@ -17192,12 +17239,14 @@ const FHQuick = (function(){
       if(!r || r.error || !Array.isArray(r.items)){ status.textContent = (r && r.error) || 'Couldn’t sort that. Try again.'; return; }
       items = r.items.map(clean).filter(Boolean);
       drawResults(r.unsure);
+      // owner's trial: which model answered, and how big the request was (QUICKADD_MODEL)
+      if(r.model) results.appendChild(h('p', { class:'fho-sub fhqa-model', id:'fhqaModel', text:'Sorted by ' + r.model + (r.usage ? ' · ' + r.usage.input + ' tokens in, ' + r.usage.output + ' out' : '') }));
     });
     const m = h('div', { id:'fhqaSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Quick add' },
         h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✨ Quick add' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhe-form' },
-          h('p', { class:'fho-sub', text:'Type or paste anything: appointments, things to do, shopping, renewal dates. We’ll sort it and show you before anything is added.' }),
+          h('p', { class:'fho-sub', text:'Type or paste anything: appointments, things to do, shopping, birthdays, renewal dates. We’ll sort it and show you before anything is added.' }),
           ta, h('div', { class:'fhe-actions' }, go), status, results,
           h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type, with your family’s first names, is sent to Claude (Anthropic) to sort it.' }))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(ta), 50);
