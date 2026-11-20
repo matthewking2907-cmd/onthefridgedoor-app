@@ -2841,6 +2841,11 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhqa-same{ font-size:0.85rem; font-weight:700; color:var(--accent,#6C4F8A); }
 .fhqa-unsure{ font-size:0.88rem; padding:8px 10px; border-radius:10px; background:var(--panel,#f6f3f8); }
 .fhqa-note{ font-size:0.8rem; margin-top:4px; }
+.fhqa-file{ display:none; }
+.fhqa-actions{ flex-wrap:wrap; }
+.fhqa-thumb{ position:relative; display:inline-block; align-self:flex-start; }
+.fhqa-thumb img{ display:block; max-width:160px; max-height:160px; border-radius:10px; border:1px solid var(--panel-line,#ddd); }
+.fhqa-thumb-x{ position:absolute; top:-8px; right:-8px; width:28px; height:28px; border-radius:50%; border:1px solid var(--panel-line,#ccc); background:var(--white,#fff); color:var(--ink,#222); font:inherit; cursor:pointer; }
 .fhqa-mic.on{ background:#C0392B; border-color:#C0392B; color:#fff; }
 
 </style>
@@ -17208,6 +17213,7 @@ const FHQuick = (function(){
   function sheet(){
     if(document.getElementById('fhqaSheet')) return;
     let rec = null;   // speech recognition while listening
+    let photo = null; // { type, data } once a photo or screenshot is chosen and shrunk
     const close = () => { if(rec) try{ rec.abort(); }catch(e){} const m = document.getElementById('fhqaSheet'); if(m) m.remove(); };
     const ta = h('textarea', { class:'fhe-in fhqa-text', id:'fhqaText', rows:'4', maxlength:'2000', 'aria-label':'What needs adding?',
       placeholder:'e.g. Ivy dentist Tuesday 3:30, milk x2 and bin bags, Dad’s MOT due 12 March, ring the school about the trip' });
@@ -17230,6 +17236,22 @@ const FHQuick = (function(){
       try{ r.start(); }catch(e){ status.textContent = 'Couldn’t listen just now. Type it instead.'; return; }
       rec = r; status.textContent = 'Listening… tap Stop when you’ve finished.';
       mic.textContent = '■ Stop'; mic.setAttribute('aria-pressed', 'true'); mic.classList.add('on');
+    });
+    // 📷 a photo of a letter or a screenshot of an email: shrunk to 1600 px on its longest side, sent as JPEG
+    const file = h('input', { type:'file', accept:'image/*', id:'fhqaFile', class:'fhqa-file', 'aria-label':'Choose a photo or screenshot' });
+    const thumb = h('div', { class:'fhqa-thumb', id:'fhqaThumb', hidden:true });
+    const pick = h('button', { type:'button', class:'btn secondary', id:'fhqaPhoto', text:'📷 Photo or screenshot', onClick:() => file.click() });
+    const showThumb = () => {
+      thumb.innerHTML = ''; thumb.hidden = !photo;
+      if(photo) thumb.appendChild(h('img', { src:'data:' + photo.type + ';base64,' + photo.data, alt:'The picture to sort' })),
+        thumb.appendChild(h('button', { type:'button', class:'fhqa-thumb-x', id:'fhqaPhotoX', 'aria-label':'Remove the picture', text:'✕', onClick:() => { photo = null; showThumb(); } }));
+    };
+    file.addEventListener('change', () => {
+      const f = file.files && file.files[0]; file.value = '';
+      if(!f) return;
+      status.textContent = 'Getting the picture ready…';
+      shrink(f).then(p => { photo = p; showThumb(); status.textContent = 'Picture added. Add a few words if you like, then Sort it out.'; })
+        .catch(() => { status.textContent = 'That picture couldn’t be opened. Try a screenshot instead.'; });
     });
     let items = [];
     const drawResults = (unsure) => {
@@ -17271,10 +17293,10 @@ const FHQuick = (function(){
     go.addEventListener('click', async () => {
       if(rec){ try{ rec.stop(); }catch(e){} micOff(); }
       const text = ta.value.trim();
-      if(text.length < 2){ status.textContent = 'Type what needs adding first.'; ta.focus(); return; }
+      if(text.length < 2 && !photo){ status.textContent = 'Type what needs adding first, or add a photo.'; ta.focus(); return; }
       go.disabled = true; status.textContent = 'Sorting it out…'; results.innerHTML = '';
       let r = null;
-      try{ r = await FHSync.fn('send-reminders', { action:'quickadd', text:text, ctx:context() }); }
+      try{ r = await FHSync.fn('send-reminders', Object.assign({ action:'quickadd', text:text, ctx:context() }, photo ? { image:photo } : {})); }
       catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
       go.disabled = false;
       if(!r || r.error || !Array.isArray(r.items)){ status.textContent = (r && r.error) || 'Couldn’t sort that. Try again.'; return; }
@@ -17287,16 +17309,33 @@ const FHQuick = (function(){
       h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Quick add' },
         h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✨ Quick add' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhe-form' },
-          h('p', { class:'fho-sub', text:'Type or paste anything: appointments, things to do, shopping, birthdays, renewal dates. We’ll sort it and show you before anything is added.' }),
-          ta, h('div', { class:'fhe-actions' }, mic, go), status, results,
-          h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type, with your family’s first names, is sent to Claude (Anthropic) to sort it.' +
+          h('p', { class:'fho-sub', text:'Type, paste or say anything: appointments, things to do, shopping, birthdays, renewal dates. Or add a photo of a school letter or a screenshot of an email. We’ll sort it and show you before anything is added.' }),
+          ta, thumb, file, h('div', { class:'fhe-actions fhqa-actions' }, pick, mic, go), status, results,
+          h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type and any picture you add, with your family’s first names, are sent to Claude (Anthropic) to sort it.' +
             (mic ? ' Speaking uses your phone’s own speech-to-text (Google or Apple).' : '') }))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(ta), 50);
+  }
+  /* a chosen photo, made small enough to send: longest side 1600 px, JPEG */
+  function shrink(f){
+    return new Promise((ok, bad) => {
+      const url = URL.createObjectURL(f), img = new Image();
+      img.onload = () => {
+        try{
+          const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+          const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(url);
+          ok({ type:'image/jpeg', data:c.toDataURL('image/jpeg', 0.82).split(',')[1] });
+        }catch(e){ URL.revokeObjectURL(url); bad(e); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); bad(new Error('unreadable')); };
+      img.src = url;
+    });
   }
   /* the bar at the top of Today */
   function bar(){
     if(!available()) return null;
-    return h('button', { type:'button', class:'fhqa-bar', id:'fhqaBar', onClick:sheet }, h('span', { text:'✨' }), h('span', { class:'fhqa-bar-t', text:'Quick add: type anything…' }));
+    return h('button', { type:'button', class:'fhqa-bar', id:'fhqaBar', onClick:sheet }, h('span', { text:'✨' }), h('span', { class:'fhqa-bar-t', text:'Quick add: type, say or snap' }));
   }
   return { available, bar, sheet, clean, apply, context, summary };
 })();
