@@ -2842,6 +2842,7 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhqa-unsure{ font-size:0.88rem; padding:8px 10px; border-radius:10px; background:var(--panel,#f6f3f8); }
 .fhqa-note{ font-size:0.8rem; margin-top:4px; }
 .fhqa-file{ display:none; }
+.fhsh-text{ white-space:pre-wrap; font-size:0.92rem; padding:10px 12px; border-radius:10px; background:var(--panel,#f6f3f8); border:1px solid var(--panel-line,#e2dbe8); max-height:220px; overflow:auto; }
 .fhqa-actions{ flex-wrap:wrap; }
 .fhqa-thumb{ position:relative; display:inline-block; align-self:flex-start; }
 .fhqa-thumb img{ display:block; max-width:160px; max-height:160px; border-radius:10px; border:1px solid var(--panel-line,#ddd); }
@@ -17210,7 +17211,7 @@ const FHQuick = (function(){
     return (p.length ? 'Added ' + p.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.' : 'Nothing added.') + (n.already ? ' ' + (n.already === 1 ? 'One occasion was' : n.already + ' occasions were') + ' already on Occasions.' : '');
   }
 
-  function sheet(){
+  function sheet(pre){
     if(document.getElementById('fhqaSheet')) return;
     let rec = null;   // speech recognition while listening
     let photo = null; // { type, data } once a photo or screenshot is chosen and shrunk
@@ -17314,6 +17315,12 @@ const FHQuick = (function(){
           h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type and any picture you add, with your family’s first names, are sent to Claude (Anthropic) to sort it.' +
             (mic ? ' Speaking uses your phone’s own speech-to-text (Google or Apple).' : '') }))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(ta), 50);
+    // shared from another app: the words in the box, the picture shrunk and shown
+    if(pre && (pre.text || pre.blob)){
+      if(pre.text) ta.value = pre.text;
+      status.textContent = 'Shared from another app. Add a few words if you like, then Sort it out.';
+      if(pre.blob) shrink(pre.blob).then(p => { photo = p; showThumb(); }).catch(() => { status.textContent = 'The shared picture couldn’t be opened. Try a screenshot instead.'; });
+    }
   }
   /* a chosen photo, made small enough to send: longest side 1600 px, JPEG */
   function shrink(f){
@@ -17335,9 +17342,53 @@ const FHQuick = (function(){
   /* the bar at the top of Today */
   function bar(){
     if(!available()) return null;
-    return h('button', { type:'button', class:'fhqa-bar', id:'fhqaBar', onClick:sheet }, h('span', { text:'✨' }), h('span', { class:'fhqa-bar-t', text:'Quick add: type, say or snap' }));
+    return h('button', { type:'button', class:'fhqa-bar', id:'fhqaBar', onClick:() => sheet() }, h('span', { text:'✨' }), h('span', { class:'fhqa-bar-t', text:'Quick add: type, say or snap' }));
   }
-  return { available, bar, sheet, clean, apply, context, summary };
+  /* ---- Share to On the FridgeDoor ----
+     pwa/sw.js keeps what another app shared (text, a picture) in the 'fh-share' cache and opens index.html?share=1.
+     The owner gets Quick add with it filled in; anyone else can put the words on the shopping list or make a task. */
+  async function takeShare(){
+    if(!/[?&]share=1(&|$)/.test(location.search)) return null;
+    try{ history.replaceState(null, '', location.pathname + location.hash); }catch(e){}
+    try{
+      if(!window.caches) return null;
+      const c = await caches.open('fh-share');
+      const t = await c.match('__share-text'), im = await c.match('__share-image');
+      const out = { text:t ? (await t.text()).trim() : '', blob:im ? await im.blob() : null };
+      await c.delete('__share-text'); await c.delete('__share-image');
+      return out.text || out.blob ? out : null;
+    }catch(e){ return null; }
+  }
+  function shareSheet(s){
+    if(document.getElementById('fhshSheet')) return;
+    const close = () => { const m = document.getElementById('fhshSheet'); if(m) m.remove(); };
+    const note = h('p', { class:'fhqa-status', id:'fhshStatus', role:'status' });
+    let list = []; try{ list = FHExtras.parse(s.text); }catch(e){}
+    const lines = s.text.split('\n').map(x => x.trim()).filter(Boolean);
+    const shop = s.text && list.length ? h('button', { type:'button', class:'btn', id:'fhshShop', text:'🛒 Add to the shopping list (' + list.length + ')', onClick:() => {
+      const n = FHExtras.addMany(list, 'once', FHExtras.ck(FHExtras.nextShopDate()));
+      note.textContent = '✓ ' + (n === 1 ? '1 thing' : n + ' things') + ' added to your next shop.'; shop.disabled = true; task && (task.disabled = true);
+      try{ refreshCurrentPage(); }catch(e){} } }) : null;
+    const task = s.text ? h('button', { type:'button', class:'btn secondary', id:'fhshTask', text:'✅ Add as a task', onClick:() => {
+      const all = FHTasks.load();
+      all.push({ id:'t' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title:lines[0].slice(0, 100), notes:lines.slice(1).join('\n').slice(0, 300), who:'', due:'', time:'', done:'', created:new Date().toISOString() });
+      FHTasks.save(all); note.textContent = '✓ Added to Tasks. Open it there to give it a date or a person.'; task.disabled = true; shop && (shop.disabled = true);
+      try{ refreshCurrentPage(); }catch(e){} } }) : null;
+    const m = h('div', { id:'fhshSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Shared with On the FridgeDoor' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'📥 Shared with the app' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form' },
+          s.text ? h('div', { class:'fhsh-text', id:'fhshText', text:s.text.length > 400 ? s.text.slice(0, 400) + '…' : s.text }) : null,
+          s.text ? null : h('p', { class:'fho-sub', text:'Reading photos and screenshots is part of Quick add, which isn’t on your account yet. For now, add what’s in it by hand.' }),
+          h('div', { class:'fhe-actions fhqa-actions' }, shop, task), note)));
+    document.body.appendChild(m);
+  }
+  function openShared(s){ if(available()) sheet({ text:s.text, blob:s.blob }); else shareSheet(s); }
+  // after setup is finished: never on top of the setup screens
+  function whenReady(fn){ let n = 0; const t = setInterval(() => { if(document.querySelector('.ob-overlay') && n++ < 900) return; clearInterval(t); fn(); }, 700); }
+  window.addEventListener('load', () => { takeShare().then(s => { if(s) whenReady(() => openShared(s)); }); });
+
+  return { available, bar, sheet, clean, apply, context, summary, takeShare, openShared };
 })();
 
 /* ==================== Startup (setup-aware) ==================== */

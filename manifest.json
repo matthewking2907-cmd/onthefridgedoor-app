@@ -28,5 +28,23 @@
       "purpose": "maskable"
     }
   ],
-  "id": "./family-hub-onboarding"
+  "id": "./family-hub-onboarding",
+  "share_target": {
+    "action": "./share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "image",
+          "accept": [
+            "image/*"
+          ]
+        }
+      ]
+    }
+  }
 }

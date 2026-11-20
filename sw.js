@@ -1,8 +1,9 @@
 // Minimal offline cache for On the FridgeDoor — caches the app shell on install so
 // it still opens (with whatever data localStorage already has) with no
 // signal, and always tries the network first for a fresh copy when online.
-const CACHE_NAME = 'family-hub-onboarding-v84';
+const CACHE_NAME = 'family-hub-onboarding-v85';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const SHARE_CACHE = 'fh-share';   // what another app shared, until the app picks it up (src/ob_quickadd.js)
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -14,10 +15,30 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
+      Promise.all(names.filter((n) => n !== CACHE_NAME && n !== SHARE_CACHE).map((n) => caches.delete(n)))
     )
   );
   self.clients.claim();
+});
+
+// Share to On the FridgeDoor (manifest share_target): keep the text and picture another app shared, then open the app,
+// which picks them up from SHARE_CACHE and opens Quick add with them (or the shopping list / task choice).
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'POST' || url.origin !== self.location.origin || !/\/share-target$/.test(url.pathname)) return;
+  event.respondWith((async () => {
+    try {
+      const fd = await event.request.formData();
+      const title = String(fd.get('title') || '').trim(), text = String(fd.get('text') || '').trim(), link = String(fd.get('url') || '').trim();
+      const words = [title && text.indexOf(title) < 0 ? title : '', text, link && text.indexOf(link) < 0 ? link : ''].filter(Boolean).join('\n');
+      const file = fd.getAll('image').find((f) => f && typeof f !== 'string' && /^image\//.test(f.type || ''));
+      const cache = await caches.open(SHARE_CACHE);
+      await cache.put('__share-text', new Response(words.slice(0, 6000)));
+      if (file && file.size < 25000000) await cache.put('__share-image', new Response(file, { headers: { 'Content-Type': file.type } }));
+      else await cache.delete('__share-image');
+    } catch (e) {}
+    return Response.redirect(new URL('index.html?share=1', self.location.href).href, 303);
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
