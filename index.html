@@ -2849,6 +2849,215 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhqa-thumb-x{ position:absolute; top:-8px; right:-8px; width:28px; height:28px; border-radius:50%; border:1px solid var(--panel-line,#ccc); background:var(--white,#fff); color:var(--ink,#222); font:inherit; cursor:pointer; }
 .fhqa-mic.on{ background:#C0392B; border-color:#C0392B; color:#fff; }
 
+/* undo on the Meal Plan (FHUndo, ob_mealdays.js) */
+.fhun-bar{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(76px + env(safe-area-inset-bottom, 0px)); z-index:9500; display:flex; align-items:center; gap:10px; max-width:min(560px, calc(100vw - 32px)); width:max-content; padding:10px 10px 10px 16px; border-radius:14px; background:#2b2431; color:#fff; box-shadow:0 6px 24px rgba(0,0,0,.25); font-size:.92rem; }
+.fhun-text{ flex:1; min-width:0; }
+.fhun-btn{ border:0; border-radius:10px; padding:8px 14px; background:#fff; color:#2b2431; font-weight:700; font-family:inherit; cursor:pointer; }
+.fhun-x{ border:0; background:transparent; color:#fff; opacity:.75; font-size:1rem; padding:6px; cursor:pointer; }
+.fhun-plan{ display:block; margin:-4px auto 10px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* portion sizes in Settings (ob_recipebook.js portionsBlock) */
+.fhpz{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line, #e6e0ea); }
+.fhpz-h{ font-weight:700; margin:0 0 2px; }
+.fhpz-sub, .fhpz-note{ font-size:.85rem; opacity:.8; margin:0 0 8px; }
+.fhpz-row{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; padding:8px 0; }
+.fhpz-on{ flex:1 1 220px; align-items:flex-start; }
+.fhpz-on span{ display:flex; flex-direction:column; }
+.fhpz-on small{ font-size:.8rem; opacity:.75; }
+.fhpz-amt{ display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.fhpz-row:not(.on) .fhpz-amt{ opacity:.5; }
+.fhpz-num{ width:80px; }
+
+/* setup: where your own recipes go (ob_wizard.js recipeTip) */
+.ob-tipback{ position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(30,20,40,.45); }
+.ob-tip{ background:var(--card, #fff); color:inherit; border-radius:18px; padding:22px 20px 18px; max-width:420px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.ob-tip-ico{ font-size:2rem; }
+.ob-tip h3{ margin:6px 0 8px; }
+.ob-tip ul{ margin:8px 0 10px; padding-left:0; list-style:none; display:grid; gap:8px; }
+.ob-tip li{ line-height:1.4; }
+.ob-tip .ob-btn{ width:100%; margin-top:6px; }
+/* the bar never gets in the way of a drop: hidden while a meal brick is dragged, and only its buttons take taps */
+.fhun-bar{ pointer-events:none; }
+.fhun-bar button{ pointer-events:auto; }
+body:has(#dragGhost[style*="block"]) .fhun-bar{ display:none; }
+
+/* ---- Chores page, board, Jobs and Stars & rewards (chore_page.js) ---- */
+#page-chores .app > :not(#fhChores){ display:none !important; }
+.fhch-top{ display:flex; align-items:center; gap:8px; margin:4px 0 10px; }
+.fhch-h{ margin:0; font-size:1.35rem; flex:1; }
+.fhch-topbtn{ font:inherit; font-size:.88rem; font-weight:700; padding:7px 12px; border-radius:999px; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
+.fhch-topbtn.solid{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.fhch-chips{ margin:0 0 10px; }
+.fhch-seg{ display:flex; background:var(--panel); border-radius:12px; padding:3px; gap:3px; margin:0 0 12px; }
+.fhch-seg button{ flex:1; font:inherit; font-size:.9rem; font-weight:700; padding:8px 6px; border:0; border-radius:9px; background:transparent; color:var(--muted); cursor:pointer; min-width:0; }
+.fhch-seg button.on{ background:var(--white); color:var(--ink); box-shadow:0 1px 3px var(--shadow); }
+.fhch-seg.small{ flex-wrap:wrap; margin:0 0 6px; }
+.fhch-seg.small button{ font-size:.84rem; padding:7px 4px; flex:1 1 auto; }
+.fhch-nav{ display:flex; align-items:center; gap:8px; margin:0 0 10px; }
+.fhch-navb{ font:inherit; font-size:1.3rem; width:38px; height:38px; border-radius:50%; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; flex:none; }
+.fhch-navl{ flex:1; display:flex; flex-direction:column; min-width:0; }
+.fhch-navl small{ color:var(--muted); }
+.fhch-pill{ font:inherit; font-size:.8rem; font-weight:700; padding:5px 10px; border-radius:999px; border:0; background:var(--accent); color:#fff; cursor:pointer; }
+.fhch-look{ display:flex; gap:6px; justify-content:flex-end; margin:-4px 0 8px; }
+.fhch-look button{ font:inherit; font-size:.8rem; font-weight:700; padding:5px 10px; border-radius:8px; border:1.5px solid var(--panel-line); background:transparent; color:var(--muted); cursor:pointer; }
+.fhch-look button.on{ border-color:var(--accent); color:var(--accent); }
+.fhch-lbl{ font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:14px 2px 6px; }
+.fhch-list > .fhch-lbl:first-child, .fhch-body > .fhch-lbl:first-child{ margin-top:2px; }
+.fhch-job{ display:flex; align-items:center; gap:10px; padding:10px; margin:0 0 6px; background:var(--white); border:1px solid var(--panel-line); border-radius:12px; cursor:pointer; min-height:48px; box-sizing:border-box; }
+.fhch-job:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.fhch-tick{ flex:none; width:26px; height:26px; border-radius:50%; border:2px solid var(--panel-line); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; color:#fff; box-sizing:border-box; }
+.fhch-job.done .fhch-tick{ background:var(--good); border-color:var(--good); }
+.fhch-job:not(.done) .fhch-tick{ color:var(--accent); }
+.fhch-job.done .fhch-t b{ text-decoration:line-through; color:var(--muted); font-weight:600; }
+.fhch-job.skipped{ opacity:.65; border-style:dashed; }
+.fhch-t{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.fhch-t b{ font-weight:700; overflow-wrap:anywhere; }
+.fhch-t small{ color:var(--muted); font-size:.8rem; overflow-wrap:anywhere; }
+.fhch-star{ flex:none; font-size:.82rem; font-weight:700; color:var(--star); }
+.fhch-av{ flex:none; width:26px; height:26px; border-radius:50%; background:var(--pc, var(--accent)); color:#fff; font-weight:800; font-size:.8rem; display:flex; align-items:center; justify-content:center; }
+.fhch-av.any{ background:var(--panel); font-size:.85rem; }
+.fhch-more{ flex:none; font:inherit; font-size:1.1rem; width:34px; height:34px; border:0; border-radius:8px; background:transparent; color:var(--muted); cursor:pointer; }
+.fhch-putback{ font-size:.8rem; font-weight:700; color:var(--accent); }
+.fhch-empty, .fhch-alldone{ color:var(--muted); margin:8px 2px; }
+.fhch-alldone{ font-weight:700; color:var(--good); }
+.fhch-donebox{ margin:8px 0 0; }
+.fhch-donebox > summary{ font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:6px 2px; cursor:pointer; }
+.fhch-who{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; margin:0 0 8px; border-radius:12px; background:var(--good-tint); }
+.fhch-whoq{ font-weight:700; flex:1 1 100%; }
+.fhch-whochips{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.fhch-whobtn{ border-color:var(--pc); }
+.fhch-whox{ font:inherit; border:0; background:transparent; color:var(--muted); font-size:1rem; cursor:pointer; padding:6px 8px; }
+.fhch-monthlink, .fhch-link{ font:inherit; font-size:.88rem; font-weight:700; color:var(--accent); background:transparent; border:0; padding:10px 2px; cursor:pointer; text-align:left; }
+.fhch-note{ color:var(--muted); font-size:.85rem; margin:4px 0 8px; display:block; }
+/* board */
+.fhch-board{ display:grid; grid-template-columns:repeat(auto-fit, minmax(128px, 1fr)); gap:8px; margin:0 0 8px; }
+.fhch-col{ background:var(--white); border:1px solid var(--panel-line); border-top:4px solid var(--pc); border-radius:12px; padding:8px; min-width:0; }
+.fhch-colh{ display:flex; align-items:center; gap:6px; width:100%; font:inherit; background:transparent; border:0; padding:2px 0 6px; cursor:pointer; color:var(--ink); text-align:left; }
+.fhch-colh b{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fhch-coln{ font-size:.8rem; color:var(--muted); font-weight:700; }
+.fhch-col .fhch-job{ padding:8px 6px; gap:8px; min-height:44px; margin:0 0 5px; border-color:transparent; background:var(--cream); }
+.fhch-col .fhch-tick{ width:22px; height:22px; }
+.fhch-colstar{ font-size:.85rem; font-weight:800; color:var(--star); margin-top:4px; }
+.fhch-bar{ height:6px; border-radius:99px; background:var(--panel); overflow:hidden; margin:2px 0 8px; }
+.fhch-bar i{ display:block; height:100%; background:var(--pc, var(--accent)); border-radius:99px; }
+/* a person's card */
+.fhch-pc{ background:var(--white); border:1px solid var(--panel-line); border-left:5px solid var(--pc, var(--accent)); border-radius:12px; padding:10px 12px; margin:0 0 10px; }
+.fhch-pctop{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.fhch-pctop b{ flex:1; min-width:0; }
+.fhch-big{ font-weight:800; color:var(--star); font-size:1.05rem; }
+.fhch-pc small{ color:var(--muted); font-size:.82rem; }
+/* week grid */
+.fhch-gridwrap{ overflow-x:auto; }
+.fhch-grid{ display:grid; gap:4px; min-width:0; }
+.fhch-gr{ display:grid; grid-template-columns:minmax(0, 1fr) repeat(7, 34px); gap:4px; align-items:center; }
+@media (max-width:380px){ .fhch-gr{ grid-template-columns:minmax(0, 1fr) repeat(7, 30px); gap:3px; } }
+.fhch-gname{ min-width:0; display:flex; flex-direction:column; font-size:.86rem; }
+.fhch-gname b{ font-weight:700; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.2; overflow-wrap:anywhere; }
+.fhch-gname small{ color:var(--muted); font-size:.74rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fhch-gday{ text-align:center; font-weight:800; font-size:.8rem; color:var(--muted); }
+.fhch-gday.now{ color:var(--accent); }
+.fhch-sq{ display:block; width:100%; height:32px; border-radius:8px; border:2px solid var(--panel-line); background:var(--white); font:inherit; font-size:.78rem; font-weight:800; color:var(--pc, var(--muted)); cursor:pointer; padding:0; }
+span.fhch-sq.off{ border:0; background:transparent; cursor:default; }
+.fhch-sq.now{ border-color:var(--accent); }
+.fhch-sq.on{ background:var(--good); border-color:var(--good); color:#fff; }
+.fhch-sq.late{ background:#E9A93A; border-color:#E9A93A; color:#fff; }
+.fhch-sq.missed{ background:var(--panel); }
+.fhch-sq.skip{ border-style:dashed; opacity:.6; }
+.fhch-legend{ color:var(--muted); font-size:.78rem; margin:8px 2px; }
+/* jobs list and its sheets */
+.fhch-jrow{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; font:inherit; color:var(--ink); padding:10px 12px; margin:0 0 6px; background:var(--white); border:1px solid var(--panel-line); border-radius:12px; cursor:pointer; min-height:48px; box-sizing:border-box; }
+.fhch-chev{ color:var(--muted); font-weight:700; font-size:.85rem; }
+.fhch-rooms{ margin-bottom:16px; }
+.fhch-addroom{ border-style:dashed; }
+.fhch-esheet .fhe-form{ overflow-y:auto; }
+.fhch-ed .fhe-lab{ display:block; margin:10px 0 6px; }
+.fhch-whopick, .fhch-roompick{ margin:0 0 6px; }
+.fhch-worth{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0 4px; }
+.fhch-worth .fhe-lab{ margin:0; }
+.fhch-step{ font:inherit; font-size:1.2rem; width:36px; height:36px; border-radius:50%; border:1.5px solid var(--panel-line); background:var(--white); cursor:pointer; }
+.fhch-roomrow{ display:flex; gap:8px; }
+.fhch-emoji{ flex:0 0 60px; text-align:center; }
+.fhch-psheet{ overflow-y:auto; }
+.fhch-pbody{ padding:0 16px 16px; }
+/* stars & rewards */
+.fhrw-src{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:.82rem; color:var(--muted); margin:0 0 8px; }
+.fhrw-tag{ background:var(--panel); border-radius:999px; padding:2px 8px; color:var(--ink); font-weight:700; }
+.fhrw-th{ flex:none; min-width:38px; text-align:center; font-weight:800; color:var(--star); }
+.fhrw-add{ width:100%; margin:4px 0 6px; }
+.fhrw-pics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; padding-bottom:12px; }
+.fhrw-pic{ display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; font-size:.78rem; padding:10px 4px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
+.fhrw-pic.on{ border-color:var(--accent); background:var(--panel); }
+.fhrw-picicon{ font-size:1.6rem; }
+.fhrw-thin{ max-width:120px; }
+/* Settings › Your people (ob_people.js peopleCard) */
+.fhp-prow{ display:flex; align-items:center; gap:8px; margin:0 0 8px; }
+.fhp-prow .fhe-in{ flex:1; min-width:0; }
+.fhp-role{ font:inherit; padding:8px; border-radius:10px; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); max-width:120px; }
+.fhp-dot{ flex:none; width:28px; height:28px; border-radius:50%; border:0; background:var(--ec); cursor:pointer; }
+.fhp-del{ flex:none; font:inherit; font-size:.85rem; border:0; background:transparent; color:var(--muted); cursor:pointer; padding:6px; }
+.fhp-swatches{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px 36px; }
+.fhp-sw{ width:28px; height:28px; border-radius:50%; border:3px solid transparent; background:var(--ec); cursor:pointer; }
+.fhp-sw.on{ border-color:var(--ink); }
+.fhp-warn{ color:#B3261E; font-size:.85rem; margin:-4px 0 10px 36px; }
+.fhp-add{ margin-top:12px; padding-top:12px; border-top:1px solid var(--panel-line); }
+/* setup: "Anything else?" and essentials on the shopping step */
+.ob-h3{ font-size:1.05rem; margin:22px 0 4px; padding-top:14px; border-top:1px solid var(--panel-line); }
+.ob-xopt{ margin:0 0 10px; }
+.ob-xopt .ob-way{ width:100%; }
+.ob-xbody{ padding:10px 4px 2px; display:grid; gap:10px; }
+.ob-bdrow{ display:flex; gap:8px; align-items:center; }
+.ob-bdrow > span{ flex:0 0 90px; font-weight:700; overflow:hidden; text-overflow:ellipsis; }
+.ob-bdrow .ob-input{ flex:1 1 0; width:0; min-width:0; box-sizing:border-box; }
+/* getting started (ob_start.js) */
+.fhst-wrap{ display:grid; gap:12px; }
+.fhst-card{ background:var(--white); border:1px solid var(--panel-line); border-radius:14px; padding:12px; }
+.fhst-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+.fhst-head b{ flex:1; }
+.fhst-n{ color:var(--muted); font-size:.82rem; font-weight:700; }
+.fhst-row{ display:flex; align-items:center; gap:6px; }
+.fhst-go{ flex:1; display:flex; align-items:center; gap:10px; font:inherit; color:var(--ink); text-align:left; background:transparent; border:0; padding:8px 2px; cursor:pointer; min-width:0; }
+.fhst-tick{ flex:none; width:22px; height:22px; border-radius:50%; border:2px solid var(--panel-line); display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:800; color:#fff; box-sizing:border-box; }
+.fhst-row.done .fhst-tick{ background:var(--good); border-color:var(--good); }
+.fhst-row.done .fhst-t b{ color:var(--muted); text-decoration:line-through; }
+.fhst-t{ display:flex; flex-direction:column; min-width:0; }
+.fhst-t small{ color:var(--muted); font-size:.8rem; }
+.fhst-x{ flex:none; font:inherit; border:0; background:transparent; color:var(--muted); cursor:pointer; padding:8px; }
+.fhst-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+.fhst-more{ color:var(--muted); font-size:.82rem; }
+.fhst-off{ font:inherit; font-size:.82rem; font-weight:700; color:var(--accent); background:transparent; border:0; cursor:pointer; padding:6px 2px; }
+.fhst-done{ margin-top:16px; text-align:left; }
+.st-sub{ margin-top:18px; padding-top:14px; border-top:1px solid var(--panel-line); }
+/* Meal plan tidy-up (ob_plantools.js) */
+#weekAnchorRow, #page-mealplan details:has(#savedPlansList):not(.fhpt-in), #resetBtn, #page-mealplan .app > .hint, #page-mealplan .sides-shelf-section{ display:none !important; }
+.fhpt-row{ display:flex; gap:8px; justify-content:flex-end; margin:6px 0 10px; }
+.fhpt-btn{ font:inherit; font-size:.86rem; font-weight:700; padding:7px 12px; border-radius:999px; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
+.fhpt-body{ padding-bottom:12px; }
+.fhpt-body details.fhpt-in{ margin-top:14px; }
+.fhpt-sheet{ overflow-y:auto; }
+.fhpt-shelfbar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:4px 0 10px; }
+.fhpt-search{ flex:1 1 200px; min-width:0; }
+.shelf-section.fhpt-closed > :not(h2):not(.fhpt-shelfbar){ display:none !important; }
+#page-mealplan .app > .actions{ display:none !important; }
+/* Shopping list | Essentials tabs */
+.fhsh-tabs{ display:flex; background:var(--panel); border-radius:12px; padding:3px; gap:3px; margin:4px 0 12px; }
+.fhsh-tab{ flex:1; font:inherit; font-size:.92rem; font-weight:700; padding:9px 6px; border:0; border-radius:9px; background:transparent; color:var(--muted); cursor:pointer; }
+.fhsh-tab.on{ background:var(--white); color:var(--ink); box-shadow:0 1px 3px var(--shadow); }
+body.ess-off .fhsh-tabs{ display:none; }
+/* Meal plan by shop week */
+.fhpt-row{ align-items:center; }
+.fhpt-view{ display:flex; background:var(--panel); border-radius:999px; padding:3px; gap:2px; margin-right:auto; }
+.fhpt-view button{ font:inherit; font-size:.84rem; font-weight:700; padding:6px 12px; border:0; border-radius:999px; background:transparent; color:var(--muted); cursor:pointer; }
+.fhpt-view button.on{ background:var(--white); color:var(--ink); box-shadow:0 1px 3px var(--shadow); }
+.fhsw-sum{ margin:0 0 10px; }
+.fhsw-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.fhsw-chip{ font-size:.82rem; font-weight:700; padding:4px 10px; border-radius:999px; background:var(--white); border:1px solid var(--panel-line); }
+.fhsw-warn{ margin:8px 0 0; padding:8px 10px; border-radius:10px; background:#FFF4DC; color:#7A4E00; font-size:.86rem; font-weight:600; }
+.fhsw-div{ font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); text-align:center; margin:6px 0; display:flex; align-items:center; gap:8px; }
+.fhsw-div::before, .fhsw-div::after{ content:''; flex:1; height:1px; background:var(--panel-line); }
+.fhsw-wk{ display:block; font-size:.7rem; color:var(--muted); font-weight:700; }
+.day-row.fhsw-today .day-label b{ color:var(--accent); }
+.fhsw-once{ font-size:.8rem; color:var(--accent-dark); font-weight:600; margin-top:4px; }
+
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
 /* Runs in <head> so the right colours are in place before the first paint. */
@@ -2915,19 +3124,18 @@ var FHTheme = (function(){
     <div class="sidebar-head">On the FridgeDoor</div>
     <div class="nav-label-grp">Family planner</div>
     <button class="nav-item active" data-page="today"><span class="nav-icon">☀️</span><span class="nav-label">Today</span></button>
-    <button class="nav-item" data-page="tomorrow"><span class="nav-icon">⏭️</span><span class="nav-label">Tomorrow</span></button>
     <button class="nav-item" data-page="calendar"><span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span></button>
-    <button class="nav-item" data-page="occasions"><span class="nav-icon">🎂</span><span class="nav-label">Occasions</span></button>
-    <div class="nav-label-grp">Meals &amp; shopping</div>
+    <div class="nav-label-grp">Food &amp; shopping</div>
     <button class="nav-item" data-page="mealplan"><span class="nav-icon">🍽️</span><span class="nav-label">Meal plan</span></button>
     <button class="nav-item" data-page="recipes"><span class="nav-icon">📖</span><span class="nav-label">Recipes</span></button>
     <button class="nav-item" data-page="shopping"><span class="nav-icon">🛒</span><span class="nav-label">Shopping list</span></button>
-    <button class="nav-item" data-page="essentials"><span class="nav-icon">🧻</span><span class="nav-label">Essentials</span></button>
-    <div class="nav-label-grp">Household</div>
-    <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span><span class="nav-chev" id="navChoresChev" role="button" tabindex="0" aria-label="Show or hide Upcoming chores" aria-expanded="false">▶</span></button>
-    <button class="nav-item nav-sub" data-page="tasklists"><span class="nav-icon">📋</span><span class="nav-label">Upcoming chores</span></button>
-    <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
+    <div class="nav-label-grp">Family</div>
+    <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span></button>
     <button class="nav-item" data-page="routines"><span class="nav-icon">🌅</span><span class="nav-label">Routines</span></button>
+    <button class="nav-item" data-page="rewards"><span class="nav-icon">⭐</span><span class="nav-label">Stars &amp; rewards</span></button>
+    <div class="nav-label-grp">Home</div>
+    <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
+    <button class="nav-item" data-page="occasions"><span class="nav-icon">🎂</span><span class="nav-label">Occasions</span></button>
     <button class="nav-item" data-page="paperwork"><span class="nav-icon">📄</span><span class="nav-label">Paperwork</span></button>
     <div class="nav-label-grp">App</div>
     <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
@@ -2982,14 +3190,14 @@ var FHTheme = (function(){
         <input type="checkbox" id="expiryEnabledCheckbox">
         <span>Freshness check — flag meals whose ingredients will expire before their cooking day, with a suggested swap</span>
       </label>
-      <p class="panel-note" style="margin:8px 0 0;">Ingredient quantities on each meal are written for 4 people and scale automatically to your household size (change them on the Recipes page). Mark an ingredient "Per person" in a meal's quick list (Recipes › Manage) to give it a flat per-head amount instead — handy for meat/fish where you know your portion size (e.g. 125g each). See the shopping list from the Shopping List tab.</p>
+      <p class="panel-note" style="margin:8px 0 0;">Recipes are written for 4 people and scale to your household size. To change a meal’s ingredients, open it in Recipes and tap ✏️ Edit.</p>
     </div>
   </details>
 
   <details class="panel" id="portionsPanel">
     <summary>Protein portions</summary>
     <div class="panel-body">
-      <p class="panel-note" style="margin:0 0 8px;">Set a flat per-person amount for an ingredient once here (e.g. Chicken breast = 125g), then tap "Apply to all meals" to push it onto every meal that uses that ingredient — tick "Per person" on any of them individually too and it'll pick up this rate.</p>
+      <p class="panel-note" style="margin:0 0 8px;">For all meat, fish and tofu at once, use Settings › Your household › Portion sizes. Here you can give one ingredient its own amount (e.g. Salmon fillets = 140g each), then tap "Apply to all meals".</p>
       <div id="portionsList"></div>
       <div class="panel-form" style="position:relative;">
         <input type="text" id="newPortionName" placeholder="Ingredient name (e.g. Chicken breast)" maxlength="40" autocomplete="off">
@@ -3097,6 +3305,7 @@ var FHTheme = (function(){
 
     <section class="page" id="page-shopping">
       <div class="app">
+        <div class="fhsh-tabs" role="tablist" aria-label="Shopping"><button type="button" role="tab" class="fhsh-tab on" data-page="shopping" aria-selected="true" onclick="showPage('shopping')">🛒 Shopping list</button><button type="button" role="tab" class="fhsh-tab" data-page="essentials" aria-selected="false" onclick="showPage('essentials')">🧻 Essentials</button></div>
         <p class="hint" style="margin-top:0;">Everything for the week from your shop day, grouped by aisle. Add anything by hand below.</p>
         <div id="shoppingListContent"></div>
       </div>
@@ -3105,6 +3314,7 @@ var FHTheme = (function(){
     <section class="page" id="page-chores">
       <div class="app">
   <div class="top-space"></div>
+  <div id="fhChores"></div>
 
   <div class="stars-bar" id="starsBar"></div>
 
@@ -3251,7 +3461,8 @@ var FHTheme = (function(){
     </section>
 
     <section class="page" id="page-essentials">
-      <div class="app"><div id="essentialsContent"></div></div>
+      <div class="app">
+        <div class="fhsh-tabs" role="tablist" aria-label="Shopping"><button type="button" role="tab" class="fhsh-tab" data-page="shopping" aria-selected="false" onclick="showPage('shopping')">🛒 Shopping list</button><button type="button" role="tab" class="fhsh-tab on" data-page="essentials" aria-selected="true" onclick="showPage('essentials')">🧻 Essentials</button></div><div id="essentialsContent"></div></div>
     </section>
 
     <section class="page" id="page-tasks">
@@ -3264,6 +3475,10 @@ var FHTheme = (function(){
 
     <section class="page" id="page-routines">
       <div class="app"><div id="routinesContent"></div></div>
+    </section>
+
+    <section class="page" id="page-rewards">
+      <div class="app"><div id="rewardsContent"></div></div>
     </section>
 
     <section class="page" id="page-paperwork">
@@ -3509,6 +3724,20 @@ function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMe
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
 
+/* Portion sizes (meal_portions.js): which per-person amount a meal line takes. 'meat' = meat & fish bought by
+   weight (not bacon, ham, chorizo and the like, which flavour a dish, and not a roasting joint or whole bird);
+   'plant' = tofu, tempeh, seitan, Quorn, paneer, halloumi and plant-based mince, chicken or pieces. */
+function fhPortionGroup(l){
+  if(!l) return null;
+  const n = String(l._n0 || l.name || '').toLowerCase(), u = String(l.unit || '').toLowerCase();
+  if(/\b(tofu|tempeh|seitan|quorn|paneer|halloumi)\b/.test(n) || /\b(vegan|vegetarian|soya|soy|plant-based|meat-free)\b.*\b(mince|chicken|pieces|chunks|strips|fillets?)\b/.test(n))
+    return (u === 'g' || u === 'kg' || u === 'pack') ? 'plant' : null;
+  if(l.section !== 'meat-fish' || (u !== 'g' && u !== 'kg')) return null;
+  if(/\b(bacon|lardons?|chorizo|ham|pancetta|salami|prosciutto|anchov\w*|black pudding)\b/.test(n)) return null;
+  if(/\b(joint|leg|shoulder|whole|roasting|rack|crown|brisket|gammon)\b/.test(n)) return null;
+  return 'meat';
+}
+
 const FH_CONV = {"plain flour":{"base":"g","per":{"tbsp":8},"approx":true},"mozzarella":{"base":"g","per":{"each":125}},"soft cheese":{"base":"g","per":{"tub":180}},"smoked bacon":{"base":"g","per":{"each":30},"say":"rasher","approx":true},"salmon fillet":{"base":"each","per":{"g":0.008333}},"red cabbage":{"base":"each","per":{"quarter":0.25,"g":0.00125}},"puff pastry sheet":{"base":"sheet","per":{"piece":1,"pack":1}}};
 /* ==================== SHOPPING LIST: one line per item, and "2 more" after a tick ====================
    The base list keyed lines by exact name + unit, so "Potatoes 500 g" and "Potatoes 1 kg", or "Honey 1 tsp" and
@@ -3643,6 +3872,104 @@ const FHShop = (function(){
              the household's meal history (later: "fill in the week for me", "something new to try").
    Everything that reads the plan by date (getDayDisplay, shopCycleDays) asks slot() first, so Today, the calendar,
    the kitchen display, reminders and the shopping list follow without changes of their own. */
+/* ==================== UNDO on the Meal Plan (FHUndo) ====================
+   Every change to the rotation (savePlan) or to dated dinners (FHDays) keeps what was there before. Changes made in
+   one go (a drag that swaps two days, "Every week" clearing a one-off) count as one. A bar says what changed
+   ("Moved Lasagne from Tue to Wed") with Undo, and ↶ Undo stays on the Meal Plan for the last 10 changes, this
+   session only. An undo is skipped if the plan has changed since by itself (another device's sync). */
+window.FHUndo = (function(){
+  const PLAN = 'brick-bites-plan-v1', DAYS = 'family-hub-meal-days-v1', MAX = 10;
+  const stack = []; let pending = null, armed = false, busy = false, hideT = 0;
+  const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // nothing counts until the app has loaded (setup, migrations and sync write the plan by themselves)
+  window.addEventListener('load', () => { setTimeout(() => { armed = true; }, 1200); });
+  function name(id){ try{ const m = MealApp.getCatalog().find(x => x.id === id); return m ? m.name : 'a meal'; }catch(e){ return 'a meal'; } }
+  function rotWeeks(){ try{ return parseInt(fhRawGet('family-hub-rotation-weeks-v1'), 10) || 4; }catch(e){ return 4; } }
+  function when(w, d){ return (rotWeeks() > 1 ? 'Week ' + w + ' ' : '') + DAY[d]; }
+  function dateWord(k){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(k); if(!m) return k; return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }); }
+  function parse(s, dflt){ try{ return JSON.parse(s) || dflt; }catch(e){ return dflt; } }
+  /* what changed, in words */
+  function describe(e){
+    const ch = [];
+    if('plan' in e){
+      const a = parse(e.plan, {}), b = parse(fhRawGet(PLAN), {});
+      [1, 2, 3, 4].forEach(w => { for(let d = 0; d < 7; d++){
+        const x = (a[w] || [])[d] || {}, y = (b[w] || [])[d] || {};
+        if((x.meal || null) !== (y.meal || null)) ch.push({ at:when(w, d), from:x.meal || null, to:y.meal || null });
+        else if(JSON.stringify(x.sides || []) !== JSON.stringify(y.sides || [])) ch.push({ at:when(w, d), sides:true });
+      } });
+    }
+    if('days' in e){
+      const a = parse(e.days, {}), b = parse(fhRawGet(DAYS), {});
+      Object.keys(Object.assign({}, a, b)).sort().forEach(k => {
+        const x = a[k] || {}, y = b[k] || {};
+        if((x.meal || null) !== (y.meal || null)) ch.push({ at:dateWord(k), from:x.meal || null, to:y.meal || null });
+        else if(JSON.stringify(x.sides || []) !== JSON.stringify(y.sides || [])) ch.push({ at:dateWord(k), sides:true });
+      });
+    }
+    if(!ch.length) return '';
+    if(ch.length === 1){ const c = ch[0];
+      if(c.sides) return 'Changed the sides on ' + c.at;
+      if(!c.to) return 'Took ' + name(c.from) + ' off ' + c.at;
+      if(!c.from) return 'Put ' + name(c.to) + ' on ' + c.at;
+      return c.at + ': ' + name(c.from) + ' → ' + name(c.to); }
+    if(ch.length === 2 && !ch[0].sides && !ch[1].sides){ const p = ch[0], q = ch[1];
+      if(p.from && q.from && p.from === q.to && q.from === p.to) return 'Swapped ' + name(p.from) + ' (' + p.at + ') and ' + name(q.from) + ' (' + q.at + ')';
+      if(p.from && !p.to && !q.from && q.to === p.from) return 'Moved ' + name(p.from) + ' from ' + p.at + ' to ' + q.at;
+      if(q.from && !q.to && !p.from && p.to === q.from) return 'Moved ' + name(q.from) + ' from ' + q.at + ' to ' + p.at; }
+    return 'Changed ' + ch.length + ' days';
+  }
+  /* called with what was saved before a change */
+  function note(key, before){
+    if(!armed || busy) return;
+    if(!pending){ pending = {}; setTimeout(flush, 0); }
+    if(!(key in pending)) pending[key] = before;
+  }
+  function flush(){
+    const e = pending; pending = null; if(!e) return;
+    e.label = describe(e); if(!e.label) return;
+    e.after = { plan:fhRawGet(PLAN), days:fhRawGet(DAYS) };
+    stack.push(e); if(stack.length > MAX) stack.shift();
+    bar(e.label); button();
+  }
+  function undo(){
+    const e = stack.pop(); if(!e) return false;
+    const now = { plan:fhRawGet(PLAN), days:fhRawGet(DAYS) };
+    if(now.plan !== e.after.plan || now.days !== e.after.days){ stack.length = 0; bar('The plan has changed since (on another device?), so there’s nothing to undo.', true); button(); return false; }
+    busy = true;
+    try{
+      if('days' in e){ if(e.days == null) fhRawRemove(DAYS); else fhRawSet(DAYS, e.days); }
+      if('plan' in e) MealApp.restorePlan(parse(e.plan, null));
+      try{ refreshCurrentPage(); }catch(x){}
+    } finally { setTimeout(() => { busy = false; }, 0); }
+    bar('Undone: ' + e.label, true); button();
+    return true;
+  }
+  function bar(text, done){
+    let el = document.getElementById('fhUndoBar');
+    if(el) el.remove();
+    el = document.createElement('div'); el.id = 'fhUndoBar'; el.className = 'fhun-bar'; el.setAttribute('role', 'status');
+    const t = document.createElement('span'); t.className = 'fhun-text'; t.textContent = text; el.appendChild(t);
+    if(!done){ const b = document.createElement('button'); b.type = 'button'; b.className = 'fhun-btn'; b.id = 'fhUndoNow'; b.textContent = 'Undo'; b.addEventListener('click', () => undo()); el.appendChild(b); }
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'fhun-x'; x.setAttribute('aria-label', 'Close'); x.textContent = '✕'; x.addEventListener('click', () => el.remove()); el.appendChild(x);
+    document.body.appendChild(el);
+    clearTimeout(hideT); const mine = el; hideT = setTimeout(() => { if(mine.parentNode) mine.remove(); }, done ? 4000 : 10000);
+  }
+  /* ↶ Undo on the Meal Plan, under the hint, while there's something to undo */
+  function button(){
+    const hint = document.getElementById('tapHint'); if(!hint) return;
+    let b = document.getElementById('fhUndoBtn');
+    if(!stack.length){ if(b) b.remove(); return; }
+    if(!b){ b = document.createElement('button'); b.type = 'button'; b.id = 'fhUndoBtn'; b.className = 'btn small secondary fhun-plan'; b.addEventListener('click', () => undo()); }
+    if(b.previousElementSibling !== hint) hint.insertAdjacentElement('afterend', b);
+    const last = stack[stack.length - 1];
+    b.textContent = '↶ Undo: ' + last.label; b.title = last.label;
+  }
+  return { note, undo, button, size:() => stack.length, arm:() => { armed = true; } };
+})();
+
+/* Meal plan by shop week (per device): the grid runs from shop day to shop day instead of Monday to Sunday */
+function fhPlanShopView(){ try{ return fhRawGet('family-hub-plan-view') === 'shop' && Feature.on('shopping'); }catch(e){ return false; } }
 const FHDays = (function(){
   const KEY = 'family-hub-meal-days-v1', MODE = 'family-hub-meal-mode-v1';
   const USUAL = 'family-hub-usual-meals-v1';         // synced: meals ticked in setup as "meals you make most"
@@ -3653,7 +3980,8 @@ const FHDays = (function(){
   function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
   function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
   function load(){ try{ const v = JSON.parse(fhRawGet(KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }catch(e){ return {}; } }
-  function save(v){ fhSaveJSON(KEY, v); }
+  function save(v){ FHUndo.note('days', fhRawGet(KEY)); fhSaveJSON(KEY, v); }
+  function saveQuiet(v){ fhSaveJSON(KEY, v); }   // what we had: written by itself, nothing to undo
   function get(date){ return load()[typeof date === 'string' ? date : iso(date)] || null; }
   function set(date, meal, src){ const v = load(), k = iso(date), old = v[k]; v[k] = { meal:meal || null, src:src, at:Date.now() }; if(old && old.sides && old.sides.length) v[k].sides = old.sides; save(v); }
   /* the household's own sides on a dated day (week by week, or a one-off): kept when the meal changes, like the rotation's */
@@ -3773,7 +4101,7 @@ const FHDays = (function(){
       const info = MealApp.getDayDisplay(d);
       if(info && info.mealId){ v[k] = { meal:info.mealId, src:'had', at:Date.now() }; n++; }
     }
-    if(n) save(v);
+    if(n) saveQuiet(v);
     fhRawSet(CHECKED, iso(upto));
   }
 
@@ -3834,26 +4162,29 @@ const FHDays = (function(){
   }
   let weekView = null;   // the Monday the week-by-week Meal Plan is showing
   function monday(d){ return addDays(d, -((d.getDay() + 6) % 7)); }
+  /* where the week-by-week grid's week starts: Monday, or the shop day in the shop-week view */
+  function viewStart(d){ if(!fhPlanShopView()) return monday(d); let s = 0; try{ s = MealApp.getShopDay(); }catch(e){} return addDays(d, -(((d.getDay() + 6) % 7) - s + 7) % 7); }
+  function resetView(){ weekView = null; }
   function weekLabel(mon){
-    const thisMon = iso(monday(new Date())), k = iso(mon);
+    const sv = fhPlanShopView(), thisMon = iso(viewStart(new Date())), k = iso(mon), W = sv ? 'shop' : 'week';
     const range = mon.toLocaleDateString(undefined, { weekday:'short', day:'numeric' }) + ' to ' + addDays(mon, 6).toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'long' });
-    const name = k === thisMon ? 'This week' : k === iso(addDays(monday(new Date()), 7)) ? 'Next week' : k === iso(addDays(monday(new Date()), -7)) ? 'Last week' : 'Week of ' + mon.toLocaleDateString(undefined, { day:'numeric', month:'short' });
+    const name = k === thisMon ? 'This ' + W : k === iso(addDays(viewStart(new Date()), 7)) ? 'Next ' + W : k === iso(addDays(viewStart(new Date()), -7)) ? 'Last ' + W : (sv ? 'Shop from ' : 'Week of ') + mon.toLocaleDateString(undefined, { day:'numeric', month:'short' });
     return { name:name, range:range };
   }
   function renderWeekNav(el){
-    if(!weekView) weekView = monday(new Date());
+    if(!weekView) weekView = viewStart(new Date());
     const go = function(n){ weekView = addDays(weekView, n * 7); try{ MealApp.render(); }catch(e){} };
     const lab = weekLabel(weekView);
     el.style.display = 'block';
     const date = h('input', { type:'date', class:'fhdy-date', id:'fhdyGoDate', 'aria-label':'Go to a date', value:iso(weekView) });
-    date.addEventListener('change', function(){ const d = parse(date.value); if(d){ weekView = monday(d); try{ MealApp.render(); }catch(e){} } });
+    date.addEventListener('change', function(){ const d = parse(date.value); if(d){ weekView = viewStart(d); try{ MealApp.render(); }catch(e){} } });
     el.innerHTML = '';
     el.appendChild(h('div', { class:'fhdy-nav' },
       h('button', { type:'button', class:'fhdy-arrow', id:'fhdyPrev', 'aria-label':'Earlier week', text:'‹', onClick:function(){ go(-1); } }),
       h('div', { class:'fhdy-navt' }, h('b', { id:'fhdyWeekName', text:lab.name }), h('span', { text:lab.range })),
       h('button', { type:'button', class:'fhdy-arrow', id:'fhdyNext', 'aria-label':'Later week', text:'›', onClick:function(){ go(1); } })));
     el.appendChild(h('div', { class:'fhdy-navb' },
-      h('button', { type:'button', class:'btn small secondary', id:'fhdyThis', text:'Back to this week', onClick:function(){ weekView = monday(new Date()); try{ MealApp.render(); }catch(e){} } }),
+      h('button', { type:'button', class:'btn small secondary', id:'fhdyThis', text:fhPlanShopView() ? 'Back to this shop' : 'Back to this week', onClick:function(){ weekView = viewStart(new Date()); try{ MealApp.render(); }catch(e){} } }),
       h('span', { class:'fhdy-golabel' }, h('button', { type:'button', class:'btn small secondary', id:'fhdyGo', text:'Go to a date…', onClick:function(){
         try{ if(date.showPicker){ date.showPicker(); return; } }catch(e){} date.focus(); date.click(); } }), date)));
   }
@@ -3871,7 +4202,7 @@ const FHDays = (function(){
         fhMealSheet(d, info, onPick ? function(id){ onPick(d, id, info); } : null); };
       rows.appendChild(h('div', { class:'fhdy-day' + (iso(d) === iso(new Date()) ? ' today' : ''), 'data-date':iso(d) },
         h('span', { class:'fhdy-dl' }, h('b', { text:d.toLocaleDateString(undefined, { weekday:'short' }) }), h('span', { text:String(d.getDate()) }),
-          i === shop ? h('small', { class:'fhdy-shop', text:'Shop' }) : null),
+          (d.getDay() + 6) % 7 === shop ? h('small', { class:'fhdy-shop', text:'Shop' }) : null),
         info.mealId ? h('button', { type:'button', class:'fhdy-meal', onClick:open }, h('span', { text:info.mealName || 'Meal' }), info.pinText ? h('small', { text:'📌 fixed night' }) : null)
           : h('button', { type:'button', class:'fhdy-add', onClick:open, text:'+ Choose a meal' }),
         !onPick && info.mealId && MealApp.dateSidesRow ? MealApp.dateSidesRow(d) : null));
@@ -3890,8 +4221,9 @@ const FHDays = (function(){
     return n;
   }
   function renderWeekGrid(el){
-    if(!weekView) weekView = monday(new Date());
+    if(!weekView) weekView = viewStart(new Date());
     const mon = weekView, n = filled(mon);
+    if(fhPlanShopView() && MealApp.shopSummary) el.appendChild(MealApp.shopSummary(mon));
     el.appendChild(h('div', { class:'fhdy-sum' },
       h('span', { id:'fhdyCount', text:n + ' of 7 dinners chosen' }),
       h('button', { type:'button', class:'btn small secondary', id:'fhdyCopy', text:'Copy last week', onClick:function(){
@@ -3952,7 +4284,7 @@ const FHDays = (function(){
     setTimeout(function(){ try{ catchUp(); }catch(e){} }, 2500);
     document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible'){ try{ catchUp(); }catch(e){} } });
   }
-  return { KEY, MODE, USUAL, iso, load, get, set, clear, mode, setMode, slot, tag, choose, ask, swapDays, weekTags, catchUp, weekMarks, usage, usual, notLately,
+  return { resetView, KEY, MODE, USUAL, iso, load, get, set, clear, mode, setMode, slot, tag, choose, ask, swapDays, weekTags, catchUp, weekMarks, usage, usual, notLately,
            modeRow, renderWeekNav, renderWeekGrid, copyLastWeek, openPlanSheet, init, setSides, place, parse };
 })();
 
@@ -4038,7 +4370,39 @@ const FHPeople = (function(){
     return card;
   }
 
-  return { MONTHS:MONTHS, parse:parse, ageOf:ageOf, schoolYearOf:schoolYearOf, schoolYearLabel:schoolYearLabel, summary:summary, estimateBorn:estimateBorn, picker:picker, setFields:setFields, migrate:migrate, settingsCard:settingsCard };
+  /* Settings › Your household › Your people: names, grown-up or child, colour; add and remove. People are shared by
+     chores, meals, reminders, food needs and routines, so they live here rather than under Chores. */
+  const HUES = [8, 28, 40, 60, 90, 140, 172, 200, 230, 260, 290, 330];
+  let colourFor = '', removing = '';
+  function peopleCard(rerender){
+    const ps = people().filter(function(p){ return p && p.name; });
+    const card = h('div', { class:'st-card', id:'stHousehold' }, h('h3', { text:'Your people' }),
+      h('p', { class:'ob-hint', text:'Everyone in the household. Chores, meals, reminders, food needs and routines all use this list.' }));
+    const redo = function(){ if(rerender) rerender(); };
+    ps.forEach(function(p){
+      const name = h('input', { class:'fhe-in fhp-in', value:p.name, maxlength:'30', 'aria-label':'Name', 'data-person':p.id });
+      name.addEventListener('change', function(){ const v = name.value.trim(); if(v && v !== p.name){ setFields(p.id, { name:v }); try{ ChoreApp.render(); }catch(e){} redo(); } else name.value = p.name; });
+      const role = h('select', { class:'fhp-role', 'aria-label':p.name + ': grown-up or child', 'data-person':p.id },
+        [['parent', 'Grown-up'], ['child', 'Child'], ['other', 'Other']].map(function(r){ return h('option', { value:r[0], text:r[1], selected:(p.role || 'other') === r[0] }); }));
+      role.addEventListener('change', function(){ setFields(p.id, { role:role.value }); try{ ChoreApp.render(); }catch(e){} redo(); });
+      const del = h('button', { type:'button', class:'fhp-del', 'data-person':p.id, 'aria-label':'Remove ' + p.name, text:removing === p.id ? 'Tap again to remove' : '✕', onClick:function(){
+        if(removing !== p.id){ removing = p.id; redo(); return; }
+        removing = ''; try{ ChoreApp.removePerson(p.id); }catch(e){} redo(); } });
+      card.appendChild(h('div', { class:'fhp-prow' },
+        h('button', { type:'button', class:'fhp-dot', style:'--ec:hsl(' + p.hue + ',55%,48%)', 'aria-label':'Change ' + p.name + '’s colour', onClick:function(){ colourFor = colourFor === p.id ? '' : p.id; redo(); } }),
+        name, role, ps.length > 1 ? del : null));
+      if(colourFor === p.id) card.appendChild(h('div', { class:'fhp-swatches' }, HUES.map(function(hue){
+        return h('button', { type:'button', class:'fhp-sw' + (hue === p.hue ? ' on' : ''), style:'--ec:hsl(' + hue + ',55%,48%)', 'aria-label':'Colour', onClick:function(){ colourFor = ''; setFields(p.id, { hue:hue }); try{ ChoreApp.render(); }catch(e){} redo(); } }); })));
+      if(removing === p.id) card.appendChild(h('p', { class:'fhp-warn', text:'Their chores become Anyone jobs. Their stars, food needs and reminders go too.' }));
+    });
+    const nn = h('input', { class:'fhe-in', id:'fhpNewName', maxlength:'30', placeholder:'Name', 'aria-label':'New person’s name' });
+    const nr = h('select', { class:'fhp-role', id:'fhpNewRole', 'aria-label':'Grown-up or child' }, [['parent', 'Grown-up'], ['child', 'Child'], ['other', 'Other']].map(function(r){ return h('option', { value:r[0], text:r[1] }); }));
+    card.appendChild(h('div', { class:'fhp-prow fhp-add' }, nn, nr,
+      h('button', { type:'button', class:'ob-btn primary', id:'fhpAdd', text:'Add', onClick:function(){ const v = nn.value.trim(); if(!v) return; try{ ChoreApp.addPerson(v, nr.value); }catch(e){} redo(); } })));
+    return card;
+  }
+
+  return { peopleCard:peopleCard, MONTHS:MONTHS, parse:parse, ageOf:ageOf, schoolYearOf:schoolYearOf, schoolYearLabel:schoolYearLabel, summary:summary, estimateBorn:estimateBorn, picker:picker, setFields:setFields, migrate:migrate, settingsCard:settingsCard };
 })();
 
 /* ==================== LOCALE: units (metric / imperial) and wording (UK / US) ==================== */
@@ -5021,6 +5385,12 @@ const FHAddOns = (function(){
     const off = load().off[isoOf(date)] || {};
     return picked(mealId).filter(a => !off[a.id]);
   }
+  /* every side on a date in one list: the household's own (info.sideNames) and the app's extras not left out that day */
+  function sideNames(date, info){
+    const own = (info && info.sideNames) || [];
+    if(!info || !info.mealId) return own.slice();
+    return own.concat(chosen(info.mealId, date).map(a => FHLocale.text(a.name)).filter(n => own.indexOf(n) < 0));
+  }
   function isOn(mealId, id){ return (load().meals[mealId] || []).indexOf(id) >= 0; }
   function toggle(mealId, id){
     const v = load(), list = v.meals[mealId] || [], i = list.indexOf(id);
@@ -5183,7 +5553,7 @@ const FHAddOns = (function(){
     document.addEventListener('keydown', onKey);
     draw();
   }
-  return { ALL, byId, suggestions, others, chosen, picked, isOn, toggle, isOff, setOff, kept, lines, ings, paint, dayRow, planChip, planSheet };
+  return { ALL, byId, suggestions, others, chosen, picked, sideNames, isOn, toggle, isOff, setOff, kept, lines, ings, paint, dayRow, planChip, planSheet };
 })();
 
 /* ==================== ALLERGENS in each ingredient (FHAllergy, ob_allergens.js) ==================== */
@@ -6512,6 +6882,7 @@ async function init(){
 
 async function savePlan(){
   try{
+    FHUndo.note('plan', fhRawGet(STORAGE_KEY));
     await storage.set(STORAGE_KEY, JSON.stringify(plan), false);
   }catch(e){ /* saving is best-effort; the plan still works for this session either way */ }
 }
@@ -6526,6 +6897,7 @@ function renderWeekTabs(){
   const el = document.getElementById('weekTabs');
   FHDays.modeRow(el);
   if(FHDays.mode() === 'week'){ FHDays.renderWeekNav(el); return; }
+  if(fhShopCells()){ fhShopTabs(el); return; }
   const labels = {1:'Week 1',2:'Week 2',3:'Week 3',4:'Week 4'};
   const tags = FHDays.weekTags(weekForDate);
   el.innerHTML = '';
@@ -6538,22 +6910,81 @@ function renderWeekTabs(){
   });
 }
 
+let fhShopOff = 0;   // 0 = this shop, 1 = next shop...
+function fhShopCells(){
+  if(typeof fhPlanShopView !== 'function' || !fhPlanShopView()) return null;
+  const start = shAddDaysLocalMeal(mostRecentShopDay(new Date()), fhShopOff * 7);
+  return [0, 1, 2, 3, 4, 5, 6].map(function(i){ const d = shAddDaysLocalMeal(start, i); return { w:weekForDate(d), idx:(d.getDay() + 6) % 7, date:d }; });
+}
+let fhShopKeep = null;
+function fhShopRowWeek(w){
+  if(fhShopKeep === null) fhShopKeep = currentWeek;
+  currentWeek = w;
+  setTimeout(function(){ if(fhShopKeep !== null){ currentWeek = fhShopKeep; fhShopKeep = null; } }, 0);
+}
+function fhShopTabs(el){
+  el.innerHTML = '';
+  const s0 = mostRecentShopDay(new Date());
+  [0, 1, 2, 3].forEach(function(o){
+    const d = shAddDaysLocalMeal(s0, o * 7), e = shAddDaysLocalMeal(d, 6);
+    const btn = document.createElement('button');
+    btn.className = 'week-tab' + (o === fhShopOff ? ' active' : '');
+    btn.setAttribute('data-shop', o);
+    btn.textContent = o === 0 ? 'This shop' : o === 1 ? 'Next shop' : d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' });
+    const tag = document.createElement('span'); tag.className = 'tag';
+    tag.textContent = d.toLocaleDateString(undefined, { day:'numeric', month:d.getMonth() === e.getMonth() ? undefined : 'short' }) + '–' + e.toLocaleDateString(undefined, { day:'numeric', month:'short' });
+    btn.appendChild(tag);
+    btn.addEventListener('click', function(){ fhShopOff = o; render(); });
+    el.appendChild(btn);
+  });
+}
+/* what this shop's dinners are mostly made of: "Chicken 3 · Beef 1 · Veggie 2", and a nudge at 3 of one meat or fish */
+function fhShopSummary(cells){
+  const n = {}, order = [];
+  cells.forEach(function(c){ const id = getDayDisplay(c.date).mealId, m = id && findMeal(id); if(!m || !m.cat) return; if(!n[m.cat]){ n[m.cat] = 0; order.push(m.cat); } n[m.cat]++; });
+  const box = document.createElement('div'); box.className = 'fhsw-sum'; box.id = 'fhswSum';
+  if(!order.length) return box;
+  order.sort(function(a, b){ return n[b] - n[a]; });
+  const chips = document.createElement('div'); chips.className = 'fhsw-chips';
+  order.forEach(function(k){ const meta = categoryById(k) || { label:k }; const c = document.createElement('span'); c.className = 'fhsw-chip'; c.setAttribute('data-cat', k);
+    c.textContent = (meta.emoji ? meta.emoji + ' ' : '') + meta.label + ' ' + n[k]; chips.appendChild(c); });
+  box.appendChild(chips);
+  const lots = order.filter(function(k){ return ['chicken', 'beef', 'pork', 'lamb', 'fish'].indexOf(k) >= 0 && n[k] >= 3; });
+  if(lots.length){
+    const w = document.createElement('p'); w.className = 'fhsw-warn'; w.id = 'fhswWarn';
+    w.textContent = lots.map(function(k){ return n[k] + ' ' + ((categoryById(k) || { label:k }).label || k).toLowerCase(); }).join(' and ') + ' dinners in this shop. Drag a different meal onto one of them, or tap a meal and then the day.';
+    box.appendChild(w);
+  }
+  return box;
+}
 function renderDayGrid(){
   const el = document.getElementById('dayGrid');
   el.innerHTML = '';
   if(FHDays.mode() === 'week'){ FHDays.renderWeekGrid(el); return; }
-  DAY_NAMES.forEach((day, idx)=>{
-    const dayObj = plan[currentWeek][idx];
+  const fhCells = fhShopCells();
+  if(fhCells) el.appendChild(fhShopSummary(fhCells));
+  (fhCells || DAY_NAMES.map(function(d, i){ return { w:currentWeek, idx:i }; })).forEach((fhC, fhN)=>{
+    const idx = fhC.idx, fhW = fhC.w, day = DAY_NAMES[idx];
+    if(fhCells && fhN && fhW !== fhCells[fhN - 1].w){ const dv = document.createElement('div'); dv.className = 'fhsw-div'; dv.textContent = 'Week ' + fhW + ' of your plan starts'; el.appendChild(dv); }
+    const dayObj = plan[fhW][idx];
     if(dayObj.meal && !findMeal(dayObj.meal)){
       dayObj.meal = null; // the custom meal it pointed to was removed
     }
 
     const row = document.createElement('div');
     row.className = 'day-row';
+    if(fhCells){
+      row.addEventListener('pointerdown', function(){ fhShopRowWeek(fhW); }, true);
+      row.addEventListener('click', function(){ fhShopRowWeek(fhW); }, true);
+      row.setAttribute('data-date', toISODateLocal(fhC.date));
+      if(toISODateLocal(fhC.date) === toISODateLocal(new Date())) row.classList.add('fhsw-today');
+    }
 
     const label = document.createElement('div');
     label.className = 'day-label';
     label.textContent = day;
+    if(fhCells){ label.textContent = ''; const b = document.createElement('b'); b.textContent = fhC.date.toLocaleDateString(undefined, { weekday:'short' }); const dn = document.createElement('span'); dn.textContent = ' ' + fhC.date.getDate();
+      const wk = document.createElement('small'); wk.className = 'fhsw-wk'; wk.textContent = 'W' + fhW; label.appendChild(b); label.appendChild(dn); label.appendChild(wk); }
     row.appendChild(label);
 
     const col = document.createElement('div');
@@ -6561,9 +6992,10 @@ function renderDayGrid(){
 
     const slot = document.createElement('div');
     slot.dataset.dayIndex = idx;
+    slot.dataset.week = fhW;
     if(dayObj.meal){
       slot.className = 'day-slot';
-      slot.appendChild(makeBrick(dayObj.meal, 'day', idx, currentWeek));
+      slot.appendChild(makeBrick(dayObj.meal, 'day', idx, fhW));
     } else {
       slot.className = 'day-slot empty';
       slot.textContent = 'Empty — tap to add';
@@ -6607,6 +7039,7 @@ function renderDayGrid(){
     });
     fhPlanExtras(sidesRow, dayObj);
     col.appendChild(sidesRow);
+    if(fhCells){ const real = getDayDisplay(fhC.date); if(real.mealId && real.mealId !== dayObj.meal){ const n = document.createElement('div'); n.className = 'fhsw-once'; n.textContent = 'Just this time: ' + (real.mealName || 'another meal'); col.appendChild(n); } }
 
     row.appendChild(col);
     el.appendChild(row);
@@ -7718,7 +8151,7 @@ function onPointerUp(e){
       FHDays.place(slot.dataset.date, activeDrag.mealId);
     } else if(slot){
       const targetIndex = parseInt(slot.dataset.dayIndex);
-      placeMeal(activeDrag, currentWeek, targetIndex);
+      placeMeal(activeDrag, slot.dataset.week ? parseInt(slot.dataset.week, 10) : currentWeek, targetIndex);
     }
     selected = null;
     render();
@@ -8410,7 +8843,9 @@ function builtinIngredients(id){
   return full.map(function(i){
     const l = Object.assign({}, i);
     const p = globalPortions.find(function(g){ return normPortionName(g.name) === normPortionName(l.name); });
+    const z = fhPortionSizes()[fhPortionGroup(l)];
     if(p){ l.perPerson = true; l.qty = p.qty; l.unit = p.unit; }
+    else if(z){ l.perPerson = true; l.qty = z; l.unit = 'g'; }
     return l;
   });
 }
@@ -8439,6 +8874,13 @@ function swapPlanned(blocked){
   });
   if(n){ savePlan(); render(); renderMealLibrary(); if(typeof __onChange === 'function') __onChange(); }
   return n;
+}
+/* put back an earlier plan (FHUndo) */
+function restorePlan(p){
+  if(!p) return;
+  [1,2,3,4].forEach(function(w){ if(Array.isArray(p[w])) plan[w] = p[w]; });
+  savePlan(); render(); renderMealLibrary();
+  if(typeof __onChange === 'function') __onChange();
 }
 function resetQuestion(meal){
   return 'Put ' + meal.name + ' back to the app’s recipe? Ingredients and steps you added, took out or changed for this meal will go. Its name, category and serves stay as they are.';
@@ -8762,12 +9204,80 @@ function fhPickedBar(){
   bar.appendChild(t); bar.appendChild(x);
 }
 
-const __ready = init();
+/* ---- Portion sizes (inside MealApp): one amount per person for meat & fish, and one for tofu, paneer, halloumi and
+   other plant proteins (fhPortionGroup in ob_core.js), synced as brick-bites-portion-sizes-v1 { meat:g, plant:g }
+   (0 = use the recipe's amount, which scales with the household). Changing a size sets every matching line in every
+   meal, the household's own included; off puts the recipe's amount back. Meals that haven't had the current sizes
+   yet (a meal added since, or setup's answer on first load) catch up once, stamped `pz`, so a line someone unticks
+   "Per person" on by hand stays unticked. Recipes › Manage › Protein portions can still give one ingredient its own. */
+const FH_PORTION_KEY = 'brick-bites-portion-sizes-v1';
+function fhPortionSizes(){
+  let v = {}; try{ v = JSON.parse(fhRawGet(FH_PORTION_KEY) || 'null') || {}; }catch(e){}
+  const last = v.last || {};
+  return { meat:Math.max(0, +v.meat || 0), plant:Math.max(0, +v.plant || 0), last:{ meat:+last.meat || 0, plant:+last.plant || 0 } };   // last: the amount before it was switched off
+}
+function fhPortionSig(z){ return (z.meat || 0) + '/' + (z.plant || 0); }
+/* set one meal's lines to the sizes; force = change lines already per person too (a new size, or one switched off) */
+function fhPortionMeal(meal, z, force){
+  let changed = false;
+  (meal.ingredients || []).forEach(function(l){
+    const g = fhPortionGroup(l); if(!g) return;
+    const want = z[g] || 0;
+    if(want){
+      if(l.perPerson && (!force || (l.unit === 'g' && +l.qty === want))) return;
+      if(!l.perPerson) l.q4 = [l.qty, l.unit];
+      l.perPerson = true; l.qty = want; l.unit = 'g'; changed = true;
+    } else if(force && l.perPerson){
+      const b = !meal.isCustom && ((window.FH_BUILTIN_FULL || {})[meal.id] || []).find(function(i){ return fhIngKey(i) === fhIngKey(l); });
+      if(b){ l.qty = b.qty; l.unit = b.unit; }
+      else if(Array.isArray(l.q4)){ l.qty = l.q4[0]; l.unit = l.q4[1]; }
+      else l.qty = Math.round(l.qty * 4 * 10) / 10;   // recipes are written for 4
+      delete l.perPerson; delete l.q4; changed = true;
+    }
+  });
+  return changed;
+}
+function fhPortionStamp(meal){ return meal.isCustom ? meal.pz : (mealOverrides[meal.id] || {}).pz; }
+function fhPortionSave(meal, sig){
+  if(meal.isCustom){ meal.pz = sig; return; }
+  mealOverrides[meal.id] = Object.assign({}, mealOverrides[meal.id], { name:meal.name, cat:meal.cat, cuisine:meal.cuisine,
+    ingredients:meal.ingredients || [], servesOverride:meal.servesOverride || null, pz:sig, fhRecipes:(mealOverrides[meal.id] || {}).fhRecipes || FH_RECIPES_VER });
+}
+/* every meal that hasn't had these sizes yet; returns how many changed */
+function fhPortionsCatchUp(force){
+  const z = fhPortionSizes(), sig = fhPortionSig(z);
+  let n = 0, own = false;
+  MEALS.concat(customMeals).forEach(function(meal){
+    if(!force && fhPortionStamp(meal) === sig) return;
+    if(!force && !z.meat && !z.plant) return;
+    if(fhPortionMeal(meal, z, !!force)){ fhPortionSave(meal, sig); n++; if(meal.isCustom) own = true; }
+    else if(force && fhPortionStamp(meal) !== undefined) fhPortionSave(meal, sig);
+  });
+  if(n){ persistMealOverrides(); if(own) persistCustomMeals(); }
+  return n;
+}
+function setPortionSizes(next){
+  const z = fhPortionSizes();
+  ['meat', 'plant'].forEach(function(k){ if(k in next){ z[k] = Math.max(0, Math.min(1000, Math.round(+next[k] || 0))); if(z[k]) z.last[k] = z[k]; } });
+  fhSaveJSON(FH_PORTION_KEY, z);
+  const n = fhPortionsCatchUp(true);
+  render(); renderMealLibrary();
+  if(typeof __onChange === 'function') __onChange();
+  return n;
+}
+/* how many meals each size reaches, for the Settings card */
+function portionReach(){
+  const c = { meat:0, plant:0 };
+  MEALS.concat(customMeals).forEach(function(m){ const g = {}; (m.ingredients || []).forEach(function(l){ const k = fhPortionGroup(l); if(k) g[k] = 1; }); Object.keys(g).forEach(function(k){ c[k]++; }); });
+  return c;
+}
+
+const __ready = init().then(function(){ if(fhPortionsCatchUp(false)){ render(); renderMealLibrary(); } });
 
   return {
-    ready: __ready, getCatalog: getCatalog, getAllMeals: getAllMeals, saveRecipe: saveRecipe, applyDiets: applyDiets, getShopDay: getShopDay, setShopDay: setShopDay, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
+    ready: __ready, shopSummary: function(start){ return fhShopSummary([0, 1, 2, 3, 4, 5, 6].map(function(i){ return { date:shAddDaysLocalMeal(start, i) }; })); }, getCatalog: getCatalog, getAllMeals: getAllMeals, saveRecipe: saveRecipe, applyDiets: applyDiets, getShopDay: getShopDay, setShopDay: setShopDay, getShoppingSummary: getShoppingSummary, jumpToUpcomingShop: jumpToUpcomingShop,
     getPlannedCount: getPlannedCount, getPlanMealIds: getPlanMealIds, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
-    differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, resetQuestion: resetQuestion, swapPlanned: swapPlanned,
+    differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, restorePlan: restorePlan, setPortionSizes: setPortionSizes, getPortionSizes: fhPortionSizes, portionReach: portionReach, resetQuestion: resetQuestion, swapPlanned: swapPlanned,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
     takeSelected: fhTakeSelected, addDateSide: fhAddDateSide, dateSidesRow: fhDateSidesRow, openDateSides: fhOpenDateSides,
     getDayDisplay: getDayDisplay,
@@ -9130,8 +9640,6 @@ function render(){
   updateNewChoreFieldVisibility();
   renderChoreLibrary();
   renderRewardsPanel();
-  renderCalendar();
-  renderMonthlyList();
   if(typeof __onChange === 'function') __onChange();
 }
 
@@ -9901,6 +10409,7 @@ function buildChoreItem(chore, key, occurrenceDate, opts){
 // tick made from any of those views updates the same underlying data.
 function buildDayBlock(date, opts){
   opts = opts || {};
+  if(!opts.legacy) return opts.board ? fhchBoard(date, opts) : fhchDayList(date, opts);
   const dayIdx = (date.getDay()+6)%7; // 0=Mon..6=Sun
   const iso = toISODate(date);
   const parity = parityForMonday(mondayOf(date));
@@ -10109,7 +10618,8 @@ function getDaySummary(date){
     return false;
   });
   let total=0, done=0;
-  applicable.forEach(c=>{
+  const fhSk = fhchJSON(FHCH_SKIP);
+  applicable.filter(c=>!fhSk[c.id+'::'+iso]).forEach(c=>{
     const max = c.timesPerDay || 1;
     total += max;
     done += Math.min(completions[c.id+'::'+iso]||0, max);
@@ -10117,12 +10627,688 @@ function getDaySummary(date){
   return { total, done };
 }
 
+/* ==================== CHORES PAGE (chore_page.js, inside ChoreApp) ====================
+   Replaces the old week of open rooms with: Today (a list, or a board of columns), This week (a grid of squares),
+   This month (monthly jobs), and ✏️ Jobs (the household's jobs, one edit sheet each). Ticking goes through the
+   chart's own toggleCompletion, so stars, "done early" and the shell's day views all stay the same.
+   Synced: chore-chart-skips-v1 { key:1 } (skipped for that day), chore-chart-done-by-v1 { key:personId } (who did an
+   "Anyone" job: the occurrence is handed to them so the stars follow). Per device: family-hub-chores-who|look|group.
+   Also the Stars & rewards page (fhrwRender): each person's stars, where this week's came from, prizes. */
+const FHCH_SKIP = 'chore-chart-skips-v1', FHCH_BY = 'chore-chart-done-by-v1', FHCH_AT = 'chore-chart-completed-at-v1';
+const FHCH_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+let fhchTab = 'today', fhchDay = null, fhchWeekMon = null, fhchMode = '', fhchAsk = '', fhchDoneOpen = false, fhchS = { skip:{}, by:{}, at:{} };
+function fhchJSON(k){ try{ const v = JSON.parse(fhRawGet(k) || '{}'); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } }
+function fhchLoad(){ fhchS = { skip:fhchJSON(FHCH_SKIP), by:fhchJSON(FHCH_BY), at:fhchJSON(FHCH_AT) }; }
+function fhchPref(k, v){ const key = 'family-hub-chores-' + k; if(v === undefined){ return fhRawGet(key) || ''; } fhRawSet(key, v); }
+function fhchLocked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+/* a child's phone, or a locked screen: tick only, no editing */
+function fhchKid(){
+  try{ if(FHSync.isDevice && FHSync.isDevice()) return true; }catch(e){}
+  if(fhchLocked()) return true;
+  const me = fhchMe(); const p = me && personById(me); return !!(p && p.role === 'child');
+}
+function fhchMe(){ try{ const p = personById(FHPush.prefs().person); return p ? p.id : ''; }catch(e){ return ''; } }
+function fhchStarsOn(){ try{ return Feature.on('rewards'); }catch(e){ return true; } }
+function fhchCollectors(){ return people.filter(function(p){ return !p.noStars; }); }
+function fhchHue(id){ const p = personById(id); return p ? 'hsl(' + p.hue + ',55%,46%)' : 'var(--muted)'; }
+
+/* ---- occurrences ---- */
+function fhchOn(c, date){
+  const dayIdx = (date.getDay() + 6) % 7;
+  if(c.freq === 'daily') return true;
+  if(c.freq === 'weekly') return c.weekday === dayIdx;
+  if(c.freq === 'fortnightly') return c.weekday === dayIdx && (c.parity || 'A') === parityForMonday(mondayOf(date));
+  return false;
+}
+function fhchOcc(c, date, monthly){
+  const key = c.id + '::' + (monthly ? ymKey(date) : toISODate(date));
+  const has = Object.prototype.hasOwnProperty.call(assigneeOverrides, key);
+  const raw = has ? assigneeOverrides[key] : resolveAssignee(c, date);
+  const max = c.timesPerDay || 1, n = completions[key] || 0;
+  return { c:c, key:key, date:date, monthly:!!monthly, who:personById(raw) ? raw : 'anyone', swapped:has && !fhchS.by[key], by:fhchS.by[key] || '',
+    n:n, max:max, done:n >= max, skip:!!fhchS.skip[key] };
+}
+function fhchSkipped(key){ return !!fhchJSON(FHCH_SKIP)[key]; }
+function fhchRoomIdx(id){ const i = categories.findIndex(function(x){ return x.id === id; }); return i < 0 ? 999 : i; }
+function fhchSort(list){ return list.sort(function(a, b){ return fhchRoomIdx(a.c.cat) - fhchRoomIdx(b.c.cat) || a.c.name.localeCompare(b.c.name); }); }
+function fhchDayOcc(date, pid){
+  return fhchSort(chores.filter(function(c){ return fhchOn(c, date); }).map(function(c){ return fhchOcc(c, date); })
+    .filter(function(o){ return !pid || o.who === pid || o.who === 'anyone'; }));
+}
+function fhchMonthOcc(date, pid){
+  return fhchSort(chores.filter(function(c){ return c.freq === 'monthly'; }).map(function(c){ return fhchOcc(c, date, true); })
+    .filter(function(o){ return !pid || o.who === pid || o.who === 'anyone'; }));
+}
+
+/* ---- ticking ---- */
+function fhchTick(o){
+  const was = o.done;
+  toggleCompletion(o.key, o.c, o.who);   // stars to who it's for ("Anyone" → the family pool)
+  const now = (completions[o.key] || 0) >= o.max;
+  if(was && !now){
+    const by = fhchJSON(FHCH_BY);
+    if(by[o.key]){ delete by[o.key]; fhSaveJSON(FHCH_BY, by); clearOccurrenceOverride(o.key); }
+    if(fhchAsk === o.key) fhchAsk = '';
+  }
+  if(!was && now && o.who === 'anyone' && fhchStarsOn() && fhchCollectors().length){
+    const me = fhchMe(), mp = me && personById(me);
+    if(fhchKid() && mp && !mp.noStars){ fhchGive(fhchOcc(o.c, o.date, o.monthly), me, true); return; }   // a child's own phone: it was them
+    fhchAsk = o.key;
+  }
+  render();
+}
+/* hand an occurrence to someone; if it's already done, its stars move with it */
+function fhchGive(o, pid, doneBy){
+  const worth = (o.c.stars || 1) * Math.min(o.n || 0, o.max);
+  if(worth){ adjustStars(o.who === 'anyone' ? 'family' : o.who, -worth); adjustStars(pid === 'anyone' ? 'family' : pid, worth); }
+  const by = fhchJSON(FHCH_BY);
+  if(pid === 'anyone'){ clearOccurrenceOverride(o.key); delete by[o.key]; }
+  else { setOccurrenceOverride(o.key, pid); if(doneBy) by[o.key] = pid; else delete by[o.key]; }
+  fhSaveJSON(FHCH_BY, by);
+  if(fhchAsk === o.key) fhchAsk = '';
+  render();
+}
+function fhchSetSkip(o, on){
+  const sk = fhchJSON(FHCH_SKIP);
+  if(on) sk[o.key] = 1; else delete sk[o.key];
+  const cut = toISODate(addDays(new Date(), -60)); Object.keys(sk).forEach(function(k){ const d = k.split('::')[1] || ''; if(d.length === 10 && d < cut) delete sk[k]; });
+  fhSaveJSON(FHCH_SKIP, sk); render();
+}
+
+/* ---- a job row ---- */
+function fhchAv(who){
+  if(who === 'anyone') return h('span', { class:'fhch-av any', 'aria-hidden':'true', text:'👥' });
+  const p = personById(who);
+  return h('span', { class:'fhch-av', 'aria-hidden':'true', style:'--pc:' + fhchHue(who), text:p ? p.name.charAt(0) : '?' });
+}
+function fhchFreqWord(c){ return c.freq === 'weekly' ? 'weekly' : c.freq === 'fortnightly' ? 'every 2 weeks' : c.freq === 'monthly' ? 'this month' : ''; }
+function fhchRow(o, opts){
+  opts = opts || {};
+  const room = categoryById(o.c.cat), p = personById(o.who);
+  const sub = [opts.noRoom ? '' : room ? room.label : '', o.by ? 'done by ' + p.name : o.who === 'anyone' ? 'anyone' : (opts.noWho ? '' : p.name),
+    o.swapped ? 'today only' : '', opts.noFreq ? '' : fhchFreqWord(o.c), opts.extra || ''].filter(Boolean).join(' · ');
+  const worth = o.c.stars || 1;
+  const row = h('div', { class:'fhch-job chore-item' + (o.done ? ' done' : '') + (o.skip ? ' skipped' : ''), role:'button', tabindex:'0', 'data-key':o.key,
+    'aria-pressed':o.done ? 'true' : 'false', 'aria-label':o.c.name + (o.done ? ', done' : '') + (p ? ', ' + p.name : ''),
+    onClick:function(e){ if(e.target.closest('.fhch-more')) return; if(o.skip){ fhchSetSkip(o, false); return; } fhchTick(o); },
+    onKeydown:function(e){ if((e.key === 'Enter' || e.key === ' ') && e.target === row){ e.preventDefault(); row.click(); } } },
+    h('span', { class:'fhch-tick chore-check', 'aria-hidden':'true', text:o.done ? '✓' : o.n ? String(o.n) : '' }),
+    h('span', { class:'fhch-t' }, h('b', { text:o.c.name + (o.max > 1 ? ' (' + Math.min(o.n, o.max) + '/' + o.max + ')' : '') }), sub ? h('small', { text:sub }) : null),
+    fhchStarsOn() && worth > 1 && !o.skip ? h('span', { class:'fhch-star', text:fhRewardIcon(o.who === 'anyone' ? '' : o.who) + worth }) : null,
+    o.skip ? h('span', { class:'fhch-putback', text:'Put back' }) : opts.noAv ? null : fhchAv(o.who),
+    opts.noMore || fhchKid() || o.skip ? null : h('button', { type:'button', class:'fhch-more', 'aria-label':'More for ' + o.c.name, text:'⋯', onClick:function(e){ e.stopPropagation(); fhchJobSheet(o); } }));
+  return row;
+}
+/* "Who did it?" after an Anyone job is ticked, so the stars go to them */
+function fhchWhoBar(o){
+  const ps = fhchCollectors();
+  return h('div', { class:'fhch-who', role:'group', 'aria-label':'Who did ' + o.c.name + '?' },
+    h('span', { class:'fhch-whoq', text:'✓ ' + o.c.name + '. Who did it?' }),
+    h('span', { class:'fhch-whochips' }, ps.map(function(p){ return h('button', { type:'button', class:'ob-chip fhch-whobtn', 'data-person':p.id, style:'--pc:' + fhchHue(p.id), text:p.name,
+      onClick:function(e){ e.stopPropagation(); fhchGive(o, p.id, true); } }); }),
+      h('button', { type:'button', class:'fhch-whox', 'aria-label':'Not now', text:'✕', onClick:function(e){ e.stopPropagation(); fhchAsk = ''; render(); } })));
+}
+
+/* ---- one day as a list: Today, the calendar's day, a Today tile's sheet ---- */
+function fhchDayList(date, opts){
+  opts = opts || {}; fhchLoad();
+  const all = fhchDayOcc(date, opts.person);
+  if(opts.monthly){ fhchMonthOcc(date, opts.person).filter(function(o){ return !o.done; }).forEach(function(o){ all.push(o); }); }
+  const todo = all.filter(function(o){ return !o.done && !o.skip; }), done = all.filter(function(o){ return o.done; }), skipped = all.filter(function(o){ return o.skip && !o.done; });
+  const wrap = h('div', { class:'fhch-list' });
+  if(!all.length){ wrap.appendChild(h('p', { class:'fhch-empty day-empty', text:'No chores ' + (shSameDate(date, new Date()) ? 'today' : 'this day') })); return wrap; }
+  const ask = all.find(function(o){ return o.key === fhchAsk && o.done && o.who === 'anyone'; });
+  if(ask) wrap.appendChild(fhchWhoBar(ask));
+  if(opts.labels) wrap.appendChild(h('div', { class:'fhch-lbl', text:todo.length ? 'Still to do · ' + todo.length : 'All done 🎉' }));
+  else if(!todo.length) wrap.appendChild(h('p', { class:'fhch-alldone', text:'All done 🎉' }));
+  todo.forEach(function(o){ wrap.appendChild(fhchRow(o, { extra:o.monthly ? 'any day this month' : '' , noFreq:o.monthly })); });
+  if(done.length){
+    const d = h('details', { class:'fhch-donebox' }, h('summary', { text:'Done · ' + done.length }));
+    if(fhchDoneOpen || opts.openDone) d.open = true;
+    d.addEventListener('toggle', function(){ fhchDoneOpen = d.open; });
+    done.forEach(function(o){ d.appendChild(fhchRow(o)); });
+    wrap.appendChild(d);
+  }
+  if(skipped.length){
+    wrap.appendChild(h('div', { class:'fhch-lbl', text:'Skipped · ' + skipped.length }));
+    skipped.forEach(function(o){ wrap.appendChild(fhchRow(o)); });
+  }
+  return wrap;
+}
+
+/* ---- the board: a column per person (kitchen display, children) ---- */
+function fhchBoard(date, opts){
+  opts = opts || {}; fhchLoad();
+  const occ = fhchDayOcc(date);
+  const cols = people.map(function(p){ return { p:p, list:occ.filter(function(o){ return o.who === p.id; }) }; }).filter(function(x){ return x.list.length; });
+  const any = occ.filter(function(o){ return o.who === 'anyone'; });
+  const wrap = h('div', { class:'fhch-boardwrap' });
+  if(!occ.length){ wrap.appendChild(h('p', { class:'fhch-empty day-empty', text:'No chores today' })); return wrap; }
+  const ask = occ.find(function(o){ return o.key === fhchAsk && o.done && o.who === 'anyone'; });
+  if(ask) wrap.appendChild(fhchWhoBar(ask));
+  const board = h('div', { class:'fhch-board' });
+  cols.forEach(function(x){
+    const dn = x.list.filter(function(o){ return o.done; }).length;
+    const col = h('div', { class:'fhch-col', style:'--pc:' + fhchHue(x.p.id), 'data-person':x.p.id },
+      h('button', { type:'button', class:'fhch-colh', 'aria-label':x.p.name + '’s day', onClick:function(){ if(opts.onPerson) opts.onPerson(x.p.id); else fhchPersonSheet(x.p.id, date); } },
+        fhchAv(x.p.id), h('b', { text:x.p.name }), h('span', { class:'fhch-coln', text:dn + '/' + x.list.length })),
+      h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / x.list.length) + '%' })));
+    x.list.forEach(function(o){ col.appendChild(fhchRow(o, { noRoom:true, noWho:true, noAv:true, noMore:true, noFreq:true })); });
+    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar', text:fhRewardIcon(x.p.id) + ' ' + (starsByPerson[x.p.id] || 0) }));
+    board.appendChild(col);
+  });
+  wrap.appendChild(board);
+  if(any.length){
+    wrap.appendChild(h('div', { class:'fhch-lbl', text:'Anyone can do' }));
+    any.forEach(function(o){ wrap.appendChild(fhchRow(o, { noMore:true })); });
+  }
+  return wrap;
+}
+/* one person's day in a sheet: their chores, then routines and habits */
+function fhchPersonSheet(pid, date){
+  const p = personById(pid); if(!p) return;
+  const old = document.getElementById('fhchPerson'); if(old) old.remove();
+  const body = h('div', { class:'fhch-pbody' });
+  const draw = function(){
+    if(!document.getElementById('fhchPerson')) return;
+    body.innerHTML = '';
+    body.appendChild(fhchPersonDay(pid, date));
+  };
+  const close = function(){ const m = document.getElementById('fhchPerson'); if(m) m.remove(); };
+  const m = h('div', { id:'fhchPerson', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
+    h('div', { class:'fhm-sheet fhch-psheet', role:'dialog', 'aria-label':p.name + '’s day' },
+      h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:p.name + '’s day' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })), body));
+  m.addEventListener('click', function(e){ if(e.target.closest('button,[role=button]')) setTimeout(draw, 40); });
+  document.body.appendChild(m); draw();
+}
+function fhchPersonDay(pid, date){
+  const p = personById(pid);
+  const wrap = h('div', { class:'fhch-pday' });
+  const mine = fhchDayOcc(date, pid).filter(function(o){ return o.who === pid; });
+  const dn = mine.filter(function(o){ return o.done; }).length;
+  wrap.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(pid) },
+    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', text:fhRewardIcon(pid) + ' ' + (starsByPerson[pid] || 0) }) : null),
+    mine.length ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / mine.length) + '%' })) : null,
+    h('small', { text:mine.length ? dn + ' of ' + mine.length + ' done' + fhrwNextText(pid) : 'No jobs of their own today' })));
+  mine.forEach(function(o){ wrap.appendChild(fhchRow(o, { noWho:true, noAv:true, noMore:fhchKid() })); });
+  const any = fhchDayOcc(date).filter(function(o){ return o.who === 'anyone' && !o.done; });
+  if(any.length){ wrap.appendChild(h('div', { class:'fhch-lbl', text:'Anyone can do' })); any.forEach(function(o){ wrap.appendChild(fhchRow(o, { noMore:true })); }); }
+  try{
+    const r = FHRoutines.todayNode(date, pid), hb = FHRoutines.habitsNode(date, pid);
+    if(r){ wrap.appendChild(h('div', { class:'fhch-lbl', text:'Routines' })); wrap.appendChild(r); }
+    if(hb){ wrap.appendChild(h('div', { class:'fhch-lbl', text:'Habits' })); wrap.appendChild(hb); }
+  }catch(e){}
+  return wrap;
+}
+
+/* ---- ⋯ on a job: hand it over for the day, skip it, edit it ---- */
+function fhchJobSheet(o){
+  const old = document.getElementById('fhchJob'); if(old) old.remove();
+  const close = function(){ const m = document.getElementById('fhchJob'); if(m) m.remove(); };
+  const when = o.monthly ? o.date.toLocaleDateString(undefined, { month:'long' }) : o.date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'short' });
+  const chip = function(id, label, on){ return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-person':id, text:label,
+    onClick:function(){ close(); fhchGive(o, id, o.done); } }); };
+  const body = h('div', { class:'fhe-form fhch-jsheet' },
+    h('p', { class:'fhe-lab', text:(o.done ? 'Done by' : (o.monthly ? 'This month' : 'Just ' + (shSameDate(o.date, new Date()) ? 'today' : 'this day')) + ', give it to') }),
+    h('div', { class:'ob-chips' }, chip('anyone', 'Anyone', o.who === 'anyone'), people.map(function(p){ return chip(p.id, p.name, o.who === p.id); })),
+    o.swapped && !o.done ? h('button', { type:'button', class:'fhch-link', id:'fhchUsual', text:'Back to the usual (' + assigneeLabel(resolveAssignee(o.c, o.date)) + ')', onClick:function(){ close(); clearOccurrenceOverride(o.key); render(); } }) : null,
+    fhchStarsOn() ? h('p', { class:'fhch-note', text:'Worth ' + fhRewardIcon(o.who === 'anyone' ? '' : o.who) + ' ' + (o.c.stars || 1) + '. ' + (o.done ? 'The stars move to whoever you pick.' : 'Stars go to whoever it’s given to.') }) : null,
+    h('div', { class:'fhe-actions' },
+      !o.done ? h('button', { type:'button', class:'btn secondary', id:'fhchSkip', text:'Skip ' + (o.monthly ? 'this month' : shSameDate(o.date, new Date()) ? 'today' : 'this day'), onClick:function(){ close(); fhchSetSkip(o, true); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhchEditJob', text:'Edit job', onClick:function(){ close(); fhchEdit(fhchGroupOf(o.c)); } })));
+  const m = h('div', { id:'fhchJob', class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
+    h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':o.c.name },
+      h('div', { class:'fhm-head' }, h('div', {}, h('div', { class:'fhm-title', text:o.c.name }), h('small', { class:'fhch-note', text:when })), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })), body));
+  document.body.appendChild(m);
+}
+
+/* ---- the page ---- */
+function fhchRender(){
+  const root = document.getElementById('fhChores'); if(!root) return;
+  const y = window.scrollY;
+  root.innerHTML = ''; fhchLoad();
+  const kid = fhchKid();
+  if(fhchMode === 'jobs' && !kid){ root.appendChild(fhchJobs()); return; }
+  fhchMode = '';
+  let who = fhchPref('who'); const me = fhchMe();
+  if(kid && me && !fhchPref('who-set')) who = me;
+  if(who && !personById(who)) who = '';
+  const today = shStartOfDayLocal(new Date());
+  if(!fhchDay) fhchDay = today;
+  root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Chores' }),
+    fhchStarsOn() ? h('button', { type:'button', class:'fhch-topbtn', id:'fhchStars', text:'⭐ Stars', onClick:function(){ showPage('rewards'); } }) : null,
+    kid ? null : h('button', { type:'button', class:'fhch-topbtn', id:'fhchEdit', text:'✏️ Jobs', onClick:function(){ fhchMode = 'jobs'; fhchRender(); window.scrollTo(0, 0); } })));
+  if(people.length > 1){
+    const chips = h('div', { class:'fhe-chips fhch-chips', role:'group', 'aria-label':'Show chores for' });
+    [['', 'Everyone']].concat(people.map(function(p){ return [p.id, p.name]; })).forEach(function(x){
+      chips.appendChild(h('button', { type:'button', class:'fhe-chip' + (who === x[0] ? ' on' : ''), 'aria-pressed':who === x[0] ? 'true' : 'false', 'data-person':x[0] || 'all',
+        style:'--ec:' + (x[0] ? fhchHue(x[0]) : 'var(--accent,#6C4F8A)'), text:x[1], onClick:function(){ fhchPref('who', x[0]); fhchPref('who-set', '1'); fhchRender(); } }));
+    });
+    root.appendChild(chips);
+  }
+  const seg = h('div', { class:'fhch-seg', role:'tablist', 'aria-label':'Chores for' });
+  [['today', 'Today'], ['week', 'This week'], ['month', 'This month']].forEach(function(t){
+    seg.appendChild(h('button', { type:'button', role:'tab', id:'fhchTab-' + t[0], class:fhchTab === t[0] ? 'on' : '', 'aria-selected':fhchTab === t[0] ? 'true' : 'false', text:t[1],
+      onClick:function(){ fhchTab = t[0]; fhchRender(); } }));
+  });
+  root.appendChild(seg);
+  const body = h('div', { class:'fhch-body', role:'tabpanel' });
+  root.appendChild(body);
+  if(fhchTab === 'week') fhchWeekTab(body, who);
+  else if(fhchTab === 'month') fhchMonthTab(body, who);
+  else fhchTodayTab(body, who, today);
+  if(document.getElementById('page-chores').classList.contains('active')) window.scrollTo(0, y);
+}
+function fhchNav(label, sub, prev, next, back){
+  return h('div', { class:'fhch-nav' },
+    h('button', { type:'button', class:'fhch-navb', id:'fhchPrev', 'aria-label':'Previous', text:'‹', onClick:prev }),
+    h('div', { class:'fhch-navl' }, h('b', { text:label }), sub ? h('small', { text:sub }) : null),
+    back ? h('button', { type:'button', class:'fhch-pill', id:'fhchBack', text:back[0], onClick:back[1] }) : null,
+    h('button', { type:'button', class:'fhch-navb', id:'fhchNext', 'aria-label':'Next', text:'›', onClick:next }));
+}
+function fhchTodayTab(body, who, today){
+  const d = fhchDay, isToday = shSameDate(d, today);
+  const look = who ? 'list' : (fhchPref('look') || 'list');
+  body.appendChild(fhchNav(isToday ? 'Today' : d.toLocaleDateString(undefined, { weekday:'long' }), d.toLocaleDateString(undefined, { weekday:isToday ? 'long' : undefined, day:'numeric', month:'long' }),
+    function(){ fhchDay = addDays(fhchDay, -1); fhchRender(); }, function(){ fhchDay = addDays(fhchDay, 1); fhchRender(); },
+    isToday ? null : ['Today', function(){ fhchDay = today; fhchRender(); }]));
+  if(!who && people.length > 1){
+    const lk = h('div', { class:'fhch-look', role:'group', 'aria-label':'Show as' });
+    [['list', '☰ List'], ['board', '▦ Board']].forEach(function(x){ lk.appendChild(h('button', { type:'button', id:'fhchLook-' + x[0], class:look === x[0] ? 'on' : '', 'aria-pressed':look === x[0] ? 'true' : 'false', text:x[1], onClick:function(){ fhchPref('look', x[0]); fhchRender(); } })); });
+    body.appendChild(lk);
+  }
+  if(look === 'board') body.appendChild(fhchBoard(d, { onPerson:function(pid){ fhchPref('who', pid); fhchPref('who-set', '1'); fhchRender(); } }));
+  else if(who) body.appendChild(fhchPersonDay(who, d));
+  else body.appendChild(fhchDayList(d, { labels:true }));
+  const left = fhchMonthOcc(today, who).filter(function(o){ return !o.done && !o.skip; }).length;
+  if(left) body.appendChild(h('button', { type:'button', class:'fhch-monthlink', id:'fhchMonthLink', text:'📅 ' + left + ' monthly job' + (left === 1 ? '' : 's') + ' still to do this month ›', onClick:function(){ fhchTab = 'month'; fhchRender(); } }));
+}
+function fhchWeekTab(body, who){
+  if(!fhchWeekMon) fhchWeekMon = currentMonday();
+  const mon = fhchWeekMon, isNow = toISODate(mon) === toISODate(currentMonday());
+  const fort = chores.some(function(c){ return c.freq === 'fortnightly'; });
+  body.appendChild(fhchNav(isNow ? 'This week' : formatWeekLabel(mon), (isNow ? formatWeekLabel(mon) : '') + (fort ? (isNow ? ' · ' : '') + 'Week ' + parityForMonday(mon) : ''),
+    function(){ fhchWeekMon = addDays(fhchWeekMon, -7); fhchRender(); }, function(){ fhchWeekMon = addDays(fhchWeekMon, 7); fhchRender(); },
+    isNow ? null : ['This week', function(){ fhchWeekMon = currentMonday(); fhchRender(); }]));
+  if(who){
+    const p = personById(who);
+    let n = 0, dn = 0;
+    for(let i = 0; i < 7; i++){ const dd = addDays(mon, i); chores.forEach(function(c){ if(!fhchOn(c, dd)) return; const o = fhchOcc(c, dd); if(o.who === who && !o.skip){ n++; if(o.done) dn++; } }); }
+    const wk = fhrwWeek(who, mon), tot = wk.chores + wk.routines + wk.habits;
+    body.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(who) },
+      h('div', { class:'fhch-pctop' }, fhchAv(who), h('b', { text:p.name }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', text:fhRewardIcon(who) + ' ' + tot + ' this week' }) : null),
+      n ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / n) + '%' })) : null,
+      h('small', { text:(n ? dn + ' of ' + n + ' jobs done' : 'No jobs this week') + (fhchStarsOn() && !p.noStars ? fhrwNextText(who) : '') })));
+  }
+  body.appendChild(fhchGrid(mon, who));
+  if(fort && !fhchKid()) body.appendChild(h('button', { type:'button', class:'fhch-link', id:'fhchSwapAB', text:'Every-2-weeks jobs on the wrong week? Swap Week A and B',
+    onClick:function(){ anchorMonday = toISODate(addDays(mondayOf(new Date(anchorMonday)), 7)); saveKey(KEYS.anchor, anchorMonday); render(); } }));
+}
+function fhchGrid(mon, who){
+  const days = [0, 1, 2, 3, 4, 5, 6].map(function(i){ return addDays(mon, i); });
+  const todayISO = toISODate(new Date());
+  let rows = chores.filter(function(c){ return c.freq !== 'monthly'; }).map(function(c){
+    return { c:c, cells:days.map(function(d){ if(!fhchOn(c, d)) return null; const o = fhchOcc(c, d); return (!who || o.who === who) ? o : null; }) };
+  }).filter(function(r){ return r.cells.some(Boolean); });
+  rows = rows.sort(function(a, b){ return fhchRoomIdx(a.c.cat) - fhchRoomIdx(b.c.cat) || a.c.name.localeCompare(b.c.name); });
+  const wrap = h('div', { class:'fhch-gridwrap' });
+  if(!rows.length){ wrap.appendChild(h('p', { class:'fhch-empty', text:who ? 'No jobs for ' + personById(who).name + ' this week.' : 'No jobs this week.' })); return wrap; }
+  const g = h('div', { class:'fhch-grid', role:'table', 'aria-label':'Jobs this week' });
+  g.appendChild(h('div', { class:'fhch-gr fhch-ghead', role:'row' }, h('span', { role:'columnheader', class:'fhch-gname', text:'' }),
+    days.map(function(d, i){ return h('span', { role:'columnheader', class:'fhch-gday' + (toISODate(d) === todayISO ? ' now' : ''), text:FHCH_DAYS[i].charAt(0), title:FHCH_DAYS[i] }); })));
+  rows.forEach(function(r){
+    const whos = {}; r.cells.forEach(function(o){ if(o) whos[o.who] = 1; });
+    const one = Object.keys(whos).length === 1 ? Object.keys(whos)[0] : '';
+    g.appendChild(h('div', { class:'fhch-gr', role:'row' },
+      h('span', { role:'rowheader', class:'fhch-gname' }, h('b', { text:r.c.name }), !who ? h('small', { text:one ? assigneeLabel(one) : 'takes turns' }) : null),
+      r.cells.map(function(o, i){
+        if(!o) return h('span', { role:'cell', class:'fhch-sq off' });
+        const at = fhchS.at[o.key], late = o.done && at && at.slice(0, 10) > toISODate(days[i]);
+        const past = toISODate(days[i]) < todayISO;
+        const p = personById(o.who);
+        return h('span', { role:'cell' }, h('button', { type:'button', class:'fhch-sq' + (o.done ? (late ? ' late' : ' on') : o.skip ? ' skip' : past ? ' missed' : '') + (toISODate(days[i]) === todayISO ? ' now' : ''),
+          style:'--pc:' + fhchHue(o.who), 'data-key':o.key, 'aria-pressed':o.done ? 'true' : 'false',
+          'aria-label':r.c.name + ', ' + FHCH_DAYS[i] + (p ? ', ' + p.name : '') + (o.done ? ', done' : o.skip ? ', skipped' : ''),
+          text:o.done ? '✓' : (!who && o.who !== 'anyone' && p ? p.name.charAt(0) : (o.max > 1 && o.n ? String(o.n) : '')),
+          onClick:function(){ if(o.skip) fhchSetSkip(o, false); else fhchTick(o); } }));
+      })));
+  });
+  wrap.appendChild(g);
+  const ask = rows.reduce(function(a, r){ return a || r.cells.find(function(o){ return o && o.key === fhchAsk && o.done && o.who === 'anyone'; }); }, null);
+  if(ask) wrap.insertBefore(fhchWhoBar(ask), g);
+  wrap.appendChild(h('p', { class:'fhch-legend', text:'Ticked = done · amber = done late · tap a square to tick or untick' }));
+  return wrap;
+}
+function fhchMonthTab(body, who){
+  const now = new Date(), end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  body.appendChild(h('div', { class:'fhch-nav' }, h('div', { class:'fhch-navl' }, h('b', { text:now.toLocaleDateString(undefined, { month:'long', year:'numeric' }) }), h('small', { text:'Any day before ' + end.toLocaleDateString(undefined, { day:'numeric', month:'short' }) }))));
+  const list = fhchMonthOcc(now, who);
+  if(!list.length){ body.appendChild(h('p', { class:'fhch-empty', text:'No monthly jobs' + (who ? ' for ' + personById(who).name : '') + '. Add one from ✏️ Jobs.' })); return; }
+  const todo = list.filter(function(o){ return !o.done && !o.skip; }), done = list.filter(function(o){ return o.done; }), sk = list.filter(function(o){ return o.skip && !o.done; });
+  const ask = list.find(function(o){ return o.key === fhchAsk && o.done && o.who === 'anyone'; });
+  if(ask) body.appendChild(fhchWhoBar(ask));
+  body.appendChild(h('div', { class:'fhch-lbl', text:todo.length ? 'Still to do · ' + todo.length : 'All done this month 🎉' }));
+  todo.forEach(function(o){ body.appendChild(fhchRow(o, { noFreq:true })); });
+  if(done.length){ body.appendChild(h('div', { class:'fhch-lbl', text:'Done · ' + done.length })); done.forEach(function(o){ body.appendChild(fhchRow(o, { noFreq:true })); }); }
+  if(sk.length){ body.appendChild(h('div', { class:'fhch-lbl', text:'Skipped · ' + sk.length })); sk.forEach(function(o){ body.appendChild(fhchRow(o, { noFreq:true })); }); }
+}
+
+/* ==================== ✏️ JOBS: the household's jobs, one edit sheet ==================== */
+/* copies of the same job for different people ("Make bed" for Ivy and Sam) show and edit as one */
+function fhchGroups(){
+  const map = {}, out = [];
+  chores.forEach(function(c){
+    const fixed = c.assignedTo && c.assignedTo !== 'anyone' && !isRotateToken(c.assignedTo);
+    const k = fixed ? [c.name.trim().toLowerCase(), c.freq, c.weekday, c.parity, c.cat, c.stars || 1, c.timesPerDay || 1].join('|') : 'id:' + c.id;
+    if(map[k]) map[k].copies.push(c); else { map[k] = { copies:[c] }; out.push(map[k]); }
+  });
+  return out;
+}
+function fhchGroupOf(c){ return fhchGroups().find(function(g){ return g.copies.indexOf(c) >= 0; }) || { copies:[c] }; }
+function fhchWhen(c){
+  const day = c.weekday != null ? DAY_NAMES[c.weekday] : '';
+  if(c.freq === 'daily') return 'Every day' + ((c.timesPerDay || 1) > 1 ? ', ' + c.timesPerDay + ' times' : '');
+  if(c.freq === 'weekly') return day;
+  if(c.freq === 'fortnightly') return day + ', every 2 weeks';
+  return 'Once a month';
+}
+function fhchWhoText(g){
+  const c = g.copies[0];
+  if(c.assignedTo === 'anyone') return 'Anyone';
+  if(isRotateToken(c.assignedTo)){ const r = rosterForRotateToken(c.assignedTo, c).map(function(p){ return p.name; }); return r.length ? fhchAnd(r) + ' take turns' : 'Takes turns'; }
+  const names = g.copies.map(function(x){ return assigneeLabel(x.assignedTo); });
+  return fhchAnd(names) + (names.length > 1 ? ' · each their own' : '');
+}
+function fhchAnd(a){ return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+function fhchGroupPeople(g){
+  const c = g.copies[0];
+  if(c.assignedTo === 'anyone') return ['anyone'];
+  if(isRotateToken(c.assignedTo)) return rosterForRotateToken(c.assignedTo, c).map(function(p){ return p.id; });
+  return g.copies.map(function(x){ return x.assignedTo; });
+}
+function fhchJobs(){
+  const wrap = h('div', { class:'fhch-jobs' });
+  wrap.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Jobs' }),
+    h('button', { type:'button', class:'fhch-topbtn solid', id:'fhchAdd', text:'＋ Add a job', onClick:function(){ fhchEdit(null); } }),
+    h('button', { type:'button', class:'fhch-topbtn', id:'fhchDone', text:'Done', onClick:function(){ fhchMode = ''; fhchRender(); window.scrollTo(0, 0); } })));
+  wrap.appendChild(h('p', { class:'fhch-note', text:'Every job the household shares. Tap one to change how often, who does it or what it’s worth.' }));
+  const by = fhchPref('group') || 'freq';
+  const chips = h('div', { class:'fhe-chips fhch-chips', role:'group', 'aria-label':'Group the jobs' });
+  [['freq', 'By how often'], ['person', 'By person'], ['room', 'By room']].forEach(function(x){
+    chips.appendChild(h('button', { type:'button', class:'fhe-chip' + (by === x[0] ? ' on' : ''), 'aria-pressed':by === x[0] ? 'true' : 'false', id:'fhchBy-' + x[0], style:'--ec:var(--accent,#6C4F8A)', text:x[1], onClick:function(){ fhchPref('group', x[0]); fhchRender(); } }));
+  });
+  wrap.appendChild(chips);
+  const groups = fhchGroups(), sections = [];
+  if(by === 'person'){
+    people.concat([{ id:'anyone', name:'Anyone' }]).forEach(function(p){ sections.push([p.name, groups.filter(function(g){ return fhchGroupPeople(g).indexOf(p.id) >= 0; })]); });
+  } else if(by === 'room'){
+    categories.forEach(function(r){ sections.push([r.emoji + ' ' + r.label, groups.filter(function(g){ return g.copies[0].cat === r.id; })]); });
+  } else {
+    [['daily', 'Every day'], ['weekly', 'Each week'], ['fortnightly', 'Every 2 weeks'], ['monthly', 'Each month']].forEach(function(f){ sections.push([f[1], groups.filter(function(g){ return g.copies[0].freq === f[0]; })]); });
+  }
+  sections.forEach(function(s){
+    if(!s[1].length) return;
+    wrap.appendChild(h('div', { class:'fhch-lbl', text:s[0] + ' · ' + s[1].length }));
+    s[1].sort(function(a, b){ return (a.copies[0].weekday || 0) - (b.copies[0].weekday || 0) || a.copies[0].name.localeCompare(b.copies[0].name); }).forEach(function(g){
+      const c = g.copies[0], room = categoryById(c.cat);
+      const desc = [by === 'freq' && c.freq !== 'daily' && c.freq !== 'monthly' ? fhchWhen(c) : by !== 'freq' ? fhchWhen(c) : '', fhchWhoText(g), by !== 'room' && room ? room.label : ''].filter(Boolean).join(' · ');
+      wrap.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-chore':c.id, onClick:function(){ fhchEdit(g); } },
+        h('span', { class:'fhch-t' }, h('b', { text:c.name }), h('small', { text:desc })),
+        fhchStarsOn() ? h('span', { class:'fhch-star', text:fhRewardIcon('') + (c.stars || 1) }) : null, h('span', { class:'fhch-chev', 'aria-hidden':'true', text:'›' })));
+    });
+  });
+  if(!chores.length) wrap.appendChild(h('p', { class:'fhch-empty', text:'No jobs yet. Tap ＋ Add a job.' }));
+  // rooms
+  wrap.appendChild(h('div', { class:'fhch-lbl', text:'Rooms' }));
+  const rooms = h('div', { class:'ob-chips fhch-rooms' });
+  categories.forEach(function(r){ rooms.appendChild(h('button', { type:'button', class:'ob-chip', 'data-room':r.id, text:r.emoji + ' ' + r.label, onClick:function(){ fhchRoomSheet(r); } })); });
+  rooms.appendChild(h('button', { type:'button', class:'ob-chip fhch-addroom', id:'fhchAddRoom', text:'＋ Add a room', onClick:function(){ fhchRoomSheet(null); } }));
+  wrap.appendChild(rooms);
+  return wrap;
+}
+function fhchSheet(id, title, body, actions){
+  const close = function(){ const m = document.getElementById(id); if(m) m.remove(); };
+  const old = document.getElementById(id); if(old) old.remove();
+  const m = h('div', { id:id, class:'fhm-back', onClick:function(e){ if(e.target === m) close(); } },
+    h('div', { class:'fhm-sheet fhch-esheet', role:'dialog', 'aria-label':title },
+      h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:title }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+      h('div', { class:'fhe-form' }, body, h('div', { class:'fhe-actions' }, actions(close)))));
+  document.body.appendChild(m); return m;
+}
+function fhchSeg(opts, val, onPick, id){
+  return h('div', { class:'fhch-seg small', role:'group', id:id || null }, opts.map(function(o){
+    return h('button', { type:'button', class:val === o[0] ? 'on' : '', 'aria-pressed':val === o[0] ? 'true' : 'false', 'data-v':String(o[0]), text:o[1], onClick:function(){ onPick(o[0]); } }); }));
+}
+function fhchEdit(g){
+  const copies = g ? g.copies : [], c0 = copies[0] || null;
+  const curParity = parityForMonday(currentMonday());
+  const f = { name:c0 ? c0.name : '', freq:c0 ? c0.freq : 'weekly', weekday:c0 && c0.weekday != null ? c0.weekday : 5, parity:c0 ? (c0.parity || 'A') : curParity,
+    times:c0 ? (c0.timesPerDay || 1) : 1, cat:c0 ? c0.cat : ((categories[0] || {}).id || ''), stars:c0 ? (c0.stars || 1) : 1,
+    mode:!c0 ? 'own' : c0.assignedTo === 'anyone' ? 'anyone' : isRotateToken(c0.assignedTo) ? 'turns' : 'own',
+    who:c0 && c0.assignedTo !== 'anyone' && !isRotateToken(c0.assignedTo) ? copies.map(function(x){ return x.assignedTo; }) : [],
+    turns:c0 && isRotateToken(c0.assignedTo) ? c0.assignedTo : ROTATE_CHILDREN };
+  const body = h('div', { class:'fhch-ed' });
+  const err = h('div', { class:'fhe-err' });
+  const name = h('input', { class:'fhe-in', id:'fhchName', value:f.name, maxlength:'60', placeholder:'e.g. Hoover the lounge', 'aria-label':'Job' });
+  name.addEventListener('input', function(){ f.name = name.value; });
+  const draw = function(){
+    body.innerHTML = '';
+    body.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Job' }), name));
+    body.appendChild(h('p', { class:'fhe-lab', text:'How often' }));
+    body.appendChild(fhchSeg([['daily', 'Every day'], ['weekly', 'Each week'], ['fortnightly', 'Every 2 weeks'], ['monthly', 'Each month']], f.freq, function(v){ f.freq = v; draw(); }, 'fhchFreq'));
+    if(f.freq === 'weekly' || f.freq === 'fortnightly'){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Day' }));
+      body.appendChild(fhchSeg(FHCH_DAYS.map(function(d, i){ return [i, d]; }), f.weekday, function(v){ f.weekday = v; draw(); }, 'fhchDay'));
+    }
+    if(f.freq === 'fortnightly'){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Starting' }));
+      body.appendChild(fhchSeg([[curParity, 'This week'], [curParity === 'A' ? 'B' : 'A', 'Next week']], f.parity, function(v){ f.parity = v; draw(); }, 'fhchParity'));
+    }
+    if(f.freq === 'daily'){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Times a day' }));
+      body.appendChild(fhchSeg([[1, 'Once'], [2, 'Twice'], [3, '3 times']], f.times, function(v){ f.times = v; draw(); }, 'fhchTimes'));
+    }
+    body.appendChild(h('p', { class:'fhe-lab', text:'Who' }));
+    body.appendChild(fhchSeg([['own', people.length > 1 ? 'Each their own' : 'One person'], ['turns', 'Take turns'], ['anyone', 'Anyone']], f.mode, function(v){ f.mode = v; draw(); }, 'fhchMode'));
+    if(f.mode === 'own'){
+      body.appendChild(h('div', { class:'ob-chips fhch-whopick' }, people.map(function(p){ const on = f.who.indexOf(p.id) >= 0;
+        return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-person':p.id, text:p.name,
+          onClick:function(){ const i = f.who.indexOf(p.id); if(i >= 0) f.who.splice(i, 1); else f.who.push(p.id); draw(); } }); })));
+      if(f.who.length > 1) body.appendChild(h('p', { class:'fhch-note', text:'Each of them gets their own copy to tick.' }));
+    } else if(f.mode === 'turns'){
+      body.appendChild(fhchSeg([[ROTATE_CHILDREN, 'Children'], [ROTATE_PARENTS, 'Grown-ups'], [ROTATE_ALL, 'Everyone']], f.turns, function(v){ f.turns = v; draw(); }, 'fhchTurns'));
+      const fake = { id:'_', freq:f.freq, weekday:f.weekday, parity:f.parity, assignedTo:f.turns, minAge:c0 ? c0.minAge : undefined };
+      const roster = rosterForRotateToken(f.turns, fake);
+      body.appendChild(h('p', { class:'fhch-note', text:roster.length ? fhchAnd(roster.map(function(p){ return p.name; })) + ' take turns, ' + (f.freq === 'daily' ? 'a day each' : f.freq === 'monthly' ? 'a month each' : 'a week each') + '.' : 'Nobody in that group yet.' }));
+    } else body.appendChild(h('p', { class:'fhch-note', text:'Whoever does it ticks it' + (fhchStarsOn() ? ' and says who it was, so the stars go to them.' : '.') }));
+    if(categories.length){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Room' }));
+      body.appendChild(h('div', { class:'ob-chips fhch-roompick' }, categories.map(function(r){ const on = f.cat === r.id;
+        return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-room':r.id, text:r.emoji + ' ' + r.label, onClick:function(){ f.cat = r.id; draw(); } }); })));
+    }
+    if(fhchStarsOn()){
+      body.appendChild(h('div', { class:'fhch-worth' }, h('span', { class:'fhe-lab', text:'Worth' }),
+        h('button', { type:'button', class:'fhch-step', 'aria-label':'Fewer stars', text:'−', disabled:f.stars <= 1, onClick:function(){ f.stars = Math.max(1, f.stars - 1); draw(); } }),
+        h('b', { id:'fhchWorth', text:fhRewardIcon('') + ' ' + f.stars }),
+        h('button', { type:'button', class:'fhch-step', 'aria-label':'More stars', text:'+', disabled:f.stars >= 20, onClick:function(){ f.stars = Math.min(20, f.stars + 1); draw(); } }),
+        h('small', { class:'fhch-note', text:'A quick job 1, a big one 3' })));
+    }
+    body.appendChild(err);
+  };
+  draw();
+  let delArmed = false;
+  fhchSheet('fhchEd', c0 ? 'Edit job' : 'Add a job', body, function(close){ return [
+    c0 ? h('button', { type:'button', class:'btn secondary', id:'fhchDel', text:'Delete', onClick:function(e){
+      if(!delArmed){ delArmed = true; e.target.textContent = 'Tap again to delete'; return; }
+      chores = chores.filter(function(x){ return copies.indexOf(x) < 0; }); saveKey(KEYS.chores, chores); close(); render(); } }) : null,
+    h('button', { type:'button', class:'btn', id:'fhchSave', text:'Save', onClick:function(){
+      f.name = name.value.trim();
+      if(!f.name){ err.textContent = 'What’s the job called?'; return; }
+      if(f.mode === 'own' && !f.who.length){ err.textContent = 'Pick who does it, or choose Anyone.'; return; }
+      const fields = function(c){
+        c.name = f.name; c.freq = f.freq; c.cat = f.cat; c.stars = f.stars;
+        if(f.freq === 'weekly' || f.freq === 'fortnightly') c.weekday = f.weekday; else delete c.weekday;
+        if(f.freq === 'fortnightly') c.parity = f.parity; else delete c.parity;
+        if(f.freq === 'daily' && f.times > 1) c.timesPerDay = f.times; else delete c.timesPerDay;
+        return c;
+      };
+      const at = c0 ? chores.indexOf(c0) : chores.length;
+      const stamp = Date.now().toString(36);
+      let keep = [];
+      if(f.mode === 'own'){
+        f.who.forEach(function(pid, i){
+          const ex = copies.find(function(x){ return x.assignedTo === pid; });
+          if(ex){ fields(ex); keep.push(ex); }
+          else { const n = fields({ id:'c_' + stamp + i, assignedTo:pid }); if(c0 && c0.minAge) n.minAge = c0.minAge; keep.push(n); }
+        });
+      } else {
+        const c = c0 || { id:'c_' + stamp };
+        fields(c); c.assignedTo = f.mode === 'anyone' ? 'anyone' : f.turns; keep.push(c);
+      }
+      chores = chores.filter(function(x){ return copies.indexOf(x) < 0; });   // copies[0] is the earliest, so nothing before it moves
+      chores.splice.apply(chores, [Math.min(at, chores.length), 0].concat(keep));
+      saveKey(KEYS.chores, chores); close(); render();
+    } })]; });
+  setTimeout(function(){ if(!c0) name.focus(); }, 30);
+}
+function fhchRoomSheet(r){
+  const emoji = h('input', { class:'fhe-in fhch-emoji', id:'fhchRoomEmoji', value:r ? r.emoji : '🏠', maxlength:'4', 'aria-label':'Emoji' });
+  const name = h('input', { class:'fhe-in', id:'fhchRoomName', value:r ? r.label : '', maxlength:'40', placeholder:'e.g. Bathroom', 'aria-label':'Room' });
+  const err = h('div', { class:'fhe-err' });
+  const used = r ? chores.filter(function(c){ return c.cat === r.id; }).length : 0;
+  fhchSheet('fhchRoom', r ? 'Edit room' : 'Add a room', h('div', {}, h('div', { class:'fhch-roomrow' }, emoji, name),
+    r && used ? h('p', { class:'fhch-note', text:used + ' job' + (used === 1 ? '' : 's') + ' in this room. Deleting it moves them to ' + ((categories.find(function(c){ return c.id !== r.id; }) || {}).label || 'another room') + '.' }) : null, err),
+    function(close){ return [
+      r && categories.length > 1 ? h('button', { type:'button', class:'btn secondary', id:'fhchRoomDel', text:'Delete', onClick:function(){ close(); deleteCategory(r.id); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhchRoomSave', text:'Save', onClick:function(){
+        const lab = name.value.trim(); if(!lab){ err.textContent = 'What’s the room called?'; return; }
+        if(r){ r.label = lab; r.emoji = emoji.value.trim() || r.emoji; }
+        else categories.push({ id:'cat_' + Date.now().toString(36), label:lab, emoji:emoji.value.trim() || '🏠', hue:PRESET_HUES[categories.length % PRESET_HUES.length] });
+        saveKey(KEYS.categories, categories); close(); render(); } })]; });
+}
+
+/* ==================== STARS & REWARDS page ==================== */
+function fhrwNext(pid, total){
+  return rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; }).find(function(m){ return (!m.who || m.who === pid) && m.threshold > total; }) || null;
+}
+function fhrwNextText(pid){
+  if(!fhchStarsOn()) return '';
+  const p = personById(pid); if(!p || p.noStars) return '';
+  const t = starsByPerson[pid] || 0, n = fhrwNext(pid, t);
+  return n ? ' · ' + (n.threshold - t) + ' more to ' + n.text : '';
+}
+/* this week's stars by where they came from */
+function fhrwWeek(pid, mon){
+  mon = mon || currentMonday();
+  const out = { chores:0, routines:0, habits:0 }, end = toISODate(addDays(mon, 6)), start = toISODate(mon);
+  for(let i = 0; i < 7; i++){
+    const d = addDays(mon, i);
+    chores.forEach(function(c){ if(!fhchOn(c, d)) return; const o = fhchOcc(c, d); if(o.who === pid && o.n) out.chores += Math.min(o.n, o.max) * (c.stars || 1); });
+  }
+  chores.forEach(function(c){ if(c.freq !== 'monthly') return; [mon, addDays(mon, 6)].forEach(function(d, j){ if(j && ymKey(d) === ymKey(mon)) return;
+    const o = fhchOcc(c, d, true), at = (fhchS.at[o.key] || '').slice(0, 10); if(o.who === pid && o.done && at >= start && at <= end) out.chores += o.max * (c.stars || 1); }); });
+  try{
+    const L = FHRoutines.log(), kinds = {}; FHRoutines.data().items.forEach(function(it){ kinds[it.id] = it.kind; });
+    for(let i = 0; i < 7; i++){ const day = L[toISODate(addDays(mon, i))] || {};
+      Object.keys(day).forEach(function(id){ const r = (day[id] || {})[pid]; if(r && +r.st) out[kinds[id] === 'habit' ? 'habits' : 'routines'] += +r.st; }); }
+  }catch(e){}
+  return out;
+}
+function fhrwRender(root){
+  if(!root) return;
+  root.innerHTML = ''; fhchLoad();
+  const kid = fhchKid();
+  root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Stars & rewards' })));
+  root.appendChild(h('p', { class:'fhch-note', text:'Stars come from chores, routines and habits. Each person collects their own.' }));
+  const coll = fhchCollectors(), not = people.filter(function(p){ return p.noStars; });
+  coll.forEach(function(p){
+    const t = starsByPerson[p.id] || 0, wk = fhrwWeek(p.id), n = fhrwNext(p.id, t);
+    const src = [['Chores', wk.chores], ['Routines', wk.routines], ['Habits', wk.habits]].filter(function(x){ return x[1]; });
+    const prev = rewardMilestones.filter(function(m){ return (!m.who || m.who === p.id) && m.threshold <= t; }).reduce(function(a, m){ return Math.max(a, m.threshold); }, 0);
+    root.appendChild(h('div', { class:'fhch-pc fhrw-card', style:'--pc:' + fhchHue(p.id), 'data-person':p.id },
+      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big', text:fhRewardIcon(p.id) + ' ' + t })),
+      h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No stars yet this week' })),
+      n ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * (t - prev) / Math.max(1, n.threshold - prev)) + '%' })) : null,
+      h('small', { text:n ? 'Next: ' + n.text + ' at ' + n.threshold + ' (' + (n.threshold - t) + ' to go)' : rewardMilestones.length ? 'Every prize reached 🎉' : 'No prizes set yet' })));
+  });
+  if((starsByPerson.family || 0) > 0 || chores.some(function(c){ return c.assignedTo === 'anyone'; })){
+    root.appendChild(h('div', { class:'fhch-pc fhrw-card fhrw-pool', 'data-person':'family' },
+      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:'Family pool' }), h('span', { class:'fhch-big', text:fhRewardIcon('') + ' ' + (starsByPerson.family || 0) })),
+      h('small', { text:'Anyone jobs land here when nobody says who did them.' })));
+  }
+  if(not.length) root.appendChild(h('p', { class:'fhch-note', text:fhchAnd(not.map(function(p){ return p.name; })) + (not.length === 1 ? ' isn’t' : ' aren’t') + ' collecting stars.' }));
+  if(!coll.length) root.appendChild(h('p', { class:'fhch-empty', text:'Nobody is collecting stars yet.' }));
+  if(kid) return;
+  // prizes
+  root.appendChild(h('div', { class:'fhch-lbl', text:'Prizes' }));
+  const sorted = rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; });
+  if(!sorted.length) root.appendChild(h('p', { class:'fhch-note', text:'No prizes yet. Add one, like a film night at 20.' }));
+  sorted.forEach(function(m){
+    root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-prize':m.id, onClick:function(){ fhrwPrize(m); } },
+      h('span', { class:'fhrw-th', text:String(m.threshold) }), h('span', { class:'fhch-t' }, h('b', { text:m.text }), h('small', { text:m.who && personById(m.who) ? personById(m.who).name + ' only' : 'Everyone' })),
+      h('span', { class:'fhch-chev', 'aria-hidden':'true', text:'›' })));
+  });
+  root.appendChild(h('button', { type:'button', class:'btn secondary fhrw-add', id:'fhrwAddPrize', text:'＋ Add a prize', onClick:function(){ fhrwPrize(null); } }));
+  // who collects, and with what picture
+  root.appendChild(h('div', { class:'fhch-lbl', text:'Who collects stars' }));
+  people.forEach(function(p){
+    root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-collect':p.id, onClick:function(){ fhrwPic(p); } },
+      fhchAv(p.id), h('span', { class:'fhch-t' }, h('b', { text:p.name }), h('small', { text:p.noStars ? 'Not collecting' : 'Collects ' + fhRewardIcon(p.id) + ' ' + ((p.reward && p.reward.label) || rewardConfig.label).toLowerCase() })),
+      h('span', { class:'fhch-chev', text:'Change' })));
+  });
+}
+function fhrwPrize(m){
+  const f = { threshold:m ? m.threshold : '', text:m ? m.text : '', who:m ? (m.who || '') : '' };
+  const th = h('input', { class:'fhe-in fhrw-thin', id:'fhrwTh', type:'number', min:'1', max:'9999', value:String(f.threshold), placeholder:'20', 'aria-label':'Stars needed' });
+  const tx = h('input', { class:'fhe-in', id:'fhrwText', value:f.text, maxlength:'60', placeholder:'e.g. Film night', 'aria-label':'Prize' });
+  const err = h('div', { class:'fhe-err' });
+  const whoBox = h('div', {});
+  const draw = function(){ whoBox.innerHTML = ''; whoBox.appendChild(h('div', { class:'ob-chips' }, [['', 'Everyone']].concat(people.map(function(p){ return [p.id, p.name]; })).map(function(x){
+    return h('button', { type:'button', class:'ob-chip' + (f.who === x[0] ? ' on' : ''), 'aria-pressed':f.who === x[0] ? 'true' : 'false', 'data-person':x[0] || 'all', text:x[1], onClick:function(){ f.who = x[0]; draw(); } }); }))); };
+  draw();
+  fhchSheet('fhrwPrizeEd', m ? 'Edit prize' : 'Add a prize', h('div', {},
+    h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Prize' }), tx),
+    h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Stars needed' }), th),
+    h('p', { class:'fhe-lab', text:'For' }), whoBox, err), function(close){ return [
+      m ? h('button', { type:'button', class:'btn secondary', id:'fhrwDel', text:'Delete', onClick:function(){ rewardMilestones = rewardMilestones.filter(function(x){ return x.id !== m.id; }); saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } }) : null,
+      h('button', { type:'button', class:'btn', id:'fhrwSave', text:'Save', onClick:function(){
+        const n = parseInt(th.value, 10), t = tx.value.trim();
+        if(!t){ err.textContent = 'What’s the prize?'; return; }
+        if(!n || n < 1){ err.textContent = 'How many stars does it take?'; return; }
+        const rec = m || { id:'rw_' + Date.now() };
+        rec.threshold = n; rec.text = t; if(f.who) rec.who = f.who; else delete rec.who;
+        if(!m) rewardMilestones.push(rec);
+        saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } })]; });
+}
+function fhrwPic(p){
+  const cur = p.noStars ? 'none' : ((p.reward && p.reward.presetId) || rewardConfig.presetId);
+  const grid = h('div', { class:'fhrw-pics' });
+  REWARD_PRESETS.concat([{ id:'none', icon:'🚫', label:'Not collecting' }]).forEach(function(r){
+    grid.appendChild(h('button', { type:'button', class:'fhrw-pic' + (cur === r.id ? ' on' : ''), 'aria-pressed':cur === r.id ? 'true' : 'false', 'data-pic':r.id,
+      onClick:function(){
+        if(r.id === 'none') p.noStars = true; else { delete p.noStars; p.reward = { presetId:r.id, icon:r.icon, label:r.label }; }
+        saveKey(KEYS.people, people); const m = document.getElementById('fhrwPicEd'); if(m) m.remove(); render(); } },
+      h('span', { class:'fhrw-picicon', 'aria-hidden':'true', text:r.icon }), h('span', { text:r.label })));
+  });
+  fhchSheet('fhrwPicEd', p.name + ' collects', h('div', {}, h('p', { class:'fhch-note', text:'Their stars look like this on every screen. Not collecting hides their stars.' }), grid), function(){ return []; });
+}
+
 const __ready = init();
 
   return {
     ready: __ready,
+    renderPage: fhchRender,
+    renderRewards: fhrwRender,
+    dayList: fhchDayList,
+    board: fhchBoard,
+    personSheet: fhchPersonSheet,
+    weekStars: fhrwWeek,
+    nextPrize: fhrwNext,
+    people: function(){ return people.slice(); },
+    addPerson: function(name, role){ const n = (name || '').trim(); if(!n) return null; const id = 'p_' + Date.now().toString(36); people.push({ id:id, name:n, role:role || 'other', hue:PRESET_HUES[people.length % PRESET_HUES.length] }); saveKey(KEYS.people, people); render(); return id; },
+    removePerson: function(id){ deletePerson(id); },
     getCounts: function(){ return { people: people.length, chores: chores.length, rooms: categories.length }; },
-    choresForDay: function(date){ const dayIdx = (date.getDay()+6)%7, iso = toISODate(date), parity = parityForMonday(mondayOf(date)), ym = ymKey(date), dom = date.getDate(); return chores.filter(c=> c.freq==='daily' || (c.freq==='weekly' && c.weekday===dayIdx) || (c.freq==='fortnightly' && c.weekday===dayIdx && (c.parity||'A')===parity) || (c.freq==='monthly' && (dom===1 || dom===20))).map(c=>{ const key = c.id + '::' + (c.freq==='monthly' ? ym : iso); const who = resolveAssigneeForKey(c, date, key); return { id:c.id, name:c.name, freq:c.freq, who: who && who !== 'anyone' && personById(who) ? who : '', done: (completions[key]||0) >= (c.timesPerDay||1) }; }); },
+    choresForDay: function(date){ const dayIdx = (date.getDay()+6)%7, iso = toISODate(date), parity = parityForMonday(mondayOf(date)), ym = ymKey(date), dom = date.getDate(); return chores.filter(c=> c.freq==='daily' || (c.freq==='weekly' && c.weekday===dayIdx) || (c.freq==='fortnightly' && c.weekday===dayIdx && (c.parity||'A')===parity) || (c.freq==='monthly' && (dom===1 || dom===20))).filter(c=>!fhchSkipped(c.id + '::' + (c.freq==='monthly' ? ym : iso))).map(c=>{ const key = c.id + '::' + (c.freq==='monthly' ? ym : iso); const who = resolveAssigneeForKey(c, date, key); return { id:c.id, name:c.name, freq:c.freq, who: who && who !== 'anyone' && personById(who) ? who : '', done: (completions[key]||0) >= (c.timesPerDay||1) }; }); },
     addStars: function(id, n){ if(id && n) adjustStars(id, n); },
     setPersonFields: function(id, f){ const p = people.find(x=>x.id===id); if(!p) return false; Object.keys(f).forEach(k=>{ if(f[k] === undefined) delete p[k]; else p[k] = f[k]; }); saveKey(KEYS.people, people); return true; },
     buildDayBlock: buildDayBlock,
@@ -10144,8 +11330,9 @@ function shStartOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
 function shSameDate(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 
 /* ==================== Meal + chore combined day building ==================== */
-function buildMealCard(date){
+function buildMealCard(date, mcOpts){
   const info = MealApp.getDayDisplay(date);
+  const fhSideNames = (mcOpts && mcOpts.noExtras) ? (info.sideNames || []) : FHAddOns.sideNames(date, info);
   const card = document.createElement('div');
   card.className = 'meal-card';
   const catMeta = info.catId ? MealApp.getCategoryMeta(info.catId) : null;
@@ -10171,10 +11358,10 @@ function buildMealCard(date){
     const w = document.createElement('div'); w.className = 'meal-noing'; w.textContent = '⚠️ No ingredients added — not on your shopping list.';
     card.appendChild(w);
   }
-  if(info.sideNames && info.sideNames.length){
+  if(fhSideNames.length){
     const sides = document.createElement('div');
     sides.className = 'meal-sides';
-    sides.textContent = info.sideNames.join(' · ');
+    sides.textContent = fhSideNames.join(' · ');
     card.appendChild(sides);
   }
   card.appendChild(FHDays.tag(info, date));
@@ -11453,9 +12640,9 @@ const FHEvents = (function(){
     let all = own;
     if(typeof FHCal !== 'undefined' && FHCal.forDay){ all = own.concat(FHCal.forDay(date).filter(function(ev){ return isFor(ev, person); })); }
     if(typeof FHBins !== 'undefined'){ const bin = FHBins.event(date); if(bin) all = all.concat([bin]); }
-    if(typeof FHOcc !== 'undefined') all = all.concat(FHOcc.events(date));
-    if(typeof FHPaper !== 'undefined') all = all.concat(FHPaper.events(date));
-    if(typeof FHRoutines !== 'undefined') all = all.concat(FHRoutines.events(date));
+    if(typeof FHOcc !== 'undefined' && Feature.on('occasions')) all = all.concat(FHOcc.events(date));
+    if(typeof FHPaper !== 'undefined' && Feature.on('paperwork')) all = all.concat(FHPaper.events(date));
+    if(typeof FHRoutines !== 'undefined' && Feature.on('routines')) all = all.concat(FHRoutines.events(date));
     return all.sort(function(a, b){ return (a.allDay ? 0 : 1) - (b.allDay ? 0 : 1) || sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)); });
   }
   function refresh(){ try{ refreshCurrentPage(); }catch(e){} }
@@ -11992,15 +13179,17 @@ function fhDayDash(date, opts){
     h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Plans' + (n ? ' · ' + n : '') }), acts), body));
   // ---- bring everyone in (today only, while the plan is with one person)
   // ---- or, once that's done or put off, add your own calendar (one prompt at a time)
+  // ---- then whatever setup left for later (FHStart, ob_start.js)
   { const sc = typeof FHShare !== 'undefined' ? FHShare.todayCard(date) : null;
-    if(sc) nodes.prompts = sc;
-    else if(typeof FHCal !== 'undefined') nodes.prompts = FHCal.todayCard(date); }
+    const pr = sc || (typeof FHCal !== 'undefined' ? FHCal.todayCard(date) : null);
+    const gs = typeof FHStart !== 'undefined' ? FHStart.card(date) : null;
+    nodes.prompts = pr && gs ? h('div', { class:'fhst-wrap' }, pr, gs) : (pr || gs); }
   // ---- birthdays & occasions coming up (today only)
-  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = FHOcc.todayCard(date); if(typeof FHPaper !== 'undefined') oc = FHPaper.todayCard(date, oc); nodes.coming = oc; }
+  if(iso === FHEvents.iso(new Date()) && typeof FHOcc !== 'undefined'){ let oc = Feature.on('occasions') ? FHOcc.todayCard(date) : null; if(typeof FHPaper !== 'undefined' && Feature.on('paperwork')) oc = FHPaper.todayCard(date, oc); nodes.coming = oc; }
   // ---- dinner
   let dinfo = null;
   if(Feature.on('meals')){
-    const card = buildMealCard(date);
+    const card = buildMealCard(date, { noExtras:!FHLock.isLocked() });   // unlocked, the extras show as chips below
     let info = null; try{ info = MealApp.getDayDisplay(date); }catch(e){}
     dinfo = info;
     const ing = info && info.mealId && FHRecipes.ingLines ? FHRecipes.ingLines(info.mealId, date) : [];
@@ -12047,7 +13236,7 @@ function fhDashFaces(date, nodes, d){
   if(nodes.dinner){
     const i = d.dinner || {}, cook = typeof FHShare !== 'undefined' ? FHShare.cookFor(FHEvents.iso(date)) : '';
     const cp = cook ? fhDashPeople().find(function(p){ return p.id === cook; }) : null;
-    F.dinner = { node:nodes.dinner, value:i.mealName || 'Not planned', sub:cp ? cp.name + '’s cooking' : (i.sideNames && i.sideNames.length ? 'With ' + i.sideNames.join(', ') : '') };
+    F.dinner = { node:nodes.dinner, value:i.mealName || 'Not planned', sub:cp ? cp.name + '’s cooking' : (FHAddOns.sideNames(date, i).length ? 'With ' + FHAddOns.sideNames(date, i).join(', ') : '') };
   }
   // chores: how many left (this person's, when the name chips pick one)
   if(nodes.chores && ChoreApp.choresForDay){
@@ -12071,7 +13260,7 @@ function fhDashFaces(date, nodes, d){
     try{ const pw = FHPaper.needs(date); if(pw.length && !first){ first = pw[0].kind === 'other' ? (pw[0].title || 'Paperwork') : FHPaper.fullName(pw[0]); } n += pw.length; }catch(e){}
     F.coming = { node:nodes.coming || null, count:n || '', value:n ? first : 'All clear', sub:n > 1 ? '+' + (n - 1) + ' more' : (n ? when : 'Nothing to get ready for') };
   }
-  if(typeof FHRoutines !== 'undefined'){
+  if(typeof FHRoutines !== 'undefined' && Feature.on('routines')){
     let only = d.person && (fhDashPeople().find(function(p){ return p.id === d.person; }) || {}).role === 'child' ? d.person : '';
     if(!only){ try{ const me = fhDashPeople().find(function(p){ return p.id === FHPush.prefs().person; }); if(me && me.role === 'child') only = me.id; }catch(e){} }
     if(FHLayout.isOn('today', 'routines')) F.routines = FHRoutines.todayFace(date, only);
@@ -12088,7 +13277,7 @@ function fhDashNextDinner(date){
   const title = (today ? 'Tomorrow' : nd.toLocaleDateString(undefined, { weekday:'long' })) + '’s dinner';
   return h('section', { class:'fhd-sec fhd-next' }, h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:title })),
     h('div', { class:'fhd-next-m' }, h('b', { text:info && info.mealName ? info.mealName : 'Nothing planned yet' }),
-      info && info.sideNames && info.sideNames.length ? h('small', { text:'With ' + info.sideNames.join(', ') }) : null));
+      info && FHAddOns.sideNames(nd, info).length ? h('small', { text:'With ' + FHAddOns.sideNames(nd, info).join(', ') }) : null));
 }
 /* the shopping list in a line: items left and the next shop day */
 function fhDashShopping(date){
@@ -12517,7 +13706,7 @@ const FHLayout = (function(){
   function openFace(b, f){
     if(document.getElementById('fhlyFace') || !f.node) return;
     const close = () => { const m = document.getElementById('fhlyFace'); if(m) m.remove(); try{ refreshCurrentPage(); }catch(e){} };
-    const m = h('div', { id:'fhlyFace', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+    const m = h('div', { id:'fhlyFace', class:'fhm-back', 'data-block':b.id, onClick:e => { if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':f.title || b.name },
         h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:(f.icon || b.icon) + ' ' + (f.title || b.name) }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhly-body fhly-sheetbody' }, f.node)));
@@ -12531,6 +13720,9 @@ const FHLayout = (function(){
       const f = faces[b.id]; if(!b.on || !f) return;
       if(b.kind === 'row' || !f.node && b.size !== 'tile'){ grid = null; if(f.node){ f.node.setAttribute('data-block', b.id); wrap.appendChild(f.node); } return; }
       if(b.size === 'tile' && b.kind !== 'notile'){
+        // its sheet is open (a chore ticked in it redraws the page): show the fresh block there
+        const open = document.getElementById('fhlyFace');
+        if(open && open.getAttribute('data-block') === b.id && f.node){ const body = open.querySelector('.fhly-sheetbody'); if(body){ body.innerHTML = ''; body.appendChild(f.node); } }
         if(!grid){ grid = h('div', { class:'fhly-tiles' }); wrap.appendChild(grid); }
         grid.appendChild(tile(b, f)); return;
       }
@@ -13170,7 +14362,7 @@ const FHRoutines = (function(){
         saveData(dd); close(); } })]);
   }
 
-  return { KEY, LOG, TEMPLATES, data, log, activeOn, itemsFor, kitFor, stateOf, tickStep, setCount, approve, canTick, current, todayFace, habitsFace, kitchenNode,
+  return { KEY, LOG, TEMPLATES, data, log, activeOn, itemsFor, kitFor, stateOf, tickStep, setCount, approve, canTick, current, todayFace, habitsFace, kitchenNode, todayNode, habitsNode,
     events, pushItems, kitLines, render, editor, breakEditor, kitEditor, startAt };
 })();
 
@@ -13356,7 +14548,36 @@ const FHBook = (function(){
   /* Settings > Your household: household size, shop day and the freshness check, from the old Meal plan panel */
   function settingsCard(){
     if(!houseBody) return null;
-    return h('div', { class:'st-card', id:'stMeals' }, h('h3', { text:'Meals and shopping' }), houseBody);
+    return h('div', { class:'st-card', id:'stMeals' }, h('h3', { text:'Meals and shopping' }), houseBody, portionsBlock());
+  }
+  /* Portion sizes: meat & fish, and tofu & other plant proteins, per person (MealApp.setPortionSizes) */
+  function portionsBlock(){
+    const wrap = h('div', { class:'fhpz', id:'fhPortions' });
+    const imp = (() => { try{ return FHLocale.imperial(); }catch(e){ return false; } })();
+    const toShow = g => imp ? Math.round(g / 28.3495 * 2) / 2 : g, fromShow = v => imp ? Math.round(v * 28.3495 / 5) * 5 : Math.round(v);
+    // a change re-draws Settings: bring this card up to date if it's still there, and say what happened on whichever is
+    const after = (n, word) => { if(wrap.isConnected) draw(); const el = document.getElementById('fhpzMsg'); if(el && n) el.textContent = word + ' ' + n + (n === 1 ? ' meal.' : ' meals.'); };
+    const draw = msg => {
+      const z = MealApp.getPortionSizes(), reach = MealApp.portionReach();
+      wrap.innerHTML = '';
+      wrap.appendChild(h('p', { class:'fhpz-h', text:'Portion sizes' }));
+      wrap.appendChild(h('p', { class:'fhpz-sub', text:'Off: each recipe’s own amount, scaled to your household. On: the same amount for each person, in every meal that uses it.' }));
+      [['meat', '🍗 Meat & fish', 125, 'Chicken, mince, steak, fish, prawns… (not bacon, ham or chorizo, or a roasting joint)'],
+       ['plant', '🌱 Tofu, paneer & halloumi', 100, 'Also tempeh, Quorn and plant-based mince or pieces']].forEach(([k, label, dflt, hint]) => {
+        const on = z[k] > 0;
+        const num = h('input', { type:'number', class:'ob-input ob-num fhpz-num', id:'fhpz-' + k, min:imp ? 1 : 25, max:imp ? 20 : 500, step:imp ? 0.5 : 5, value:toShow(on ? z[k] : (z.last[k] || dflt)), disabled:locked() || !on,
+          'aria-label':label + ' per person', onChange:e => { const v = fromShow(parseFloat(e.target.value) || 0); if(v > 0) after(MealApp.setPortionSizes({ [k]:v }), 'Updated'); } });
+        wrap.appendChild(h('div', { class:'fhpz-row' + (on ? ' on' : '') },
+          h('label', { class:'ob-check fhpz-on' }, h('input', { type:'checkbox', id:'fhpzOn-' + k, checked:on, disabled:locked(), onChange:e => {
+            const on2 = e.target.checked;
+            after(MealApp.setPortionSizes({ [k]:on2 ? (z[k] || z.last[k] || dflt) : 0 }), on2 ? 'Set in' : 'Back to the recipe in'); } }),
+            h('span', {}, h('b', { text:label }), h('small', { text:hint + ' · in ' + reach[k] + (reach[k] === 1 ? ' meal' : ' meals') }))),
+          h('span', { class:'fhpz-amt' }, num, h('span', { text:(imp ? 'oz' : 'g') + ' each' }))));
+      });
+      wrap.appendChild(h('p', { class:'fhpz-note', id:'fhpzMsg', role:'status', text:msg || 'To give one ingredient its own amount, use Recipes › Manage › Protein portions.' }));
+    };
+    draw('');
+    return wrap;
   }
   /* the Meal plan's line at the top: who it cooks for, the shop day, and where the recipes went */
   function planInfo(){
@@ -13934,7 +15155,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Stars & rewards', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -13942,6 +15163,8 @@ function refreshPage(pageId){
   else if(pageId==='tomorrow') renderTomorrowPage();
   else if(pageId==='calendar') renderCalendarPage();
   else if(pageId==='settings') renderSettingsPage();
+  else if(pageId==='chores') ChoreApp.renderPage();
+  else if(pageId==='rewards') ChoreApp.renderRewards(document.getElementById('rewardsContent'));
   else if(pageId==='tasklists') ChoreApp.renderFrequencyPage(document.getElementById('taskListsContent'));
   else if(pageId==='shopping') MealApp.renderShoppingListPage(document.getElementById('shoppingListContent'));
   else if(pageId==='essentials') FHEss.render(document.getElementById('essentialsContent'));
@@ -13968,13 +15191,15 @@ function fhSetChoresOpen(open){
 function refreshCurrentPage(){ refreshPage(currentPage); }
 
 function showPage(pageId){
+  if(pageId==='tasklists') pageId = 'chores';
+  if(pageId==='mealplan') setTimeout(function(){ try{ FHPlanTools.mount(); }catch(e){} }, 0);
   currentPage = pageId;
   try{ if(typeof FHSync !== 'undefined') FHSync.nudge(); }catch(e){}
-  if(pageId==='chores' || pageId==='tasklists') fhSetChoresOpen(true);
+
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const target = document.getElementById('page-'+pageId);
   if(target) target.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(b=> b.classList.toggle('active', b.dataset.page===pageId));
+  document.querySelectorAll('.nav-item').forEach(b=> b.classList.toggle('active', b.dataset.page===(pageId==='essentials' ? 'shopping' : pageId)));
   const titleEl = document.getElementById('topbarTitle');
   if(titleEl) titleEl.textContent = PAGE_TITLES[pageId] || '';
   closeDrawer();
@@ -14096,6 +15321,7 @@ const OB_DIETS = [
 const OB_VEGETARIAN = { id:'vegetarian', label:'We’re a vegetarian household', test:p=>p.meat };
 const OB_VEGAN = { id:'vegan', label:'We’re a vegan household', test:p=>!p.vegan };
 const OB_HOUSE = [OB_VEGETARIAN, OB_VEGAN];
+const OB_EAT_SOME = ['chicken', 'beef', 'pork', 'lamb', 'fish'];   // setup's "Some things" (nuts belong to a person's food needs now)
 function obToggleHouse(diets, id){ const on = diets.indexOf(id) >= 0; const out = diets.filter(d=> d !== 'vegetarian' && d !== 'vegan'); if(!on) out.push(id); return out; }
 // Work out what protein(s) a catalog meal is built on from its meat & fish lines.
 function obMealInfo(m){
@@ -14325,13 +15551,15 @@ function obGeneratePlan(S, seed){
   const used = {}; pool.forEach(id=>used[id]=0);
   const fillOk = (id,d)=>{ const r = restricted[id]; return !r || (r.every === 0 && r.day === d); };
   const lastIdx = {}; let slot = 0, prevProt = null, prevMeal = null;
+  const seq = [];   // main protein night by night, so any 7 days in a row (whatever the shop day) stays mixed
+  const protShare = {}, protUsed = {}; pool.forEach(id=>{ const mp = info[id].mainProtein; protShare[mp] = (protShare[mp] || 0) + 1; });
   for(let w=1; w<=N; w++){
     for(let d=0; d<7; d++){
       const fx = fixed[w][d];
       if(fx){                                           // a fixed night always wins, even on a night you normally skip
-        plan[w].push(fx); used[fx] = (used[fx]||0)+1; lastIdx[fx] = slot; prevProt = info[fx].mainProtein; prevMeal = fx; slot++; continue;
+        plan[w].push(fx); used[fx] = (used[fx]||0)+1; lastIdx[fx] = slot; prevProt = info[fx].mainProtein; prevMeal = fx; seq.push(prevProt); protUsed[prevProt] = (protUsed[prevProt] || 0) + 1; slot++; continue;
       }
-      if(own || !S.cookNights[d]){ plan[w].push(null); prevProt = null; prevMeal = null; slot++; continue; }
+      if(own || !S.cookNights[d]){ plan[w].push(null); prevProt = null; prevMeal = null; seq.push(null); slot++; continue; }
       const isLast = (w===N && d===6);
       const firstMeal = isLast ? plan[1][0] : null;      // the rotation wraps round, so the last night must not match the first
       let cands = pool.filter(id=> id!==prevMeal && id!==firstMeal && fillOk(id,d));
@@ -14342,9 +15570,18 @@ function obGeneratePlan(S, seed){
         let sc = used[id]*1000 + rng()*5;   // every ticked meal is used once before any repeats
         if(lastIdx[id] !== undefined && slot - lastIdx[id] < 5) sc += 100;
         if(prevProt && info[id].mainProtein === prevProt && prevProt !== 'veg') sc += 30;
+        // spread each meat or fish evenly through the plan, in proportion to how many of the ticked meals use it, so any
+        // 7 nights in a row (a shop week, whatever the shop day) get a fair mix rather than a run of chicken
+        const mp = info[id].mainProtein;
+        if(mp && mp !== 'veg'){
+          const share = (protShare[mp] || 0) / pool.length, ahead = (protUsed[mp] || 0) + 1 - share * (seq.length + 1);
+          sc += Math.max(0, ahead) * 60;
+          const k = seq.slice(-6).filter(x=>x===mp).length, allow = Math.max(1, Math.ceil(7 * share));
+          if(k + 1 > allow) sc += (k + 1 - allow) * 80;
+        }
         if(sc < bestScore){ bestScore = sc; best = id; }
       });
-      plan[w].push(best); used[best]++; lastIdx[best] = slot; prevProt = info[best].mainProtein; prevMeal = best; slot++;
+      plan[w].push(best); used[best]++; lastIdx[best] = slot; prevProt = info[best].mainProtein; prevMeal = best; seq.push(prevProt); protUsed[prevProt] = (protUsed[prevProt] || 0) + 1; slot++;
     }
   }
   for(let w=N+1; w<=4; w++) plan[w] = plan[((w-1)%N)+1].slice();   // short rotations simply repeat
@@ -14399,18 +15636,6 @@ function obApply(S){
     const info = obCatalogInfo();
     const allowedIds = {}; obAllowedMeals(S.diets).forEach(p=>allowedIds[p.id]=true);
     info.forEach(p=>{ if(!p.custom && !allowedIds[p.id]) hidden.push(p.id); });
-    if(S.portionOn && S.portionG > 0){
-      MealApp.getCatalog().forEach(m=>{
-        let touched = false;
-        const lines = (m.ingredients||[]).map(l=>{
-          if(l.section==='meat-fish' && l.unit==='g' && /chicken|beef|mince|pork|lamb|salmon|fish|steak|turkey/i.test(l.name)){
-            touched = true; portionNames[l.name]=true; return Object.assign({}, l, { qty:S.portionG, perPerson:true });
-          }
-          return l;
-        });
-        if(touched) overrides[m.id] = { ingredients: lines };
-      });
-    }
   }
   const planObj = {}; [1,2,3,4].forEach(w=>{ planObj[w] = (planIds ? planIds[w] : empty[w].map(()=>null)).map(id=>({ meal:id||null, sides:[] })); });
   fhSaveJSON('brick-bites-plan-v1', planObj); obSaveMealWay(S);
@@ -14430,14 +15655,40 @@ function obApply(S){
   fhRawSet('brick-bites-expiry-enabled-v1', String(!!S.expiryOn));
   fhSaveJSON('brick-bites-shopping-checked-v1', {});
   fhSaveJSON('brick-bites-meat-expiry-v1', {});
-  fhSaveJSON('brick-bites-global-portions-v1', (F.meals && S.portionOn && S.portionG>0) ? Object.keys(portionNames).sort().map(n=>({name:n, qty:S.portionG, unit:'g'})) : []);
+  fhSaveJSON('brick-bites-global-portions-v1', []);
+  fhSaveJSON('brick-bites-portion-sizes-v1', (F.meals && S.portionOn && S.portionG>0) ? { meat:S.portionG, plant:S.portionG } : { meat:0, plant:0 });
 
   if(F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
-  Feature.markSetUp({ chores:!!F.chores, meals:!!F.meals, shopping:!!F.shopping, essentials:!!(F.shopping && F.essentials), tasks:F.tasks !== false, rewards:!!(F.chores && F.rewards) });
+  Feature.markSetUp({ chores:!!F.chores, meals:!!F.meals, shopping:!!F.shopping, essentials:!!(F.shopping && F.essentials), tasks:F.tasks !== false, rewards:!!(F.chores && F.rewards),
+    routines:F.routines !== false, occasions:F.occasions !== false, paperwork:F.paperwork !== false });
+  obApplyExtras(S, people);
   try{ fhRawSet('family-hub-calview-v1', (S.calView === 'shopweek' && !F.shopping) ? 'week' : (S.calView || 'week')); }catch(e){}
   fhRawRemove(FH_DRAFT_KEY);
   try{ sessionStorage.setItem(FH_JUST_KEY, '1'); }catch(e){}
   location.reload();
+}
+
+/* setup's "Anything else?": a school-morning routine, bin day, birthdays; passports go on the getting-started list */
+function obApplyExtras(S, people){
+  const X = S.extra || {}, F = S.features;
+  const uid = p=> p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  try{
+    const kids = people.filter(p=>p.role==='child').map(p=>p.id);
+    const t = (typeof FHRoutines !== 'undefined') && FHRoutines.TEMPLATES.find(x=>x.id==='morning');
+    if(X.morning && F.routines !== false && kids.length && t){
+      fhSaveJSON('family-hub-routines-v1', { items:[{ id:uid('r'), kind:'routine', name:t.name, who:kids, days:t.days, by:t.by, until:t.until,
+        steps:t.steps.map(x=>({ id:uid('s'), t:x[0], min:x[1], kit:x[2] ? 1 : 0 })), remind:{ start:1, late:1, parents:1 }, stars:(F.rewards && F.chores) ? 2 : 0, ticks:'child' }], breaks:[], kit:{} });
+    }
+  }catch(e){}
+  try{ if(X.bins) fhSaveJSON('family-hub-bins-v1', { on:true, day:+X.binDay || 0, alt:!!X.binAlt, a:'General waste', b:'Recycling', aWeek:fhMondayISO() }); }catch(e){}
+  try{
+    if(X.bdays && F.occasions !== false && typeof FHOcc !== 'undefined'){
+      const add = (name, v)=>{ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); if(name && m) FHOcc.addFrom({ kind:'birthday', title:name, date:m[2] + '-' + m[3], year:m[1] }); };
+      S.people.forEach((p, i)=>add(people[i].name, (X.bd || {})[p.id]));
+      (X.more || []).forEach(r=>add(String(r.name || '').trim(), r.date));
+    }
+  }catch(e){}
+  try{ if(X.paper && F.paperwork !== false){ const st = JSON.parse(fhRawGet('family-hub-start-v1') || '{}') || {}; st.paper = 1; fhRawSet('family-hub-start-v1', JSON.stringify(st)); } }catch(e){}
 }
 
 // Adds ONE feature (chores or meals) to a hub that was set up without it. Never touches people, ticks or the other feature's data.
@@ -14460,16 +15711,6 @@ function obApplyAddon(S, which){
     const info = obCatalogInfo(), hidden = [], overrides = {}, portionNames = {};
     const allowedIds = {}; obAllowedMeals(S.diets).forEach(p=>allowedIds[p.id]=true);
     info.forEach(p=>{ if(!p.custom && !allowedIds[p.id]) hidden.push(p.id); });
-    if(S.portionOn && S.portionG > 0){
-      MealApp.getCatalog().forEach(m=>{
-        let touched = false;
-        const lines = (m.ingredients||[]).map(l=>{
-          if(l.section==='meat-fish' && l.unit==='g' && /chicken|beef|mince|pork|lamb|salmon|fish|steak|turkey/i.test(l.name)){ touched = true; portionNames[l.name]=true; return Object.assign({}, l, { qty:S.portionG, perPerson:true }); }
-          return l;
-        });
-        if(touched) overrides[m.id] = { ingredients: lines };
-      });
-    }
     const planObj = {}; [1,2,3,4].forEach(w=>{ planObj[w] = planIds[w].map(id=>({ meal:id||null, sides:[] })); });
     fhSaveJSON('brick-bites-plan-v1', planObj); obSaveMealWay(S);
     const starter = {}; [1,2,3,4].forEach(w=>{ starter[w] = planObj[w].map(d=>d.meal); });
@@ -14483,7 +15724,8 @@ function obApplyAddon(S, which){
     fhRawSet('brick-bites-household-size-v1', String(Math.max(1, S.householdSize || S.people.length)));
     fhRawSet('brick-bites-shop-day-v1', String(S.shopDay));
     fhRawSet('brick-bites-expiry-enabled-v1', String(!!S.expiryOn));
-    fhSaveJSON('brick-bites-global-portions-v1', (S.portionOn && S.portionG>0) ? Object.keys(portionNames).sort().map(n=>({name:n, qty:S.portionG, unit:'g'})) : []);
+    fhSaveJSON('brick-bites-global-portions-v1', []);
+    fhSaveJSON('brick-bites-portion-sizes-v1', (S.portionOn && S.portionG>0) ? { meat:S.portionG, plant:S.portionG } : { meat:0, plant:0 });
     if(F.shopping && F.essentials){ FHEss.save({ ids: S.essIds || FHEss.defaults(S.pets, S.people), custom: S.essCustom || [] }); }
     Feature.markProvisioned('meals');
   }
@@ -14500,7 +15742,7 @@ const OBW = (function(){
   function freshState(){
     return {
       v:2, step:'welcome',
-      features:{ chores:true, meals:true, shopping:true, rewards:true, essentials:true, tasks:true }, calView:'week', essIds:null, essCustom:[],
+      features:{ chores:true, meals:true, shopping:true, rewards:true, essentials:true, tasks:true, routines:true, occasions:true, paperwork:true }, extra:null, eatSome:false, calView:'week', essIds:null, essCustom:[],
       people:[
         { id:'t1', name:'', role:'parent', age:null, hue:OB_PERSON_HUES[0] },
         { id:'t2', name:'', role:'parent', age:null, hue:OB_PERSON_HUES[1] },
@@ -14524,13 +15766,13 @@ const OBW = (function(){
     const F = S.features;
     if(mode === 'addon'){
       if(addon === 'chores') return ['rooms','chores'];
-      const a = ['meals','ownmeals']; if(F.shopping){ a.push('shopping'); if(F.essentials) a.push('essentials'); } return a;
+      const a = ['meals','food','mealpick']; if(F.shopping) a.push('shopping'); return a;
     }
     const st = ['welcome','region','features','people'];
     if(F.chores){ st.push('rooms'); st.push('chores'); }
-    if(F.meals){ st.push('meals'); st.push('ownmeals'); }
+    if(F.meals){ st.push('meals'); st.push('food'); st.push('mealpick'); }
     if(F.shopping) st.push('shopping');
-    if(F.shopping && F.essentials) st.push('essentials');
+    st.push('extras');
     st.push('review');
     return st;
   }
@@ -14669,11 +15911,14 @@ const OBW = (function(){
       h('input',{type:'checkbox',checked:!!F[key]&&!disabled,disabled:!!disabled,onChange:e=>{ F[key]=e.target.checked; error=''; render(); }}));
     return [ ...title('What do you want to use?','Switch on only what suits your family. You can change this any time in Settings.'),
       row('chores','🧹','Chore chart','Daily, weekly and monthly jobs shared between everyone.'),
-      row('rewards','⭐','Rewards','Stars (or anything you like) earned for chores, with prizes at milestones.', !F.chores, !F.chores?'Needs the chore chart':''),
+      row('rewards','⭐','Stars & rewards','Stars (or anything you like) for chores and routines, with prizes later.', !F.chores, !F.chores?'Needs the chore chart':''),
       row('meals','🍽️','Meal planner','A 4-week rolling plan with a library of family meals.'),
       row('shopping','🛒','Shopping list', F.meals ? 'Built automatically from your meal plan, scaled to your household. Add anything else by hand.' : 'A shopping list you fill yourself. Switch on the meal planner too and it fills itself from your meals.'),
       row('essentials','🧻','Household essentials','Tap when you run low on toilet roll, bin bags and the like. It goes on your next shop.', !F.shopping, !F.shopping?'Needs the shopping list':''),
       row('tasks','☑️','Tasks','One-off jobs like “return parcel”, with who and by when. Dated tasks show on the calendar.'),
+      row('routines','🌅','Routines & habits','School mornings, bedtime, reading practice: steps to tick, with stars if you like.'),
+      row('occasions','🎂','Birthdays & occasions','Birthdays and anniversaries with a reminder before, and gift ideas.'),
+      row('paperwork','📄','Paperwork','Passports, MOT, insurance and deals that end, with a reminder in time.'),
       h('p',{class:'ob-label',text:'When you open the calendar, show'}),
       h('div',{class:'ob-chips'}, [['3day','3 day'],['shopweek','Shop week'],['week','Week'],['month','Month']].filter(o=>o[0]!=='shopweek' || F.shopping).map(o=>chip(o[1], (S.calView||'week')===o[0], ()=>{ S.calView=o[0]; render(); }))),
       h('p',{class:'ob-hint',text:'You can change this any time in Settings, per device.'})
@@ -14766,8 +16011,8 @@ const OBW = (function(){
       out.push(box);
     });
     if(F.rewards){
-      out.push(h('p',{class:'ob-label',text:'Rewards'}));
-      out.push(h('p',{class:'ob-hint',text:'Everyone earns and keeps their own points — pick what each person collects.'}));
+      out.push(h('p',{class:'ob-label',text:'Stars'}));
+      out.push(h('p',{class:'ob-hint',text:'Everyone collects their own. Pick what each person’s stars look like.'}));
       const prow = h('div',{class:'ob-list'});
       S.people.forEach((p,i)=>{
         prow.appendChild(h('div',{class:'ob-person'},
@@ -14776,16 +16021,7 @@ const OBW = (function(){
           select(OB_REWARD_CHOICES.map(r=>[r.id,r.icon+' '+r.label]), S.personRewards[p.id]||'stars', v=>{ S.personRewards[p.id]=v; saveDraft(); })));
       });
       out.push(prow);
-      const ms = h('div',{class:'ob-list'});
-      S.milestones.forEach((m,i)=>{
-        ms.appendChild(h('div',{class:'ob-ms'},
-          h('input',{class:'ob-input ob-num',type:'number',min:1,value:m.threshold,onInput:e=>{ m.threshold=parseInt(e.target.value,10)||0; saveDraft(); }}),
-          h('input',{class:'ob-input',value:m.text,placeholder:'Prize',maxlength:40,onInput:e=>{ m.text=e.target.value; saveDraft(); }}),
-          h('button',{type:'button',class:'ob-x',text:'×',onClick:()=>{ S.milestones.splice(i,1); render(); }})));
-      });
-      out.push(h('p',{class:'ob-hint',text:'Prize at this many '+'points'+':'}));
-      out.push(ms);
-      out.push(h('button',{type:'button',class:'ob-btn ghost',text:'+ Add a prize',onClick:()=>{ S.milestones.push({threshold:100,text:''}); render(); }}));
+      out.push(h('p',{class:'ob-hint',text:'Prizes come later, on the Stars & rewards page, once everyone has a few stars.'}));
     }
     return out;
   }
@@ -14800,9 +16036,6 @@ const OBW = (function(){
     const cap = freeCap(), n = looseCount();
     const note = ()=>{ mealNote = ''; };
     const toggleDiet = id=>{ note(); const i = S.diets.indexOf(id); if(i>=0) S.diets.splice(i,1); else S.diets.push(id); S.selectedMeals = null; S.mealsTouched=false; render(); };
-    const diets = h('div',{class:'ob-chips'}, OB_DIETS.map(d=> chip(d.label, S.diets.indexOf(d.id)>=0, ()=>toggleDiet(d.id))));
-    const toggleHouse = id=>{ note(); S.diets = obToggleHouse(S.diets, id); S.selectedMeals = null; S.mealsTouched=false; render(); };
-    const vegHouse = h('div',{class:'ob-chips',style:'margin-top:8px'}, OB_HOUSE.map(d=> chip(d.label, S.diets.indexOf(d.id)>=0, ()=>toggleHouse(d.id))));
     const needWeeks = Math.max(1, ...(S.pins||[]).map(obPinNeedsWeeks));
     const weeksRow = h('div',{class:'ob-chips'}, [[1,'1 week','Same meals every week'],[2,'2 weeks','Alternating'],[4,'4 weeks','Most variety']].map(o=> chip(o[1]+' · '+o[2], S.weeks===o[0], ()=>{ note(); const w = Math.max(o[0], needWeeks); if(w!==o[0]) mealNote = 'Your fixed nights need at least '+needWeeks+' weeks, so the rotation stays at '+w+'.'; S.weeks = w; if(!S.mealsTouched) S.selectedMeals=null; render(); })));
     const nights = h('div',{class:'ob-chips'}, OB_DAY_SHORT.map((d,i)=> chip(d, S.cookNights[i], ()=>{ note(); S.cookNights[i]=!S.cookNights[i]; if(!S.mealsTouched) S.selectedMeals=null; render(); })));
@@ -14868,7 +16101,7 @@ const OBW = (function(){
       });
       lib.appendChild(h('div',{class:'ob-mg'}, h('div',{class:'ob-mg-h',text:g.emoji+' '+g.label}), grid));
     });
-    const noMatch = h('div',{class:'ob-hint',id:'obSearchNone',style:'display:none',text:'No meals match that search. Check the filters above, or add it as your own meal on the next step.'});
+    const noMatch = h('div',{class:'ob-hint',id:'obSearchNone',style:'display:none',text:'No meals match that search. Check the filters above. You can add your own recipes once you’re set up.'});
     const applySearch = ()=>{
       const q = mealQ.trim().toLowerCase(); let any = false;
       lib.querySelectorAll('.ob-mg').forEach(g=>{ let vis = 0;
@@ -14895,18 +16128,33 @@ const OBW = (function(){
       way('shuffle','Plan it for me','Tick meals your family eats. We build a rotation and mix things up.'),
       way('repeat','I’ll choose, on repeat','Pick the meal for each night of a 1, 2 or 4-week plan. It repeats until you change it.'),
       way('week','Week by week','Choose fresh each week. We remember what you make, so it’s quick.'));
-    const ownLine = h('p',{class:'ob-label',id:'obOwnCount',text:'Meals you make most · '+S.selectedMeals.length+' ticked'});
-    return [ ...title(own ? 'Your meals' : 'Meal suggestions', own ? 'How do you like to plan dinners? You can change this later on the Meal Plan.' : 'Tick the meals your family would eat. We’ll build a rotation from them, mixing proteins and avoiding repeats.'),
+    const ownLine = h('p',{class:'ob-label',id:'obOwnCount',text:S.selectedMeals.length+' ticked'});
+    if(S.step === 'meals') return [ ...title('How do you plan dinners?', 'Pick the way that suits you. You can change it later on the Meal plan.'),
       ways,
-      own ? h('button',{type:'button',class:'ob-btn ghost ob-jump',id:'obJumpMeals',text:'↓ Tick the meals you make most',onClick:()=>{ const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ behavior:'smooth', block:'start' }); }}) : null,
-      h('p',{class:'ob-label',text:'Food preferences and allergies'}),
-      h('p',{class:'ob-hint',text:'Tap anything you want left out — those meals disappear from the list.'}), diets, vegHouse,
-      needsBox(),
       wk ? null : h('p',{class:'ob-label',text:'How long is your meal rotation?'}), wk ? null : weeksRow,
       wk ? null : h('p',{class:'ob-hint',text: S.weeks===1 ? 'The same week repeats every week.' : S.weeks===2 ? 'Two different weeks, repeating.' : 'Four different weeks before anything repeats.'}),
       own ? null : h('p',{class:'ob-label',text:'Nights you cook'}), own ? null : nights,
       own ? null : h('p',{class:'ob-hint',text:'Other nights are left blank for leftovers or takeaway.'}),
-      own ? h('p',{class:'ob-hint',text:'Tick any you already cook (optional). They’ll be first when you choose a meal. Your own family recipes come on the next step. After setup, '+(wk ? 'the week starts empty: tap a day to choose its dinner.' : 'fill each night of your rotation from Today or the Meal Plan.')}) : null,
+      mealNote ? h('div',{class:'ob-hint',id:'obMealNote',style:'color:var(--accent-dark);font-weight:600',text:mealNote}) : null ];
+    if(S.step === 'food'){
+      const eat = S.diets.indexOf('vegan')>=0 ? 'vegan' : S.diets.indexOf('vegetarian')>=0 ? 'vegetarian' : (S.eatSome || S.diets.some(d=>OB_EAT_SOME.indexOf(d)>=0)) ? 'some' : 'all';
+      const pickEat = id=>{ note(); const legacy = S.diets.filter(d=>d==='nuts'); S.eatSome = id === 'some';
+        if(id === 'all') S.diets = legacy; else if(id === 'vegetarian' || id === 'vegan') S.diets = legacy.concat([id]); else S.diets = S.diets.filter(d=>d!=='vegetarian' && d!=='vegan');
+        S.selectedMeals = null; S.mealsTouched = false; render(); };
+      const opt = (id, t, sub)=> h('button',{type:'button',class:'ob-way'+(eat===id?' on':''),id:'obEat-'+id,'aria-pressed':eat===id?'true':'false',onClick:()=>pickEat(id)}, h('b',{text:t}), h('span',{text:sub}));
+      return [ ...title('What does your household eat?', 'This changes which meals we suggest. You can change it later in Settings.'),
+        h('div',{class:'ob-ways',id:'obEat'},
+          opt('all','We eat everything','Meat, fish and veggie meals'),
+          opt('vegetarian','Vegetarian','No meat or fish'),
+          opt('vegan','Vegan','No meat, fish, dairy, eggs or honey'),
+          opt('some','Some things','Pick what to leave out')),
+        eat === 'some' ? h('div',{class:'ob-chips',id:'obEatSome',style:'margin-top:10px'}, OB_DIETS.filter(d=>OB_EAT_SOME.indexOf(d.id)>=0).map(d=> chip(d.label, S.diets.indexOf(d.id)>=0, ()=>toggleDiet(d.id)))) : null,
+        h('p',{class:'ob-hint',id:'obEatCount',text: eat === 'all' ? 'All '+allowed.length+' meals to choose from.' : allowed.length+' meals to choose from.'}),
+        S.diets.indexOf('nuts')>=0 ? h('p',{class:'ob-hint',text:'Meals with nuts are left out too. A nut allergy is better added to the person who has it, below.'}) : null,
+        needsBox() ];
+    }
+    return [ ...title(own ? 'Meals you make most' : 'Meals you like', own ? 'Tick any you already cook (optional). They’ll be first when you choose a meal.' : 'Tick the meals your family would eat. We’ll build a rotation from them, mixing things up and avoiding repeats.'),
+      own ? h('p',{class:'ob-hint',text:'After setup, '+(wk ? 'the week starts empty: tap a day to choose its dinner.' : 'fill each night of your rotation from Today or the Meal plan.')}) : null,
       h('p',{class:'ob-label',text:'Filter the list'}),
       FHRecipes.filterBar(()=>render(), { inline:true }),
       pinList ? h('p',{class:'ob-label',text:'📌 Fixed nights'}) : null, pinList,
@@ -14917,73 +16165,32 @@ const OBW = (function(){
         h('button',{type:'button',class:'ob-btn ghost',text:'Select all',onClick:()=>{ note(); const f = fixedIds(); S.selectedMeals=Object.keys(f).concat(allowed.filter(p=>!f[p.id]).map(p=>p.id).sort((a,b)=>(S.customMeals.some(m=>m.id===b)?1:0)-(S.customMeals.some(m=>m.id===a)?1:0)).slice(0,freeCap())); S.mealsTouched=true; render(); }})),
       searchBox, noMatch,
       mealNote ? h('div',{class:'ob-hint',id:'obMealNote',style:'color:var(--accent-dark);font-weight:600',text:mealNote}) : null,
-      own ? null : warn, h('div',{class:'ob-hint',text:'Tip: tap 📌 on any meal to fix it to a night — e.g. roast chicken every other Sunday, pizza every Friday.'}),
+      own ? null : warn, h('div',{class:'ob-hint',text:'Tip: tap 📌 on any meal to fix it to a night, like roast chicken every other Sunday or pizza every Friday.'}),
       shown.length ? null : h('div',{class:'ob-hint',text:'No meals match these filters. Clear a filter to see more.'}), lib
-    ];
-  }
-  let ownW = null, ownName = '', ownLink = '', ownMsg = '';
-  function stepOwnMeals(){
-    ensureMeals();
-    if(!ownW) ownW = fhIngWidget({ serves: S.householdSize || S.people.length || 4 });
-    ownW.setServes(S.householdSize || S.people.length || 4);
-    const list = h('div',{class:'ob-list'});
-    S.customMeals.forEach(m=> list.appendChild(h('div',{class:'ob-own-item'},
-      h('span',{text:'★ '+m.name}), h('small',{text:m.ingredients.length+' ingredients'}),
-      h('button',{type:'button',class:'ob-x',text:'×','aria-label':'Remove',onClick:()=>{
-        S.customMeals = S.customMeals.filter(x=>x.id!==m.id); S.selectedMeals = S.selectedMeals.filter(id=>id!==m.id); render(); }}))));
-    const err = h('div',{class:'ob-error',style:'display:none',id:'obOwnErr'});
-    const nameIn = h('input',{class:'ob-input',style:'width:100%',id:'obOwnName',placeholder:'Meal name (e.g. Nan’s shepherd’s pie)',maxlength:40,value:ownName,onInput:e=>{ ownName = e.target.value; }});
-    const linkIn = h('input',{class:'ob-input',style:'width:100%;margin-top:8px',id:'obOwnLink',type:'url',placeholder:'Recipe link (optional)',value:ownLink,onInput:e=>{ ownLink = e.target.value; }});
-    const add = h('button',{type:'button',class:'ob-btn primary',id:'obOwnAdd',style:'margin-top:10px;width:100%',text:'Add this meal',onClick:()=>{
-      const name = ownName.trim(); const lines = ownW.getLines();
-      const fail = t=>{ err.textContent = t; err.style.display = 'block'; };
-      if(!name) return fail('Give the meal a name.');
-      if(!lines.length) return fail('Add at least one ingredient with an amount — that’s what builds your shopping list.');
-      const link = fhSafeLink(ownLink);
-      if(ownLink.trim() && !link) return fail('That link should start with http:// or https://');
-      const m = { id:'own-'+fhSlug(name)+'-'+Date.now().toString(36), name, ingredients:lines };
-      if(link) m.link = link;
-      S.customMeals.push(m); OB_EXTRA_MEALS = S.customMeals;
-      const allowed = ensureMeals();
-      ownMsg = '';
-      if(S.selectedMeals.length >= maxMeals()){
-        let idx = -1; for(let i=S.selectedMeals.length-1;i>=0;i--){ if(!S.customMeals.some(c=>c.id===S.selectedMeals[i])){ idx = i; break; } }
-        if(idx >= 0){ const nm = (obCatalogInfo().find(p=>p.id===S.selectedMeals[idx])||{}).name; S.selectedMeals.splice(idx,1,m.id); ownMsg = 'Added — swapped out '+nm+' to make room.'; }
-        else ownMsg = 'Added, but every cook night is already taken by your own meals.';
-      } else { S.selectedMeals.push(m.id); ownMsg = 'Added to your rotation.'; }
-      ownName = ''; ownLink = ''; ownW.reset(); render();
-    }});
-    return [ ...title('Your own meals','Add family favourites that aren’t in our list. Their ingredients go straight onto your shopping list. This step is optional.'),
-      list,
-      ownMsg ? h('div',{class:'ob-load',text:ownMsg}) : null,
-      h('p',{class:'ob-label',text:'Add a meal'}), nameIn, linkIn, ownW.el, err, add
     ];
   }
   function stepShopping(){
     if(S.householdSize == null) S.householdSize = S.people.length;
     const sh = [[0,'Monday'],[1,'Tuesday'],[2,'Wednesday'],[3,'Thursday'],[4,'Friday'],[5,'Saturday'],[6,'Sunday']];
-    return [ ...title('Shopping','Your shopping list covers the seven days from each shop day.'),
+    return [ ...title(S.features.essentials ? 'Shopping and essentials' : 'Shopping','Your shopping list covers the seven days from each shop day.'),
       h('p',{class:'ob-label',text:'Which day do you shop?'}),
       h('div',{class:'ob-chips'}, sh.map(d=>chip(d[1].slice(0,3), S.shopDay===d[0], ()=>{ S.shopDay=d[0]; render(); }))),
       ...(!S.features.meals ? [] : [
       h('p',{class:'ob-label',text:'How many people do you cook for?'}),
       h('div',{class:'ob-row'}, stepper(S.householdSize,1,12,v=>{ S.householdSize=v; render(); }), h('small',{class:'ob-hint',text:'Recipes are written for 4 and scale to this.'})),
-      h('p',{class:'ob-label',text:'Meat portions'}),
-      h('label',{class:'ob-check'}, h('input',{type:'checkbox',checked:S.portionOn,onChange:e=>{ S.portionOn=e.target.checked; render(); }}), h('span',{text:'Use a set amount of meat & fish per person'})),
-      S.portionOn ? (S.units==='imperial'
-        ? h('div',{class:'ob-row'}, h('input',{class:'ob-input ob-num',type:'number',min:2,max:14,step:0.5,value:Math.round(S.portionG/28.3495*2)/2,onInput:e=>{ S.portionG=Math.round((parseFloat(e.target.value)||0)*28.3495/5)*5; saveDraft(); }}), h('span',{text:'oz per person per meal'}))
-        : h('div',{class:'ob-row'}, h('input',{class:'ob-input ob-num',type:'number',min:50,max:400,step:5,value:S.portionG,onInput:e=>{ S.portionG=parseInt(e.target.value,10)||0; saveDraft(); }}), h('span',{text:'g per person per meal'}))) : h('p',{class:'ob-hint',text:'Off = recipe amounts scale with household size. 125g per person is a common starting point.'}),
       h('p',{class:'ob-label',text:'Freshness'}),
       h('label',{class:'ob-check'}, h('input',{type:'checkbox',checked:S.expiryOn,onChange:e=>{ S.expiryOn=e.target.checked; render(); }}), h('span',{text:'Warn me when meat or fish might go off before I cook it'}))
-      ])
+      ]),
+      ...(S.features.essentials ? essentialsBits() : [])
     ];
   }
 
-  function stepEssentials(){
+  function stepEssentials(){ return [ ...title('Household essentials','Tick what you want to keep an eye on.') ].concat(essentialsBits()); }
+  function essentialsBits(){
     if(!S.essIds) S.essIds = FHEss.defaults(S.pets, S.people);
     if(!S.essCustom) S.essCustom = [];
     const on = {}; S.essIds.forEach(id=>{ on[id] = 1; });
-    const out = [ ...title('Household essentials','Tick what you want to keep an eye on. Later, one tap on “running low” puts it on your next shop. Change this any time.') ];
+    const out = [ h('h3',{class:'ob-h3',id:'obEssHead',text:'🧻 Household essentials'}), h('p',{class:'ob-hint',text:'Tick what you want to keep an eye on. Later, one tap on “running low” puts it on your next shop.'}) ];
     FHEss.groups(S.pets, S.people).forEach(g=>{
       const items = FHEss.catalog(S.pets, S.people).filter(i=>i.group===g.id); if(!items.length) return;
       out.push(h('p',{class:'ob-label',text:g.label}));
@@ -14998,6 +16205,34 @@ const OBW = (function(){
     inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addIt(); } });
     out.push(h('div',{class:'ob-row'}, inp, h('button',{type:'button',class:'ob-btn ghost',text:'Add',onClick:addIt})));
     out.push(h('p',{class:'ob-hint',text:(S.essIds.length + S.essCustom.length)+' selected'}));
+    return out;
+  }
+
+  /* ----- anything else? routines, bin day, birthdays, paperwork: one optional step, nothing required ----- */
+  function stepExtras(){
+    const F = S.features, nm = namedPeople(), kids = nm.filter(p=>p.role==='child');
+    const X = S.extra = Object.assign({ morning:false, bins:false, binDay:3, binAlt:false, bdays:false, bd:{}, more:[], paper:false }, S.extra || {});
+    const opt = (key, t, sub, body)=>{ const on = !!X[key];
+      return h('div',{class:'ob-xopt'+(on?' on':''),id:'obX-'+key},
+        h('button',{type:'button',class:'ob-way'+(on?' on':''),'aria-pressed':on?'true':'false',onClick:()=>{ X[key] = !X[key]; keep(); }}, h('b',{text:t}), h('span',{text:sub})),
+        on && body ? body() : null); };
+    const out = [ ...title('Anything else that would help?', 'Tick any to set up now. The rest stay in the menu for later.') ];
+    const names = kids.map(p=>p.name), andN = names.length < 2 ? (names[0] || '') : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    if(F.routines !== false && kids.length) out.push(opt('morning', '🌅 School mornings for ' + andN, 'Breakfast, teeth, dressed, hair and bag by 8:00' + (F.rewards && F.chores ? ', with stars' : '') + '. Change the steps any time in Routines.'));
+    out.push(opt('bins', '🗑️ Bin day', 'Which day, and whether the bins alternate. It shows on the day and in the evening reminder.', ()=> h('div',{class:'ob-xbody'},
+      h('div',{class:'ob-chips',id:'obBinDay'}, OB_DAY_SHORT.map((d,i)=>chip(d, X.binDay===i, ()=>{ X.binDay = i; keep(); }))),
+      h('label',{class:'ob-check'}, h('input',{type:'checkbox',id:'obBinAlt',checked:!!X.binAlt,onChange:e=>{ X.binAlt = e.target.checked; saveDraft(); }}), h('span',{text:'They alternate: general waste this week, recycling next week'})))));
+    if(F.occasions !== false) out.push(opt('bdays', '🎂 Birthdays', 'Add the grown-ups’ and anyone else’s. A reminder comes a week before.', ()=>{
+      const box = h('div',{class:'ob-xbody'});
+      if(kids.length) box.appendChild(h('p',{class:'ob-hint',text:'For children we keep only the birth month and year, so their birthdays aren’t asked for here.'}));
+      nm.filter(p=>p.role!=='child').forEach(p=> box.appendChild(h('label',{class:'ob-bdrow'}, h('span',{text:p.name}),
+        h('input',{type:'date',class:'ob-input',value:X.bd[p.id]||'','aria-label':p.name+'’s birthday','data-person':p.id,onChange:e=>{ X.bd[p.id] = e.target.value; saveDraft(); }}))));
+      X.more.forEach((r,i)=> box.appendChild(h('div',{class:'ob-bdrow'},
+        h('input',{class:'ob-input',value:r.name||'',placeholder:'Name, e.g. Grandma',maxlength:40,'aria-label':'Name','data-more':i,onInput:e=>{ r.name = e.target.value; saveDraft(); }}),
+        h('input',{type:'date',class:'ob-input',value:r.date||'','aria-label':'Birthday','data-more-date':i,onChange:e=>{ r.date = e.target.value; saveDraft(); }}))));
+      box.appendChild(h('button',{type:'button',class:'ob-btn ghost',id:'obBdMore',text:'＋ Someone else',onClick:()=>{ X.more.push({ name:'', date:'' }); keep(); }}));
+      return box; }));
+    if(F.paperwork !== false) out.push(opt('paper', '📄 Passports and renewals', 'We’ll add it to your getting-started list, so you can put the dates in after setup.'));
     return out;
   }
 
@@ -15072,6 +16307,10 @@ const OBW = (function(){
       if(F.shopping) lines.push(['🛒', 'Shopping on '+OB_DAY_LONG[S.shopDay]+(F.meals ? ' for '+(S.householdSize||nm.length) : '')]);
       if(F.shopping && F.essentials) lines.push(['🧻', ((S.essIds||FHEss.defaults(S.pets, S.people)).length + (S.essCustom||[]).length)+' household essentials to keep stocked']);
     }
+    const X = S.extra || {};
+    if(X.morning) lines.push(['🌅', 'A school-morning routine for the children']);
+    if(X.bins) lines.push(['🗑️', 'Bin day on '+OB_DAY_LONG[X.binDay||0]+(X.binAlt ? ', alternating' : '')]);
+    if(X.bdays){ const n = Object.keys(X.bd||{}).filter(k=>X.bd[k]).length + (X.more||[]).filter(r=>r.name && r.date).length; if(n) lines.push(['🎂', n+' birthday'+(n===1?'':'s')]); }
     const prev = [];
     if(F.meals){
       const pl = obGeneratePlan(S, S.seed);
@@ -15087,7 +16326,7 @@ const OBW = (function(){
       h('div',{class:'ob-list'}, lines.map(l=>h('div',{class:'ob-sum'},h('span',{text:l[0]}),h('span',{text:l[1]})))), prev,
       mode==='rerun' ? h('div',{class:'ob-warn',text:'This will replace your current data.'}) : null ];
   }
-  const RENDERERS = { welcome:stepWelcome, region:stepRegion, features:stepFeatures, people:stepPeople, rooms:stepRooms, chores:stepChores, meals:stepMeals, ownmeals:stepOwnMeals, fixed:stepFixed, shopping:stepShopping, essentials:stepEssentials, review:stepReview };
+  const RENDERERS = { welcome:stepWelcome, region:stepRegion, features:stepFeatures, people:stepPeople, rooms:stepRooms, chores:stepChores, meals:stepMeals, food:stepMeals, mealpick:stepMeals, fixed:stepFixed, shopping:stepShopping, essentials:stepEssentials, extras:stepExtras, review:stepReview };
 
   /* ----- per-page reset ----- */
   const RESET_KEYS = {
@@ -15095,10 +16334,12 @@ const OBW = (function(){
     features:['features'], people:['people','nextPid','rooms','chores','choresKey','personRewards'],
     rooms:['rooms','pets','chores','choresKey'],
     chores:['level','style','chores','choresKey','personRewards','milestones'],
-    meals:['diets','weeks','cookNights','selectedMeals','mealsTouched','pins'],
-    ownmeals:['customMeals','selectedMeals'],
+    meals:['weeks','cookNights'],
+    food:['diets','eatSome'],
+    mealpick:['selectedMeals','mealsTouched','pins'],
+    extras:['extra'],
     fixed:['pins'],
-    shopping:['shopDay','householdSize','portionOn','portionG','expiryOn'],
+    shopping:['shopDay','householdSize','expiryOn','essIds','essCustom'],
     essentials:['essIds','essCustom'],
     review:['seed']
   };
@@ -15107,7 +16348,6 @@ const OBW = (function(){
     const f = freshState();
     keys.forEach(k=>{ S[k] = f[k]; });
     if(S.step==='fixed'){ pinMeal = ''; pinMsg = ''; pinDay = 6; pinRep = '1:1'; }
-    if(S.step==='ownmeals'){ ownW = null; ownName = ''; ownLink = ''; ownMsg = ''; OB_EXTRA_MEALS = []; }
     error=''; render();
   }
 
@@ -15121,21 +16361,40 @@ const OBW = (function(){
     }
     if(S.step==='rooms' && !S.rooms.length && !(S.pets.dog||S.pets.cat||S.pets.other)) return 'Add at least one room.';
     if(S.step==='meals' && S.planMode==='shuffle' && !S.cookNights.some(Boolean)) return 'Pick at least one night you cook.';
-    if(S.step==='meals' && S.planMode==='shuffle' && !S.selectedMeals.length) return 'Choose at least one meal.';
+    if(S.step==='mealpick' && S.planMode==='shuffle' && !S.selectedMeals.length) return 'Choose at least one meal.';
     return '';
   }
   function go(delta){
     const st = steps(); let i = st.indexOf(S.step);
     if(delta > 0){ error = validate(); if(error){ render(); return; } }
-    if(delta > 0 && S.step==='meals' && S.planMode!=='shuffle' && !S.selectedMeals.length && !S.ownNudged){
+    if(delta > 0 && S.step==='mealpick' && S.planMode!=='shuffle' && !S.selectedMeals.length && !S.ownNudged){
       // the own ways don't need ticks, but the list is a long way down: say so once
       S.ownNudged = true; mealNote = 'No meals ticked yet. That’s fine: you can choose from every meal later. Tick a few you make often below, or tap Next again to carry on.';
       render(); const t = document.getElementById('obOwnCount'); if(t && t.scrollIntoView) t.scrollIntoView({ block:'start' }); return;
     }
+    if(delta > 0 && S.step==='mealpick' && !S.recipeTip){ recipeTip(); return; }
     i = Math.max(0, Math.min(st.length-1, i+delta));
     S.step = st[i]; error=''; mealNote=''; openPin='';
-    if(S.step!=='meals') S.ownNudged = false;   // the "no meals ticked" note shows once each time the meals step is visited
+    if(S.step!=='mealpick') S.ownNudged = false;   // the "no meals ticked" note shows once each time the meals step is visited
     saveDraft(); render(); if(bodyEl) bodyEl.scrollTop = 0;
+  }
+  /* after the meals step, once: your own recipes are added on the Recipes page, by pasting one in or typing it */
+  function recipeTip(){
+    const nx = document.getElementById('obNext'); if(nx){ nx.id = 'obNextWait'; nx.disabled = true; }
+    const done = ()=>{ m.remove(); S.recipeTip = true; saveDraft(); go(1); };
+    const m = h('div',{class:'ob-tipback',id:'obRecipeTip'},
+      h('div',{class:'ob-tip',role:'dialog','aria-label':'Your own recipes'},
+        h('div',{class:'ob-tip-ico','aria-hidden':'true',text:'📖'}),
+        h('h3',{text:'Your own recipes come later'}),
+        h('p',{text:'Once you’re set up, open Recipes from the menu and tap ＋ Add a recipe.'}),
+        h('ul',{},
+          h('li',{text:'📋 Copy a recipe from a website, a message or your notes and paste it in. We pick out the ingredients and the steps for you to check.'}),
+          h('li',{text:'🔗 Keep the link with it, so the full page is a tap away.'}),
+          h('li',{text:'✏️ Or type it in yourself.'})),
+        h('p',{class:'ob-hint',text:'Their ingredients go on the shopping list like any other meal.'}),
+        h('button',{type:'button',class:'ob-btn primary',id:'obNext',text:'Got it',onClick:done})));
+    root.appendChild(m);
+    setTimeout(()=>{ const b = document.getElementById('obNext'); if(b && b.focus) b.focus(); }, 30);
   }
   function finish(){
     error = validate(); if(error){ render(); return; }
@@ -15198,7 +16457,9 @@ const OBW = (function(){
       try{ const sd = fhRawGet('brick-bites-shop-day-v1'); if(sd != null && sd !== '') S.shopDay = parseInt(sd, 10) || 0; }catch(e){}
       S.step = steps()[0];
     }
-    error=''; OB_EXTRA_MEALS = S.customMeals || []; ownW = null; ownMsg = '';
+    error=''; OB_EXTRA_MEALS = S.customMeals || [];
+    if(S.step === 'ownmeals') S.step = 'mealpick';   // a draft saved on the old own-meals step
+    if(S.step === 'essentials') S.step = 'shopping';   // essentials are on the shopping step now
     if(root) root.remove();
     root = h('div',{class:'ob-overlay',id:'obOverlay'},
       h('div',{class:'ob-shell'}, headEl = h('div',{class:'ob-head'}), bodyEl = h('div',{class:'ob-body'}), footEl = h('div',{class:'ob-foot'})));
@@ -15210,7 +16471,7 @@ const OBW = (function(){
 
 /* ==================== SETUP: feature gating, settings page, all-set summary ==================== */
 function applyFeatureGating(){
-  const gate = { mealplan:'meals', recipes:'meals', shopping:'shopping', essentials:'essentials', chores:'chores', tasklists:'chores', tasks:'tasks' };
+  const gate = { mealplan:'meals', recipes:'meals', shopping:'shopping', essentials:'essentials', chores:'chores', tasklists:'chores', tasks:'tasks', routines:'routines', occasions:'occasions', paperwork:'paperwork' };
   Object.keys(gate).forEach(page=>{
     const btn = document.querySelector('.nav-item[data-page="'+page+'"]');
     if(btn) btn.style.display = Feature.on(gate[page]) ? '' : 'none';
@@ -15220,8 +16481,10 @@ function applyFeatureGating(){
   if(!Feature.on('shopping') && typeof calendarMode !== 'undefined' && calendarMode === 'shopweek') calendarMode = 'week';
   document.body.classList.toggle('rewards-off', !(Feature.on('chores') && Feature.on('rewards')));
   document.body.classList.toggle('chores-off', !Feature.on('chores'));
+  document.body.classList.toggle('ess-off', !Feature.on('essentials'));
   document.body.classList.toggle('meals-off', !Feature.on('meals'));
-  const hidden = { mealplan:!Feature.on('meals'), recipes:!Feature.on('meals'), shopping:!Feature.on('shopping'), essentials:!Feature.on('essentials'), chores:!Feature.on('chores'), tasklists:!Feature.on('chores'), tasks:!Feature.on('tasks') };
+  const hidden = { rewards:!(Feature.on('chores') && Feature.on('rewards')), mealplan:!Feature.on('meals'), recipes:!Feature.on('meals'), shopping:!Feature.on('shopping'), essentials:!Feature.on('essentials'), chores:!Feature.on('chores'), tasklists:!Feature.on('chores'), tasks:!Feature.on('tasks'), routines:!Feature.on('routines'), occasions:!Feature.on('occasions'), paperwork:!Feature.on('paperwork') };
+  { const rb = document.querySelector('.nav-item[data-page="rewards"]'); if(rb) rb.style.display = hidden.rewards ? 'none' : ''; }
   // hide a menu heading when everything under it is hidden
   document.querySelectorAll('#sidebar .nav-label-grp').forEach(function(lab){
     let any = false, n = lab.nextElementSibling;
@@ -15273,12 +16536,15 @@ function renderSettingsPage(){
     h('input',{type:'checkbox',checked:disabled?false:F.on(key),disabled:!!disabled,onChange:e=>{ F.set(key,e.target.checked); applyFeatureGating(); renderSettingsPage(); if(e.target.checked && (key==='chores' || key==='meals') && F.needsSetup(key)) OBW.open('addon:'+key); }}));
   root.appendChild(h('div',{class:'st-card',id:'stFeatures'},
     h('h3',{text:'Features'}),
-    toggle('chores','🧹','Chore chart','Chores, upcoming chores and calendar chores'),
-    toggle('rewards','⭐','Rewards','Stars and prizes', !F.on('chores')),
+    toggle('chores','🧹','Chore chart','Jobs for everyone, ticked off on Today and the Chores page'),
+    toggle('rewards','⭐','Stars & rewards','Stars from chores, routines and habits, and prizes', !F.on('chores')),
+    toggle('routines','🌅','Routines & habits','School mornings, bedtime, reading and the like'),
     toggle('meals','🍽️','Meal planner','Meal plan and calendar meals'),
     toggle('shopping','🛒','Shopping list', F.on('meals') ? 'Fills itself from your meal plan; add anything else by hand' : 'Add things by hand; essentials you run low on go on it too'),
     toggle('tasks','☑️','Tasks','One-off jobs with a person and a due date, shown on the calendar'),
     toggle('essentials','🧻','Household essentials','Tap what is running low and it goes on your next shop. Needs the shopping list', !F.on('shopping')),
+    toggle('occasions','🎂','Birthdays & occasions','Birthdays, anniversaries and celebrations, with reminders and gift ideas'),
+    toggle('paperwork','📄','Paperwork','Passports, MOT, insurance and deals that end'),
     h('p',{class:'ob-hint',text:'Turning something off only hides it — your data is kept and comes back if you turn it on again.'})));
   const th = FHTheme.get();
   const rr = ()=>{ renderSettingsPage(); };
@@ -15293,9 +16559,14 @@ function renderSettingsPage(){
     h('div',{class:'ob-chips'}, modeChip('Light','light'), modeChip('Dark','dark'), modeChip('Auto (follow device)','auto'))));
   root.appendChild(fhCalViewCard(rr));
   root.appendChild(FHBins.settingsCard(rr));
-  if(Feature.on('meals')) root.appendChild(fhFoodPrefsCard(rr));
-  if(Feature.on('meals')) root.appendChild(FHNeeds.settingsCard(rr));
-  if(Feature.on('chores')) root.appendChild(FHPeople.settingsCard(rr));
+  // one Food card: what the household doesn't eat, then each person's allergies and needs
+  if(Feature.on('meals')){
+    const fc = fhFoodPrefsCard(rr), nc = FHNeeds.settingsCard(rr);
+    nc.classList.remove('st-card'); nc.classList.add('st-sub');
+    const nh = nc.querySelector('h3'); if(nh) nh.replaceWith(h('p',{class:'ob-label',text:'Allergies and food needs, person by person'}));
+    fc.appendChild(nc); root.appendChild(fc);
+  }
+  root.appendChild(FHPeople.settingsCard(rr));
   root.appendChild(FHLock.settingsCard(rr));
   const lp = FHLocale.get();
   const setLoc = p=>{ FHLocale.set(p); try{ MealApp.relocalise(); FHLocale.applyRecipes(); }catch(e){} renderSettingsPage(); try{ MealApp.render(); }catch(e){} try{ refreshCurrentPage(); }catch(e){} };
@@ -15306,12 +16577,7 @@ function renderSettingsPage(){
     h('p',{class:'ob-label',text:'Wording and date format'}),
     h('div',{class:'ob-chips'}, lchip('UK', lp.naming==='uk', ()=>setLoc({naming:'uk'})), lchip('US', lp.naming==='us', ()=>setLoc({naming:'us'}))),
     h('p',{class:'ob-hint',text:'Recipes, meal names, dates and the shopping list update straight away. Chores and meals you wrote yourself keep your own wording. Ticked-off shopping items may untick when names change.'})));
-  const snap = ChoreApp.getCounts ? ChoreApp.getCounts() : null;
-  if(snap){
-    root.appendChild(h('div',{class:'st-card',id:'stHousehold'}, h('h3',{text:'People, rooms and chores'}),
-      h('p',{class:'ob-hint',text: snap.people+' '+(snap.people===1?'person':'people')+' · '+snap.rooms+' rooms · '+snap.chores+' chores'+(Feature.on('meals')?' · cooking for '+MealApp.getHouseholdSize():'')}),
-      h('p',{class:'ob-hint',text:'Edit people, rooms and chores from the Chores page.'})));
-  }
+  root.appendChild(FHPeople.peopleCard(rr));
   if(Feature.on('meals') && typeof FHBook !== 'undefined'){ const mc = FHBook.settingsCard(); if(mc) root.appendChild(mc); }
   const msg = h('p',{class:'ob-hint',id:'stMsg'});
   const file = h('input',{type:'file',accept:'.json,application/json',style:'display:none',onChange:e=>{ if(e.target.files[0]) fhImportBackup(e.target.files[0], t=>{ msg.textContent=t; }); }});
@@ -15348,7 +16614,7 @@ function fhSettingsSummary(id){
   const t = (f)=>{ try{ return f() || ''; }catch(e){ return ''; } };
   if(id === 'house') return t(()=>{ const ps = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); const b = FHBins.get();
     return [ps.length ? ps.length + (ps.length === 1 ? ' person' : ' people') : '', b.on ? 'bin day ' + ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][b.day] : '', 'food, units'].filter(Boolean).join(' · '); });
-  if(id === 'features') return t(()=>[['chores','Chores'],['meals','Meals'],['shopping','Shopping'],['tasks','Tasks'],['essentials','Essentials']].filter(f=>Feature.on(f[0])).map(f=>f[1]).join(', ') + ' on');
+  if(id === 'features') return t(()=>[['chores','Chores'],['meals','Meals'],['shopping','Shopping'],['tasks','Tasks'],['essentials','Essentials'],['routines','Routines'],['occasions','Occasions'],['paperwork','Paperwork']].filter(f=>Feature.on(f[0])).map(f=>f[1]).join(', ') + ' on');
   if(id === 'remind') return t(()=>{ const n = FHCal.feeds().length; return 'Times on this phone, who gets what' + (n ? ' · ' + n + (n === 1 ? ' calendar' : ' calendars') : ', calendars'); });
   if(id === 'sync') return t(()=>{ const s = FHSync.summary(); return s.mode === 'ok' ? 'On: this device shares the family’s plans' : 'Off: share plans with the family on every phone'; });
   if(id === 'device') return t(()=>{ const th = FHTheme.get(); return [FHTheme.palettes[th.palette] ? FHTheme.palettes[th.palette].name : '', th.mode === 'auto' ? 'auto light/dark' : th.mode, FHLock.isSet() ? 'PIN on' : 'no PIN'].filter(Boolean).join(' · '); });
@@ -15358,7 +16624,7 @@ function fhSettingsSummary(id){
 }
 function fhSettingsGroups(root){
   const GROUPS = [
-    ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stMeals', 'stBirthdays', 'stFood', 'stNeeds', 'stBins', 'stUnits']],
+    ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stBirthdays', 'stMeals', 'stFood', 'stBins', 'stUnits']],
     ['features', '🧩', 'Features', ['stFeatures']],
     ['remind', '🔔', 'Reminders & calendars', ['stReminders', 'stHouseRem', 'stCal']],
     ['sync', '🔄', 'Sync & sharing', ['stSync']],
@@ -15427,6 +16693,7 @@ function showAllSet(){
         h('p',{class:'ob-sub',text:'See your Google, Outlook or iCloud calendar alongside the family’s plans. Read-only: nothing changes in your calendar. It needs sync (free), the same sign-in as Bring everyone in.'}),
         h('button',{type:'button',class:'ob-btn ghost',id:'obCal',text:'Add your calendar',onClick:()=>{ FHCal.openSheet(); }})));
     }
+    if(typeof FHStart !== 'undefined'){ const sl = FHStart.doneList(); if(sl) box.appendChild(sl); }
     document.body.appendChild(overlay);
   });
 }
@@ -15574,9 +16841,11 @@ function fhFoodPrefsCard(rr){
   const toggle = id=>{ fhFoodSwapMsg = ''; let d = diets.slice(); if(id === 'vegetarian' || id === 'vegan') d = obToggleHouse(d, id); else { const i = d.indexOf(id); if(i>=0) d.splice(i,1); else d.push(id); } fhApplyFoodPrefs(d); rr(); };
   const chip = d=> h('button',{type:'button',class:'ob-chip'+(diets.indexOf(d.id)>=0?' on':''),'aria-pressed':diets.indexOf(d.id)>=0?'true':'false',text:d.label,onClick:()=>toggle(d.id)});
   const clash = fhPlannedBlocked(diets);
-  return h('div',{class:'st-card',id:'stFood'}, h('h3',{text:'Food preferences'}),
-    h('p',{class:'ob-hint',text:'Tap anything your household doesn’t eat. Those meals are left out of the meal chooser and suggestions.'}),
-    h('div',{class:'ob-chips'}, OB_DIETS.map(chip)),
+  return h('div',{class:'st-card',id:'stFood'}, h('h3',{text:'Food'}),
+    h('p',{class:'ob-label',text:'What your household doesn’t eat'}),
+    h('p',{class:'ob-hint',text:'Those meals are left out of the meal chooser and suggestions.'}),
+    h('div',{class:'ob-chips'}, OB_DIETS.filter(d=> d.id !== 'nuts' || diets.indexOf('nuts')>=0).map(chip)),
+    diets.indexOf('nuts')>=0 ? h('p',{class:'ob-hint',text:'A nut allergy is better added to the person who has it, below: their meals are marked, with swaps.'}) : null,
     h('div',{class:'ob-chips',style:'margin-top:8px'}, OB_HOUSE.map(chip)),
     clash.length ? h('div',{id:'stFoodClash'},
       h('p',{class:'ob-hint',text:'Already in your plan: '+(clash.length > 8 ? clash.slice(0, 6).join(', ')+' and '+(clash.length - 6)+' more' : clash.join(', '))+'.'}),
@@ -15637,7 +16906,7 @@ const FHKitchen = (function(){
     }
     card.appendChild(mk('div','fhk-meal',info.mealName));
     if(info.pinText) card.appendChild(mk('div','fhk-sub','📌 '+info.pinText));
-    if(info.sideNames && info.sideNames.length) card.appendChild(mk('div','fhk-sub','With '+info.sideNames.join(', ')));
+    { const sn = FHAddOns.sideNames(date, info); if(sn.length) card.appendChild(mk('div','fhk-sub','With '+sn.join(', '))); }
     const r = (typeof FHRecipes !== 'undefined') ? FHRecipes.get(info.mealId) : null;
     if(r){
       const bits = mk('div','fhk-bits');
@@ -15664,7 +16933,7 @@ const FHKitchen = (function(){
     tickClock();
     const wrap = el.querySelector('.fhk-main'); wrap.innerHTML = '';
     // the screen's blocks, in this device's order and widths (FHLayout, "✏️ Edit" in the top bar turns the screen into the editor)
-    const nodes = { routines:(typeof FHRoutines !== 'undefined' ? FHRoutines.kitchenNode(now) : null), shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
+    const nodes = { routines:(typeof FHRoutines !== 'undefined' && Feature.on('routines') ? FHRoutines.kitchenNode(now) : null), shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
     if(Feature.on('meals')){
       nodes.dinner = mealCard(now);
       const tm = shAddDays(now, 1); let ti = null; try{ ti = MealApp.getDayDisplay(tm); }catch(e){}
@@ -15674,7 +16943,7 @@ const FHKitchen = (function(){
     }
     if(Feature.on('chores')){
       const c = mk('div','fhk-card'); c.appendChild(mk('div','fhk-label','Today’s chores'));
-      c.appendChild(ChoreApp.buildDayBlock(now, { showHeader:false }));
+      c.appendChild(ChoreApp.buildDayBlock(now, { showHeader:false, board:true }));
       nodes.chores = c;
     }
     FHLayout.place('kitchen', wrap, nodes, render);
@@ -16641,9 +17910,9 @@ const FHPush = (function(){
         const cs = ChoreApp.choresForDay(day).filter(function(c){ return !c.done; });
         if(cs.length) items.push({ k:'chores', key:'chores:' + iso, date:iso, lines:cs.map(function(c){ return { t:c.name, who:c.who ? [c.who] : [], f:c.freq, n:c.who ? names([c.who]) : '' }; }) });
       }
-      try{ if(typeof FHOcc !== 'undefined') FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
-      try{ if(typeof FHPaper !== 'undefined') FHPaper.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
-      try{ if(typeof FHRoutines !== 'undefined'){ FHRoutines.pushItems(day).forEach(function(i){ items.push(i); }); FHRoutines.kitLines(day).forEach(function(l){ eve.push(l); }); } }catch(e){}
+      try{ if(typeof FHOcc !== 'undefined' && Feature.on('occasions')) FHOcc.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
+      try{ if(typeof FHPaper !== 'undefined' && Feature.on('paperwork')) FHPaper.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
+      try{ if(typeof FHRoutines !== 'undefined' && Feature.on('routines')){ FHRoutines.pushItems(day).forEach(function(i){ items.push(i); }); FHRoutines.kitLines(day).forEach(function(l){ eve.push(l); }); } }catch(e){}
       try{ if(typeof FHShare !== 'undefined' && Feature.on('meals')) FHShare.pushLines(day).forEach(function(l){ lines.push(l); }); }catch(e){}
       if(lines.length) items.push({ k:'day', key:'day:' + iso, date:iso, lines:lines.sort(function(a, b){ return a.t.localeCompare(b.t); }) });
       if(eve.length) items.push({ k:'eve', key:'eve:' + iso, date:iso, lines:eve });
@@ -17078,6 +18347,145 @@ const FHShare = (function(){
   try{ FHSync.onChange(() => { const c = document.getElementById('fhsToday'); if(c && !needsSharing()) c.remove(); }); }catch(e){}
 
   return { needsSharing, openSheet, todayCard, cookFor, setCook, cookRow, pushLines, handOverTask, canHandOver };
+})();
+
+/* ==================== GETTING STARTED (FHStart) ====================
+   The things setup left for later, as a short checklist: on the all-set screen and as a card on Today (under
+   "Bring everyone in" / "Your calendar here too", which keep their own cards). Each item ticks itself off when it's
+   done (an own recipe saved, a birthday added...). Per device family-hub-start-v1 { hide:{ id:1 }, off:1, paper:1 }:
+   ✕ hides one item, "Hide this" the card; paper:1 = setup's "Passports and renewals" was ticked. */
+const FHStart = (function(){
+  const KEY = 'family-hub-start-v1';
+  function st(){ try{ const v = JSON.parse(fhRawGet(KEY) || '{}'); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } }
+  function save(v){ fhRawSet(KEY, JSON.stringify(v)); }
+  function n(key){ try{ const v = JSON.parse(fhRawGet(key) || 'null'); return Array.isArray(v) ? v.length : Array.isArray(v && v.items) ? v.items.length : 0; }catch(e){ return 0; } }
+  function kids(){ try{ return JSON.parse(fhRawGet('chore-chart-people-v1') || '[]').filter(p => p && p.role === 'child').length; }catch(e){ return 0; } }
+  function go(page, card){ try{ const o = document.getElementById('obDone'); if(o) o.remove(); }catch(e){} showPage(page); if(card) setTimeout(() => { try{ fhSettingsOpen(card); }catch(e){} }, 60); }
+  /* [id, title, why, done, open] for what this household uses */
+  function items(){
+    const s = st(), out = [];
+    if(Feature.on('meals')){
+      out.push(['recipes', '📖 Add your own recipes', 'Recipes › ＋ Add a recipe. Paste one in from a website or message, or keep the link.', n('brick-bites-custom-meals-v1') > 0, () => go('recipes')]);
+      out.push(['portions', '🍗 Portion sizes', 'Set how much meat, fish and tofu each person gets, if you like.', (() => { try{ const z = MealApp.getPortionSizes(); return !!(z.meat || z.plant); }catch(e){ return false; } })(), () => go('settings', 'stMeals')]);
+    }
+    if(Feature.on('routines') && kids()) out.push(['routines', '🌅 A routine for the children', 'School mornings or bedtime, as steps to tick.', n('family-hub-routines-v1') > 0, () => go('routines')]);
+    if(Feature.on('occasions')) out.push(['bdays', '🎂 Birthdays', 'Add birthdays and anniversaries for a reminder before.', n('family-hub-occasions-v1') > 0, () => go('occasions')]);
+    if(Feature.on('paperwork') && s.paper) out.push(['paper', '📄 Passports and renewals', 'Add the dates for a reminder in good time.', n('family-hub-paperwork-v1') > 0, () => go('paperwork')]);
+    out.push(['bins', '🗑️ Bin day', 'Which day the bins go out, shown the night before.', (() => { try{ return FHBins.get().on; }catch(e){ return false; } })(), () => go('settings', 'stBins')]);
+    return out;
+  }
+  function left(){ const hide = st().hide || {}; return items().filter(x => !x[3] && !hide[x[0]]); }
+  function row(x, opts){
+    return h('div', { class:'fhst-row' + (x[3] ? ' done' : ''), 'data-start':x[0] },
+      h('button', { type:'button', class:'fhst-go', onClick:x[4] }, h('span', { class:'fhst-tick', 'aria-hidden':'true', text:x[3] ? '✓' : '' }),
+        h('span', { class:'fhst-t' }, h('b', { text:x[1] }), h('small', { text:x[3] ? 'Done' : x[2] }))),
+      opts.hide && !x[3] ? h('button', { type:'button', class:'fhst-x', 'aria-label':'Hide ' + x[1], text:'✕', onClick:() => { const v = st(); v.hide = v.hide || {}; v.hide[x[0]] = 1; save(v); try{ refreshCurrentPage(); }catch(e){} } }) : null);
+  }
+  /* Today: a card while anything is left */
+  function card(date){
+    if(FHEvents.iso(date) !== FHEvents.iso(new Date()) || st().off) return null;
+    try{ if(FHLock.isLocked() || (FHSync.isDevice && FHSync.isDevice())) return null; }catch(e){}
+    const all = items(), todo = left();
+    if(!todo.length) return null;
+    const box = h('section', { class:'fhd-sec fhst-card', id:'fhStart' },
+      h('div', { class:'fhst-head' }, h('b', { text:'Getting started' }), h('span', { class:'fhst-n', text:(all.length - todo.length) + ' of ' + all.length + ' done' })));
+    todo.slice(0, 3).forEach(x => box.appendChild(row(x, { hide:true })));
+    box.appendChild(h('div', { class:'fhst-foot' },
+      todo.length > 3 ? h('span', { class:'fhst-more', text:'and ' + (todo.length - 3) + ' more' }) : h('span'),
+      h('button', { type:'button', class:'fhst-off', id:'fhStartOff', text:'Hide this', onClick:() => { const v = st(); v.off = 1; save(v); try{ refreshCurrentPage(); }catch(e){} } })));
+    return box;
+  }
+  /* the all-set screen: the whole list */
+  function doneList(){
+    const all = items(); if(!all.length) return null;
+    const box = h('div', { class:'fhst-done', id:'obStartList' }, h('p', { class:'ob-label', text:'When you’re ready' }));
+    all.forEach(x => box.appendChild(row(x, {})));
+    box.appendChild(h('p', { class:'ob-hint', text:'These stay on Today until they’re done.' }));
+    return box;
+  }
+  return { items, left, card, doneList };
+})();
+
+/* ==================== MEAL PLAN TOOLS (FHPlanTools) ====================
+   A small row under the week tabs: 🛒 Shop week (the calendar's Shop week view: the days from your shop day, with
+   each dinner and its sides) and ⋯ (which rotation week is this week, saved plans, clear this week). The old
+   "This calendar week = Week 1" row, Saved plans fold, Reset to the starter plan, Sides & veggies shelf and the
+   bottom tip are hidden (CSS); their elements stay in the page so the meal plan's own code still finds them.
+   The meal shelf folds behind "Show all meals", with a search (per device family-hub-shelf-open). */
+const FHPlanTools = (function(){
+  const OPEN = 'family-hub-shelf-open';
+  let q = '';
+  function mount(){
+    const tabs = document.getElementById('weekTabs');
+    if(tabs && !document.getElementById('fhPlanTools')){
+      tabs.parentNode.insertBefore(h('div', { class:'fhpt-row', id:'fhPlanTools' }), tabs.nextSibling);
+    }
+    const row = document.getElementById('fhPlanTools');
+    if(row){
+      row.innerHTML = '';
+      const sv = fhPlanShopView(), wk = FHDays.mode() === 'week';
+      if(Feature.on('shopping')) row.appendChild(h('div', { class:'fhpt-view', role:'group', 'aria-label':'Show the plan' },
+        [['', wk ? 'Mon–Sun' : 'Weeks 1–4'], ['shop', 'By shop']].map(x => h('button', { type:'button', id:'fhptView-' + (x[0] || 'week'), class:(x[0] === 'shop') === sv ? 'on' : '', 'aria-pressed':(x[0] === 'shop') === sv ? 'true' : 'false', text:x[1],
+          onClick:() => { fhRawSet('family-hub-plan-view', x[0]); FHDays.resetView(); try{ MealApp.render(); }catch(e){} mount(); } }))));
+      row.appendChild(h('button', { type:'button', class:'fhpt-btn', id:'fhptMore', 'aria-label':'More for the meal plan', text:'⋯ More', onClick:sheet }));
+    }
+    shelf();
+    const sh = document.getElementById('shelf');
+    if(sh && !sh.__fhpt){ sh.__fhpt = 1; new MutationObserver(() => filter()).observe(sh, { childList:true }); }
+  }
+  function shopWeek(){ showPage('calendar'); try{ setCalendarMode('shopweek'); }catch(e){} }
+  function sheet(){
+    const old = document.getElementById('fhptSheet'); if(old) old.remove();
+    const saved = document.getElementById('savedPlansList'), det = saved && saved.closest('details');
+    const home = det ? { parent:det.parentNode, next:det.nextSibling } : null;
+    const close = () => { const m = document.getElementById('fhptSheet'); if(m) m.remove(); if(det && home){ det.classList.remove('fhpt-in'); home.parent.insertBefore(det, home.next); } };
+    const body = h('div', { class:'fhe-form fhpt-body' });
+    const wk = FHDays.mode() === 'week';
+    if(!wk && !fhPlanShopView()){
+      const sel = document.getElementById('weekAnchorSelect'), btn = document.getElementById('setWeekAnchorBtn');
+      const cur = (() => { try{ return MealApp.currentRotationWeek ? MealApp.currentRotationWeek() : null; }catch(e){ return null; } })();
+      const live = (document.querySelector('.week-anchor-live') || {}).textContent || '';
+      const now = cur || +((/Week (\d)/.exec(live) || [])[1] || 1);
+      const weeks = (() => { const n = +(fhRawGet('family-hub-rotation-weeks-v1') || 4); return n >= 1 && n <= 4 ? n : 4; })();
+      body.appendChild(h('p', { class:'fhe-lab', text:'Which week of your plan is this week?' }));
+      body.appendChild(h('div', { class:'ob-chips', id:'fhptAnchor' }, [1, 2, 3, 4].slice(0, Math.max(weeks, now)).map(w => h('button', { type:'button', class:'ob-chip' + (w === now ? ' on' : ''), 'aria-pressed':w === now ? 'true' : 'false', 'data-week':w, text:'Week ' + w,
+        onClick:() => { if(sel && btn){ sel.value = String(w); btn.click(); } close(); } }))));
+      body.appendChild(h('p', { class:'fhch-note', text:'Only needed if the weeks look out of step: the plan then carries on from here.' }));
+    }
+    if(det){ det.classList.add('fhpt-in'); det.open = true; body.appendChild(det); }
+    const clear = document.getElementById('clearBtn');
+    if(clear) body.appendChild(h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn secondary', id:'fhptClear', text:'Clear this week', onClick:() => { close(); clear.click(); } })));
+    const m = h('div', { id:'fhptSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet fhpt-sheet', role:'dialog', 'aria-label':'Meal plan' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'Meal plan' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })), body));
+    document.body.appendChild(m);
+  }
+  /* the shelf of every meal: folded, with a search */
+  function shelf(){
+    const sec = document.querySelector('#page-mealplan .shelf-section'); if(!sec) return;
+    const open = fhRawGet(OPEN) === '1';
+    sec.classList.toggle('fhpt-closed', !open);
+    let bar = document.getElementById('fhptShelfBar');
+    if(!bar){
+      bar = h('div', { class:'fhpt-shelfbar', id:'fhptShelfBar' });
+      const h2 = sec.querySelector('h2'); sec.insertBefore(bar, h2 ? h2.nextSibling : sec.firstChild);
+    }
+    bar.innerHTML = '';
+    const n = sec.querySelectorAll('#shelf .brick').length;
+    bar.appendChild(h('button', { type:'button', class:'fhpt-btn', id:'fhptShelfToggle', 'aria-expanded':open ? 'true' : 'false', text:open ? 'Hide the meals ▴' : 'Show all meals' + (n ? ' (' + n + ')' : '') + ' ▾',
+      onClick:() => { fhRawSet(OPEN, open ? '0' : '1'); shelf(); } }));
+    if(open){
+      const inp = h('input', { type:'search', class:'fhe-in fhpt-search', id:'fhptSearch', placeholder:'🔍 Find a meal', value:q, autocomplete:'off', 'aria-label':'Find a meal' });
+      inp.addEventListener('input', () => { q = inp.value; filter(); });
+      bar.appendChild(inp);
+      filter();
+    }
+  }
+  function filter(){
+    const t = q.trim().toLowerCase();
+    document.querySelectorAll('#shelf .brick').forEach(b => { b.style.display = !t || (b.textContent || '').toLowerCase().indexOf(t) >= 0 ? '' : 'none'; });
+  }
+  return { mount, shelf, shopWeek, sheet };
 })();
 
 /* ==================== QUICK ADD (AI, owner's account only for now) ====================
