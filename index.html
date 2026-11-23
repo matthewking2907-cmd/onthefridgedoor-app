@@ -2870,7 +2870,7 @@ body.kid-locked .fhly-btn{ display:none !important; }
 
 /* setup: where your own recipes go (ob_wizard.js recipeTip) */
 .ob-tipback{ position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(30,20,40,.45); }
-.ob-tip{ background:var(--card, #fff); color:inherit; border-radius:18px; padding:22px 20px 18px; max-width:420px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.ob-tip{ background:var(--white); color:var(--ink); border-radius:18px; padding:22px 20px 18px; max-width:420px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.25); }
 .ob-tip-ico{ font-size:2rem; }
 .ob-tip h3{ margin:6px 0 8px; }
 .ob-tip ul{ margin:8px 0 10px; padding-left:0; list-style:none; display:grid; gap:8px; }
@@ -3057,6 +3057,20 @@ body.ess-off .fhsh-tabs{ display:none; }
 .fhsw-wk{ display:block; font-size:.7rem; color:var(--muted); font-weight:700; }
 .day-row.fhsw-today .day-label b{ color:var(--accent); }
 .fhsw-once{ font-size:.8rem; color:var(--accent-dark); font-weight:600; margin-top:4px; }
+
+/* a Today tile's sheet scrolls itself (a long Done list), not the page behind */
+#fhlyFace .fhm-sheet{ overflow:hidden; }
+.fhly-sheetbody{ overflow-y:auto; flex:1 1 auto; min-height:0; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+/* setup: meals you like, folded by main ingredient */
+details.ob-mg{ border:1px solid var(--panel-line); border-radius:12px; background:var(--white); margin:0 0 8px; }
+details.ob-mg > summary.ob-mg-h{ display:flex; align-items:center; gap:8px; padding:12px 14px; cursor:pointer; list-style:none; }
+details.ob-mg > summary.ob-mg-h::-webkit-details-marker{ display:none; }
+details.ob-mg > summary .ob-mg-t{ flex:1; font-weight:700; }
+details.ob-mg > summary::after{ content:'▾'; color:var(--muted); transition:transform .15s; }
+details.ob-mg[open] > summary::after{ transform:rotate(180deg); }
+.ob-mg-n{ font-size:.82rem; font-weight:700; color:var(--muted); }
+.ob-mg-n.on{ color:var(--accent-dark); }
+details.ob-mg > .ob-meals{ padding:0 10px 10px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -15313,7 +15327,7 @@ const OB_DIETS = [
   { id:'pork',    label:'Pork & sausages',  test:p=>p.proteins.indexOf('pork')>=0 },
   { id:'lamb',    label:'Lamb',             test:p=>p.proteins.indexOf('lamb')>=0 },
   { id:'fish',    label:'Fish',             test:p=>p.proteins.indexOf('fish')>=0 },
-  { id:'veggie',  label:'Veggie meals',     test:p=>p.proteins.length===0 },
+  { id:'veggie',  label:'Veggie & vegan meals', test:p=>p.proteins.length===0 },
   { id:'nuts',    label:'Nuts (allergy)',   test:p=>p.nuts }
 ];
 // Separate switches: a vegetarian household leaves out every meal with meat or fish in it (stock cubes included); a
@@ -15321,7 +15335,7 @@ const OB_DIETS = [
 const OB_VEGETARIAN = { id:'vegetarian', label:'We’re a vegetarian household', test:p=>p.meat };
 const OB_VEGAN = { id:'vegan', label:'We’re a vegan household', test:p=>!p.vegan };
 const OB_HOUSE = [OB_VEGETARIAN, OB_VEGAN];
-const OB_EAT_SOME = ['chicken', 'beef', 'pork', 'lamb', 'fish'];   // setup's "Some things" (nuts belong to a person's food needs now)
+const OB_EAT_SOME = ['chicken', 'beef', 'pork', 'lamb', 'fish', 'veggie'];   // setup's "Some things" (nuts belong to a person's food needs now)
 function obToggleHouse(diets, id){ const on = diets.indexOf(id) >= 0; const out = diets.filter(d=> d !== 'vegetarian' && d !== 'vegan'); if(!on) out.push(id); return out; }
 // Work out what protein(s) a catalog meal is built on from its meat & fish lines.
 function obMealInfo(m){
@@ -16025,7 +16039,7 @@ const OBW = (function(){
     }
     return out;
   }
-  let mealQ = '', openPin = '';
+  let mealQ = '', openPin = '', openGroups = {};
   function keep(){ const st = bodyEl ? bodyEl.scrollTop : 0; render(); if(bodyEl) bodyEl.scrollTop = st; }
   function stepMeals(){
     const allowed = ensureMeals();
@@ -16099,14 +16113,22 @@ const OBW = (function(){
             keep(); }}));
         grid.appendChild(h('div',{class:'ob-mwrap'+(openPin===p.id?' open':'')}, row, pr && openPin!==p.id ? h('small',{class:'ob-pintag',text:'📌 '+obPinText(pr)}) : null, openPin===p.id ? editor(p) : null));
       });
-      lib.appendChild(h('div',{class:'ob-mg'}, h('div',{class:'ob-mg-h',text:g.emoji+' '+g.label}), grid));
+      const selN = list.filter(p=>sel[p.id]).length;
+      const det = h('details',{class:'ob-mg','data-group':g.id},
+        h('summary',{class:'ob-mg-h'}, h('span',{class:'ob-mg-t',text:g.emoji+' '+g.label}), h('span',{class:'ob-mg-n'+(selN?' on':''),text:selN+'/'+list.length+' selected'})), grid);
+      if(openGroups[g.id] || list.some(p=>p.id===openPin)) det.open = true;
+      det.addEventListener('toggle', ()=>{ if(!mealQ.trim()) openGroups[g.id] = det.open; });   // a search opens groups without remembering them
+      lib.appendChild(det);
     });
     const noMatch = h('div',{class:'ob-hint',id:'obSearchNone',style:'display:none',text:'No meals match that search. Check the filters above. You can add your own recipes once you’re set up.'});
     const applySearch = ()=>{
       const q = mealQ.trim().toLowerCase(); let any = false;
       lib.querySelectorAll('.ob-mg').forEach(g=>{ let vis = 0;
         g.querySelectorAll('.ob-mwrap').forEach(wr=>{ const t = (wr.querySelector('.ob-meal span')||{}).textContent||''; const okq = !q || t.toLowerCase().indexOf(q)>=0 || wr.classList.contains('open'); wr.style.display = okq?'':'none'; if(okq) vis++; });
-        g.style.display = vis?'':'none'; if(vis) any = true; });
+        g.style.display = vis?'':'none'; if(vis) any = true;
+        if(q) g.open = vis > 0;
+        else if(g.__fhSearched){ g.open = !!openGroups[g.getAttribute('data-group')] || !!g.querySelector('.ob-mwrap.open'); }
+        g.__fhSearched = !!q; });
       noMatch.style.display = (q && !any) ? '' : 'none';
     };
     const searchBox = h('input',{class:'ob-input',id:'obMealSearch',type:'search',style:'width:100%;margin:10px 0',placeholder:'🔍 Search meals (e.g. pizza)',value:mealQ,autocomplete:'off',onInput:e=>{ mealQ = e.target.value; applySearch(); }});
@@ -16147,7 +16169,7 @@ const OBW = (function(){
           opt('all','We eat everything','Meat, fish and veggie meals'),
           opt('vegetarian','Vegetarian','No meat or fish'),
           opt('vegan','Vegan','No meat, fish, dairy, eggs or honey'),
-          opt('some','Some things','Pick what to leave out')),
+          opt('some','Some things','Pick what to leave out, meat or veggie')),
         eat === 'some' ? h('div',{class:'ob-chips',id:'obEatSome',style:'margin-top:10px'}, OB_DIETS.filter(d=>OB_EAT_SOME.indexOf(d.id)>=0).map(d=> chip(d.label, S.diets.indexOf(d.id)>=0, ()=>toggleDiet(d.id)))) : null,
         h('p',{class:'ob-hint',id:'obEatCount',text: eat === 'all' ? 'All '+allowed.length+' meals to choose from.' : allowed.length+' meals to choose from.'}),
         S.diets.indexOf('nuts')>=0 ? h('p',{class:'ob-hint',text:'Meals with nuts are left out too. A nut allergy is better added to the person who has it, below.'}) : null,
@@ -16222,15 +16244,14 @@ const OBW = (function(){
     out.push(opt('bins', '🗑️ Bin day', 'Which day, and whether the bins alternate. It shows on the day and in the evening reminder.', ()=> h('div',{class:'ob-xbody'},
       h('div',{class:'ob-chips',id:'obBinDay'}, OB_DAY_SHORT.map((d,i)=>chip(d, X.binDay===i, ()=>{ X.binDay = i; keep(); }))),
       h('label',{class:'ob-check'}, h('input',{type:'checkbox',id:'obBinAlt',checked:!!X.binAlt,onChange:e=>{ X.binAlt = e.target.checked; saveDraft(); }}), h('span',{text:'They alternate: general waste this week, recycling next week'})))));
-    if(F.occasions !== false) out.push(opt('bdays', '🎂 Birthdays', 'Add the grown-ups’ and anyone else’s. A reminder comes a week before.', ()=>{
+    if(F.occasions !== false) out.push(opt('bdays', '🎂 Birthdays', 'Add a few now. A reminder comes a week before.', ()=>{
       const box = h('div',{class:'ob-xbody'});
-      if(kids.length) box.appendChild(h('p',{class:'ob-hint',text:'For children we keep only the birth month and year, so their birthdays aren’t asked for here.'}));
-      nm.filter(p=>p.role!=='child').forEach(p=> box.appendChild(h('label',{class:'ob-bdrow'}, h('span',{text:p.name}),
-        h('input',{type:'date',class:'ob-input',value:X.bd[p.id]||'','aria-label':p.name+'’s birthday','data-person':p.id,onChange:e=>{ X.bd[p.id] = e.target.value; saveDraft(); }}))));
+      if(!X.more.length) X.more.push({ name:'', date:'' });
       X.more.forEach((r,i)=> box.appendChild(h('div',{class:'ob-bdrow'},
         h('input',{class:'ob-input',value:r.name||'',placeholder:'Name, e.g. Grandma',maxlength:40,'aria-label':'Name','data-more':i,onInput:e=>{ r.name = e.target.value; saveDraft(); }}),
         h('input',{type:'date',class:'ob-input',value:r.date||'','aria-label':'Birthday','data-more-date':i,onChange:e=>{ r.date = e.target.value; saveDraft(); }}))));
-      box.appendChild(h('button',{type:'button',class:'ob-btn ghost',id:'obBdMore',text:'＋ Someone else',onClick:()=>{ X.more.push({ name:'', date:'' }); keep(); }}));
+      box.appendChild(h('button',{type:'button',class:'ob-btn ghost',id:'obBdMore',text:'＋ Add another',onClick:()=>{ X.more.push({ name:'', date:'' }); keep(); }}));
+      box.appendChild(h('p',{class:'ob-hint',text:'Anyone you like: family, friends, the grandparents. Add more any time on Occasions.'}));
       return box; }));
     if(F.paperwork !== false) out.push(opt('paper', '📄 Passports and renewals', 'We’ll add it to your getting-started list, so you can put the dates in after setup.'));
     return out;
