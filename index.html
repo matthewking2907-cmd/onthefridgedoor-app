@@ -3071,6 +3071,8 @@ details.ob-mg[open] > summary::after{ transform:rotate(180deg); }
 .ob-mg-n{ font-size:.82rem; font-weight:700; color:var(--muted); }
 .ob-mg-n.on{ color:var(--accent-dark); }
 details.ob-mg > .ob-meals{ padding:0 10px 10px; }
+.fhbk-del.sure{ color:#b3261e; border-color:#b3261e; }
+.fhbk-move{ color:var(--ink); font-weight:600; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -4836,11 +4838,13 @@ const FHRecipes = (function(){
   const state = { time:'any', low:false, tags:[], diet:[] };
 
   function get(id){ return R[id] || null; }
-  function mealOf(id){ try{ return MealApp.getAllMeals().find(m => m.id === id) || null; }catch(e){ return null; } }
+  function mealOf(id){ try{ return MealApp.getAllMeals().find(m => m.id === id) || (MealApp.getSides ? MealApp.getSides().find(s => s.id === id) : null) || null; }catch(e){ return null; } }
   /* what the recipe viewer shows: the app's recipe, or a household's own method (their own meal, or an app meal whose
      steps they rewrote on the Recipes page): { own: no app recipe at all, ownMethod, long, short, timers } */
   function recipeFor(id){
     const base = R[id] || null, meal = mealOf(id);
+    // a household's own side: its ingredients and method (if it has either)
+    if(meal && meal.isSide && !(meal.steps || []).length) return meal.ingredients.length ? { p:0, c:0, w:0, tags:[], long:[], short:[], own:true, ownMethod:true, timers:0, side:true } : null;
     if(meal && Array.isArray(meal.steps) && meal.steps.length){
       const label = t => String(t || '').split(/[,.;]/)[0].slice(0, 28);
       const long = meal.steps.map((s, i) => ({ h:'Step ' + (i + 1), t:s.t, s:s.s || 0, l:label(s.t) || 'Step ' + (i + 1) }));
@@ -5166,6 +5170,8 @@ const FHRecipes = (function(){
         ingList.appendChild(h('li', { class:'fha-group', text:a.name }));
         FHAddOns.ings(a).forEach(addLine);
       });
+      let side = '';
+      FHAddOns.ownSides(meal, date).forEach(l => { if(l._side !== side){ side = l._side; ingList.appendChild(h('li', { class:'fha-group', text:side })); } addLine(l); });
     };
     const addHosts = { pick:h('div', { class:'fha-host' }), top:h('div', { class:'fha-host' }), bottom:h('div', { class:'fha-host' }) };
     const timerFor = (label, secs) => {
@@ -5175,7 +5181,7 @@ const FHRecipes = (function(){
         if(ex) stopTimer(ex.id); else startTimer(label, secs, meal.name);
       } });
     };
-    const renderAddOns = () => { renderIngs(); renderTags(); FHAddOns.paint(addHosts, meal, date, !locked(), renderAddOns, timerFor); updateButtons(); };
+    const renderAddOns = () => { renderIngs(); renderTags(); if(!meal.isSide) FHAddOns.paint(addHosts, meal, date, !locked(), renderAddOns, timerFor); updateButtons(); };
     renderIngs(); renderTags();
     if(!r.own) left.appendChild(h('div', { class:'fhr-chips' },
       h('span', { class:'fhr-b time', text:'⏱ Ready in ' + fmtMin(total(r)) }),
@@ -5208,6 +5214,7 @@ const FHRecipes = (function(){
     }
     if(!r.ownMethod) right.appendChild(seg);
     right.appendChild(steps);
+    if(!r.long.length) right.appendChild(h('p', { class:'ob-hint', text:'No method saved yet.' + (locked() ? '' : ' Tap ✏️ Edit to add the steps.') }));
     right.appendChild(addHosts.bottom);
     if(meal.link) right.appendChild(h('p', {}, h('a', { class:'meal-link', href:meal.link, target:'_blank', rel:'noopener', text:'🔗 Your own recipe link' })));
     body.appendChild(h('p', { class:'fhr-safe', text:'Cook meat until steaming hot with no pink, and follow packet instructions where they differ. Diet tags come from the ingredient list: check packaging, especially if anyone has an allergy.' }));
@@ -5438,9 +5445,14 @@ const FHAddOns = (function(){
   }
   /* everything needed for this meal on this date: what the shopping list, dinner card and diet labels use */
   function lines(meal, date){
-    const on = chosen(meal.id, date);
-    if(!on.length) return meal.ingredients || [];
-    return on.reduce((acc, a) => acc.concat(ings(a)), kept(meal, date).slice());
+    const on = chosen(meal.id, date), own = ownSides(meal, date);
+    const out = on.length ? on.reduce((acc, a) => acc.concat(ings(a)), kept(meal, date).slice()) : (meal.ingredients || []);
+    return own.length ? out.concat(own) : out;
+  }
+  /* the household's own sides with a recipe on that night (Recipes › Sides): their lines, each with _side = its name */
+  function ownSides(meal, date){
+    if(!date || !meal || meal.isSide) return [];
+    try{ return MealApp.ownSideLines(date, meal.id) || []; }catch(e){ return []; }
   }
 
   /* step wording: {ml:600} is the water for 4, scaled to who's eating so the rice comes out right; then UK/US and metric/imperial */
@@ -5567,7 +5579,7 @@ const FHAddOns = (function(){
     document.addEventListener('keydown', onKey);
     draw();
   }
-  return { ALL, byId, suggestions, others, chosen, picked, sideNames, isOn, toggle, isOff, setOff, kept, lines, ings, paint, dayRow, planChip, planSheet };
+  return { ALL, byId, suggestions, others, chosen, picked, sideNames, isOn, toggle, isOff, setOff, kept, lines, ownSides, ings, paint, dayRow, planChip, planSheet };
 })();
 
 /* ==================== ALLERGENS in each ingredient (FHAllergy, ob_allergens.js) ==================== */
@@ -9081,7 +9093,7 @@ function fhOpenSides(idx){
   const week = currentWeek, day = plan[week][idx], meal = day.meal ? findMeal(day.meal) : null;
   FHAddOns.planSheet(meal, {
     title: FH_DAYLONG[idx] + ', week ' + week,
-    ownNote: 'Your own sides stay on this night of the plan, each time it comes round. They don’t add anything to the shopping list.',
+    ownNote: 'Your own sides stay on this night of the plan, each time it comes round. One with a recipe puts its ingredients on the shopping list.',
     own: function(){ return sidesLibrary.map(function(s){ return { id:s.id, name:s.name, on:day.sides.indexOf(s.id) >= 0 }; }); },
     toggleOwn: function(id){
       const i = day.sides.indexOf(id);
@@ -9118,8 +9130,8 @@ function fhOpenDateSides(date, onDone){
   const dated = !!FHDays.get(date);
   FHAddOns.planSheet(meal, {
     title: date.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long' }),
-    ownNote: dated ? 'Your own sides are for this day only, and don’t add anything to the shopping list.'
-      : 'Your own sides go on ' + FH_DAYLONG[s0.info.dayIdx] + ' of week ' + s0.info.week + ' of the plan, so they come back each time it does. They don’t add anything to the shopping list.',
+    ownNote: dated ? 'Your own sides are for this day only. One with a recipe puts its ingredients on the shopping list.'
+      : 'Your own sides go on ' + FH_DAYLONG[s0.info.dayIdx] + ' of week ' + s0.info.week + ' of the plan, so they come back each time it does. One with a recipe puts its ingredients on the shopping list.',
     own: function(){ const l = fhSidesOf(date).list; return sidesLibrary.map(function(s){ return { id:s.id, name:s.name, on:l.indexOf(s.id) >= 0 }; }); },
     toggleOwn: function(id){ const s = fhSidesOf(date), i = s.list.indexOf(id); if(i >= 0) s.list.splice(i, 1); else s.list.push(id); s.save(s.list); },
     addOwn: function(name){
@@ -9218,6 +9230,56 @@ function fhPickedBar(){
   bar.appendChild(t); bar.appendChild(x);
 }
 
+/* ---------- a household's own sides with a recipe (Recipes › Sides, or a pasted recipe saved as "A side") ----------
+   sidesLibrary entries are {id, name} plus, when there's a recipe, ingredients (for 4, scaled with that night's dinner),
+   steps [{t, s}] and link. A side on a night puts its ingredients on the shopping list and the dinner card. */
+function fhSideObj(s){ return s ? { id:s.id, name:s.name, ingredients:(s.ingredients || []).slice(), steps:s.steps ? s.steps.slice() : null, link:s.link || '', isCustom:true, isSide:true } : null; }
+function fhGetSides(){ return sidesLibrary.map(fhSideObj); }
+function fhSaveSide(o){
+  let s = o.id ? findSide(o.id) : null;
+  if(!s){
+    const slug = String(o.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    s = { id:(slug || 'side') + '-' + Date.now().toString(36), name:'' };
+    sidesLibrary.push(s);
+  }
+  s.name = String(o.name || '').trim() || s.name;
+  if(o.ingredients && o.ingredients.length) s.ingredients = o.ingredients; else delete s.ingredients;
+  if(o.steps && o.steps.length) s.steps = o.steps; else delete s.steps;
+  if(o.link) s.link = o.link; else delete s.link;
+  persistSidesLibrary(); renderSidesLibraryList(); renderSidesShelf(); render();
+  return s.id;
+}
+// gone from the library, every rotation night and every dated night
+function fhRemoveSide(id){
+  const v = FHDays.load();
+  Object.keys(v).forEach(function(k){ const e = v[k]; if(e && e.sides && e.sides.indexOf(id) >= 0) FHDays.setSides(new Date(k + 'T00:00:00'), e.sides.filter(function(x){ return x !== id; })); });
+  removeSideFromLibrary(id);
+}
+// one of the household's own meals that's really a side: it moves to Sides and comes off the nights it was planned for
+function fhMealToSide(mealId, o){
+  const m = customMeals.find(function(x){ return x.id === mealId; }); if(!m) return null;
+  const id = fhSaveSide(o);
+  [1,2,3,4].forEach(function(w){ (plan[w] || []).forEach(function(d){ if(d && d.meal === mealId) d.meal = null; }); });
+  const v = FHDays.load();
+  Object.keys(v).forEach(function(k){ const e = v[k]; if(e && e.meal === mealId && e.src !== 'had'){ if(e.sides && e.sides.length) FHDays.set(new Date(k + 'T00:00:00'), null, e.src); else FHDays.clear(new Date(k + 'T00:00:00')); } });
+  try{ removeMealRule(mealId); }catch(e){}
+  savePlan();
+  removeCustomMeal(mealId);
+  return id;
+}
+// and back: a side that's really a meal
+function fhSideToMeal(sideId, o){ const id = saveRecipe(o); fhRemoveSide(sideId); return id; }
+// the ingredients of the household's own sides on a night (only for the meal that's on that night)
+function fhOwnSideLines(date, mealId){
+  if(!date) return [];
+  const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
+  let s; try{ s = fhSidesOf(d); }catch(e){ return []; }
+  if(mealId && s.info.mealId !== mealId) return [];
+  const out = [];
+  s.list.forEach(function(id){ const side = findSide(id); if(side && side.ingredients) side.ingredients.forEach(function(l){ out.push(Object.assign({}, l, { _side:side.name })); }); });
+  return out;
+}
+
 /* ---- Portion sizes (inside MealApp): one amount per person for meat & fish, and one for tofu, paneer, halloumi and
    other plant proteins (fhPortionGroup in ob_core.js), synced as brick-bites-portion-sizes-v1 { meat:g, plant:g }
    (0 = use the recipe's amount, which scales with the household). Changing a size sets every matching line in every
@@ -9293,7 +9355,7 @@ const __ready = init().then(function(){ if(fhPortionsCatchUp(false)){ render(); 
     getPlannedCount: getPlannedCount, getPlanMealIds: getPlanMealIds, getHouseholdSize: getHouseholdSize, getSections: getSections, getKnownIngredients: getKnownIngredients,
     differsFromBuiltin: differsFromBuiltin, resetToBuiltin: resetToBuiltin, restorePlan: restorePlan, setPortionSizes: setPortionSizes, getPortionSizes: fhPortionSizes, portionReach: portionReach, resetQuestion: resetQuestion, swapPlanned: swapPlanned,
     getRule: getRule, setMealRule: setMealRule, removeMealRule: removeMealRule, reapplyRules: reapplyRules, getRuleText: ruleText, getRules: function(){ return mealRules.slice(); },
-    takeSelected: fhTakeSelected, addDateSide: fhAddDateSide, dateSidesRow: fhDateSidesRow, openDateSides: fhOpenDateSides,
+    takeSelected: fhTakeSelected, getSides: fhGetSides, saveSide: fhSaveSide, removeSide: fhRemoveSide, mealToSide: fhMealToSide, sideToMeal: fhSideToMeal, ownSideLines: fhOwnSideLines, addDateSide: fhAddDateSide, dateSidesRow: fhDateSidesRow, openDateSides: fhOpenDateSides,
     getDayDisplay: getDayDisplay,
     getWeekForDate: weekForDate,
     getCategoryMeta: categoryById,
@@ -14513,7 +14575,7 @@ const FHShopTags = (function(){
    The Recipes page (menu: Meals & shopping) holds the library, so the Meal plan page is for planning only.
    - Meals: search, Our usual / Ours / Changed / Under 30 min / a main ingredient; a card per meal opens the recipe
      (the app's, or a household's own with its method and timers); Manage holds categories, portions and the quick list.
-   - Sides: the household's own sides (the old "Sides & veggies") and the app's sides and dips.
+   - Sides: the household's own sides (MealApp.getSides: a name, or a whole recipe saved as "A side") and the app's sides and dips.
    - Homemade: the pastes and sauces the app can make from scratch, and whether this household does.
    - The editor (`edit`): name, main ingredient, cuisine, serves, ingredients, method steps with timers, a link. It
      saves through MealApp.saveRecipe: a built-in meal keeps the household's copy (its method only if it was changed),
@@ -14617,7 +14679,7 @@ const FHBook = (function(){
     const list = all(), mine = list.filter(m => m.isCustom).length;
     root.appendChild(h('div', { class:'fhbk-top' },
       h('p', { class:'fhbk-count', text:plural(list.length, 'meal', 'meals') + (mine ? ' · ' + mine + ' of yours' : '') }),
-      locked() ? null : h('button', { type:'button', class:'btn fhbk-add', id:'fhbkAdd', text:'＋ Add a recipe', onClick:() => edit(null) })));
+      locked() ? null : h('button', { type:'button', class:'btn fhbk-add', id:'fhbkAdd', text:tab === 'sides' ? '＋ Add a side' : '＋ Add a recipe', onClick:() => edit(null) })));
     root.appendChild(h('div', { class:'fhbk-tabs', role:'tablist', 'aria-label':'What kind' },
       [['meals', 'Meals'], ['sides', 'Sides'], ['homemade', 'Homemade']].map(t => h('button', { type:'button', role:'tab', class:'fhbk-tab' + (tab === t[0] ? ' on' : ''), 'aria-selected':tab === t[0] ? 'true' : 'false', 'data-tab':t[0], text:t[1],
         onClick:() => { tab = t[0]; render(); } }))));
@@ -14679,9 +14741,18 @@ const FHBook = (function(){
   }
 
   function sidesTab(root){
-    root.appendChild(h('p', { class:'ob-hint', text:'Your own sides go on any night: pick one on the Meal plan, then tap a day. The app’s sides, dips and tweaks go with a meal: tap ＋ Sides on a day’s dinner, or ＋ sides under a day on the Meal plan.' }));
-    const own = document.getElementById('fhbkSidesPanel');
-    if(own){ own.open = true; own.hidden = locked(); root.appendChild(own); }
+    root.appendChild(h('p', { class:'ob-hint', text:'Sides go with any dinner: tap ＋ Sides on a day’s dinner, or ＋ sides under a day on the Meal plan. A side with a recipe puts its ingredients on the shopping list for that night.' }));
+    const mine = (() => { try{ return MealApp.getSides(); }catch(e){ return []; } })().sort((a, b) => a.name.localeCompare(b.name));
+    root.appendChild(h('h3', { class:'fhbk-h', id:'fhbkOwnSidesH', text:'Your own sides · ' + mine.length }));
+    if(mine.length) root.appendChild(h('div', { class:'fhbk-list', id:'fhbkOwnSides' }, mine.map(s => {
+      const r = FHRecipes.recipeFor(s.id), n = (s.steps || []).length;
+      const bits = n ? plural(n, 'step', 'steps') : s.ingredients.length ? 'Ingredients only · add the method' : 'Just a name · add the recipe';
+      return h('button', { type:'button', class:'fhbk-card', 'data-side':s.id, style:'--fhbk-h:140', onClick:() => { if(r) FHRecipes.open(s.id); else if(!locked()) edit(s.id); } },
+        h('span', { class:'fhbk-ico', 'aria-hidden':'true', text:'🥗' }),
+        h('span', { class:'fhbk-txt' }, h('b', { text:s.name }), h('small', { text:bits + (n && s.ingredients.length ? ' · ' + plural(s.ingredients.length, 'ingredient', 'ingredients') : '') })),
+        h('span', { class:'fhbk-badge ours', text:'Ours' }));
+    })));
+    else root.appendChild(h('p', { class:'ob-hint fhbk-none', text:locked() ? 'No sides of your own yet.' : 'None yet. Tap “Add a side”, or paste a recipe and choose “A side”.' }));
     const app = (FHAddOns.ALL || []).filter(a => a.kind !== 'tweak');
     root.appendChild(h('h3', { class:'fhbk-h', text:'The app’s sides and dips · ' + app.length }));
     root.appendChild(h('div', { class:'fhbk-list' }, app.map(a => h('div', { class:'fhbk-card static', 'data-addon':a.id },
@@ -14719,12 +14790,15 @@ const FHBook = (function(){
   }
   function edit(id, pre){
     if(locked() || document.getElementById('fhbkEdit')) return;
-    const meal = id ? all().find(m => m.id === id) : null;
+    let meal = id ? all().find(m => m.id === id) : null;
+    const side = id && !meal ? (MealApp.getSides().find(s => s.id === id) || null) : null;
+    if(side) meal = side;
     const r = meal && !meal.isCustom ? FHRecipes.get(meal.id) : null;
     const appSteps = r ? r.long.map(s => ({ t:s.t, m:s.s ? Math.round(s.s / 60) : 0 })) : [];
     const st = {
       name:pre ? pre.name || '' : meal ? meal.name : '',
-      cat:meal ? meal.cat : pre && pre.cat || (cats()[0] || {}).id || '',
+      kind:side ? 'side' : meal ? 'meal' : pre && pre.kind || (tab === 'sides' ? 'side' : 'meal'),
+      cat:meal && !side ? meal.cat : pre && pre.cat || (cats()[0] || {}).id || '',
       cuisine:meal ? meal.cuisine || '' : '',
       serves:meal && meal.servesOverride ? String(meal.servesOverride) : '',
       ings:(pre ? pre.ingredients : meal ? meal.ingredients || [] : []).map(i => Object.assign({}, i)),
@@ -14740,15 +14814,28 @@ const FHBook = (function(){
       body.innerHTML = '';
       if(!meal) body.appendChild(h('button', { type:'button', class:'fhbk-pastebtn', id:'fhbkPasteBtn', onClick:() => { close(); paste(); } },
         h('b', { text:'📋 Paste a recipe instead' }), h('small', { text:'from a website, a note or a message' })));
+      // a meal or a side: new recipes and the household's own (the app's meals stay meals)
+      if(!meal || meal.isCustom){
+        body.appendChild(h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'What is it?' }),
+          h('div', { class:'ob-chips', id:'fhbkKind' }, [['meal', '🍽️ A main meal'], ['side', '🥗 A side']].map(k => h('button', { type:'button', class:'ob-chip' + (st.kind === k[0] ? ' on' : ''), 'aria-pressed':st.kind === k[0] ? 'true' : 'false', 'data-kind':k[0], text:k[1], onClick:() => { st.kind = k[0]; draw(); } })))));
+        if(meal && !side && st.kind === 'side') body.appendChild(h('p', { class:'ob-hint fhbk-move', text:'It moves to Sides, and comes off any nights it’s planned as a dinner.' }));
+        if(side && st.kind === 'meal') body.appendChild(h('p', { class:'ob-hint fhbk-move', text:'It moves to Meals, and comes off any nights it’s a side on.' }));
+      }
+      const isSide = st.kind === 'side';
       const nameIn = h('input', { class:'ob-input', id:'fhbkName', maxlength:'60', value:st.name, 'aria-label':'Name', onInput:e => { st.name = e.target.value; } });
       const servesIn = h('input', { class:'ob-input', id:'fhbkServes', inputmode:'numeric', maxlength:'2', value:st.serves, placeholder:String(MealApp.getHouseholdSize()), 'aria-label':'Serves', onInput:e => { st.serves = e.target.value.replace(/\D/g, ''); } });
-      body.appendChild(h('div', { class:'fhbk-row2' },
-        h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Name' }), nameIn),
-        h('label', { class:'fhe-field fhbk-serves' }, h('span', { class:'fhe-lab', text:'Serves' }), servesIn)));
-      body.appendChild(h('p', { class:'ob-hint', text:'Leave Serves empty to cook for the whole household. Amounts below are for 4 people; the app scales them.' }));
-      body.appendChild(h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Main ingredient' }),
-        h('div', { class:'ob-chips' }, cats().map(c => h('button', { type:'button', class:'ob-chip' + (st.cat === c.id ? ' on' : ''), 'aria-pressed':st.cat === c.id ? 'true' : 'false', 'data-cat':c.id, text:(c.emoji ? c.emoji + ' ' : '') + c.label, onClick:() => { st.cat = c.id; draw(); } })))));
-      body.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Cuisine (optional)' }), h('input', { class:'ob-input', maxlength:'24', value:st.cuisine, placeholder:'e.g. Italian', onInput:e => { st.cuisine = e.target.value; } })));
+      if(isSide){
+        body.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Name' }), nameIn));
+        body.appendChild(h('p', { class:'ob-hint', text:'Amounts below are for 4 people; the app scales them to the dinner it goes with.' }));
+      }else{
+        body.appendChild(h('div', { class:'fhbk-row2' },
+          h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Name' }), nameIn),
+          h('label', { class:'fhe-field fhbk-serves' }, h('span', { class:'fhe-lab', text:'Serves' }), servesIn)));
+        body.appendChild(h('p', { class:'ob-hint', text:'Leave Serves empty to cook for the whole household. Amounts below are for 4 people; the app scales them.' }));
+        body.appendChild(h('div', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Main ingredient' }),
+          h('div', { class:'ob-chips' }, cats().map(c => h('button', { type:'button', class:'ob-chip' + (st.cat === c.id ? ' on' : ''), 'aria-pressed':st.cat === c.id ? 'true' : 'false', 'data-cat':c.id, text:(c.emoji ? c.emoji + ' ' : '') + c.label, onClick:() => { st.cat = c.id; draw(); } })))));
+        body.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Cuisine (optional)' }), h('input', { class:'ob-input', maxlength:'24', value:st.cuisine, placeholder:'e.g. Italian', onInput:e => { st.cuisine = e.target.value; } })));
+      }
       // ingredients
       body.appendChild(h('p', { class:'fhe-lab fhbk-sub', text:'Ingredients · ' + st.ings.length }));
       const il = h('div', { class:'fhbk-ings' });
@@ -14792,15 +14879,29 @@ const FHBook = (function(){
       const sameAsApp = r && JSON.stringify(steps) === JSON.stringify(r.long.map(s => { const o = { t:s.t }; if(s.s) o.s = Math.round(s.s / 60) * 60; return o; }));
       const ings = st.ings.filter(i => i.name.trim()).map(i => { const o = Object.assign({}, i, { name:i.name.trim(), unit:i.unit || 'each' }); if(!o.section) o.section = fhGuessSection(o.name); return o; });
       const sv = parseInt(st.serves, 10);
-      const newId = MealApp.saveRecipe({ id:meal ? meal.id : null, name:name, cat:st.cat, cuisine:st.cuisine.trim(), servesOverride:sv > 0 ? sv : null, ingredients:ings, steps:sameAsApp ? null : steps, link:link });
+      let newId;
+      if(st.kind === 'side'){
+        const o = { id:side ? side.id : null, name:name, ingredients:ings, steps:steps, link:link };
+        newId = meal && !side ? MealApp.mealToSide(meal.id, o) : MealApp.saveSide(o);
+        tab = 'sides';
+      }else{
+        const o = { id:meal && !side ? meal.id : null, name:name, cat:st.cat, cuisine:st.cuisine.trim(), servesOverride:sv > 0 ? sv : null, ingredients:ings, steps:sameAsApp ? null : steps, link:link };
+        newId = side ? MealApp.sideToMeal(side.id, o) : MealApp.saveRecipe(o);
+        if(side) tab = 'meals';
+      }
       close(); render();
       if(newId && FHRecipes.recipeFor(newId)) FHRecipes.open(newId);
     };
     const m = h('div', { id:'fhbkEdit', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet fhbk-sheet', role:'dialog', 'aria-label':meal ? 'Edit ' + meal.name : 'Add a recipe' },
-        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:meal ? '✏️ ' + meal.name : pre ? '📋 Check and add' : '＋ Add a recipe' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:meal ? '✏️ ' + meal.name : pre ? '📋 Check and add' : st.kind === 'side' ? '＋ Add a side' : '＋ Add a recipe' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
         h('div', { class:'fhbk-scroll' }, body),
-        h('div', { class:'fhe-actions fhbk-actions' }, h('button', { type:'button', class:'btn', id:'fhbkSave', text:'Save', onClick:save }), h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }))));
+        h('div', { class:'fhe-actions fhbk-actions' }, h('button', { type:'button', class:'btn', id:'fhbkSave', text:'Save', onClick:save }), h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }),
+          side ? h('button', { type:'button', class:'btn secondary fhbk-del', id:'fhbkDelSide', text:'Delete', onClick:e => {
+            const b = e.currentTarget;
+            if(!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Tap again to delete'; return; }
+            MealApp.removeSide(side.id); close(); render();
+          } }) : null)));
     document.body.appendChild(m);
     document.addEventListener('keydown', onKey);
     draw();
