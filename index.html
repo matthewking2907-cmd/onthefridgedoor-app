@@ -3167,7 +3167,7 @@ var FHTheme = (function(){
     <div class="nav-label-grp">Family</div>
     <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span></button>
     <button class="nav-item" data-page="routines"><span class="nav-icon">🌅</span><span class="nav-label">Routines</span></button>
-    <button class="nav-item" data-page="rewards"><span class="nav-icon">⭐</span><span class="nav-label">Stars &amp; rewards</span></button>
+    <button class="nav-item" data-page="rewards"><span class="nav-icon">🏆</span><span class="nav-label">Rewards</span></button>
     <div class="nav-label-grp">Home</div>
     <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
     <button class="nav-item" data-page="occasions"><span class="nav-icon">🎂</span><span class="nav-label">Occasions</span></button>
@@ -11329,7 +11329,7 @@ function fhrwRender(root){
   if(!root) return;
   root.innerHTML = ''; fhchLoad();
   const kid = fhchKid();
-  root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Stars & rewards' })));
+  root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Rewards' })));
   root.appendChild(h('p', { class:'fhch-note', text:'Stars come from chores, routines and habits. Each person collects their own.' }));
   const coll = fhchCollectors(), not = people.filter(function(p){ return p.noStars; });
   coll.forEach(function(p){
@@ -15337,7 +15337,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Stars & rewards', ahead:'Coming up', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Rewards', ahead:'Coming up', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -16094,7 +16094,7 @@ const OBW = (function(){
       h('input',{type:'checkbox',checked:!!F[key]&&!disabled,disabled:!!disabled,onChange:e=>{ F[key]=e.target.checked; error=''; render(); }}));
     return [ ...title('What do you want to use?','Switch on only what suits your family. You can change this any time in Settings.'),
       row('chores','🧹','Chore chart','Daily, weekly and monthly jobs shared between everyone.'),
-      row('rewards','⭐','Stars & rewards','Stars (or anything you like) for chores and routines, with prizes later.', !F.chores, !F.chores?'Needs the chore chart':''),
+      row('rewards','🏆','Rewards','Stars (or anything you like) for chores and routines, with prizes later.', !F.chores, !F.chores?'Needs the chore chart':''),
       row('meals','🍽️','Meal planner','A 4-week rolling plan with a library of family meals.'),
       row('shopping','🛒','Shopping list', F.meals ? 'Built automatically from your meal plan, scaled to your household. Add anything else by hand.' : 'A shopping list you fill yourself. Switch on the meal planner too and it fills itself from your meals.'),
       row('essentials','🧻','Household essentials','Tap when you run low on toilet roll, bin bags and the like. It goes on your next shop.', !F.shopping, !F.shopping?'Needs the shopping list':''),
@@ -16204,7 +16204,7 @@ const OBW = (function(){
           select(OB_REWARD_CHOICES.map(r=>[r.id,r.icon+' '+r.label]), S.personRewards[p.id]||'stars', v=>{ S.personRewards[p.id]=v; saveDraft(); })));
       });
       out.push(prow);
-      out.push(h('p',{class:'ob-hint',text:'Prizes come later, on the Stars & rewards page, once everyone has a few stars.'}));
+      out.push(h('p',{class:'ob-hint',text:'Prizes come later, on the Rewards page, once everyone has a few stars.'}));
     }
     return out;
   }
@@ -16675,10 +16675,10 @@ function applyFeatureGating(){
   document.body.classList.toggle('meals-off', !Feature.on('meals'));
   const hidden = { rewards:!(Feature.on('chores') && Feature.on('rewards')), mealplan:!Feature.on('meals'), recipes:!Feature.on('meals'), shopping:!Feature.on('shopping'), essentials:!Feature.on('essentials'), chores:!Feature.on('chores'), tasklists:!Feature.on('chores'), tasks:!Feature.on('tasks'), routines:!Feature.on('routines'), occasions:!Feature.on('occasions'), paperwork:!Feature.on('paperwork') };
   { const rb = document.querySelector('.nav-item[data-page="rewards"]'); if(rb) rb.style.display = hidden.rewards ? 'none' : ''; }
-  // a child's own device: no kitchen display, no Occasions (gift ideas) or Paperwork
+  // a child's own device: no kitchen display, no Occasions (gift ideas), Paperwork or Routines (they tick routines on Today)
   const kid = fhChildDevice();
   document.body.classList.toggle('fh-kid', kid);
-  ['occasions', 'paperwork'].forEach(function(pg){ const b = document.querySelector('.nav-item[data-page="' + pg + '"]'); if(b) b.classList.toggle('kid-hidden', kid); if(kid) hidden[pg] = true; });
+  ['occasions', 'paperwork', 'routines'].forEach(function(pg){ const b = document.querySelector('.nav-item[data-page="' + pg + '"]'); if(b) b.classList.toggle('kid-hidden', kid); if(kid) hidden[pg] = true; });
   { const kb = document.getElementById('navKitchen'); if(kb) kb.classList.toggle('kid-hidden', kid); }
   // hide a menu heading when everything under it is hidden
   document.querySelectorAll('#sidebar .nav-label-grp').forEach(function(lab){
@@ -16732,7 +16732,7 @@ function renderSettingsPage(){
   root.appendChild(h('div',{class:'st-card',id:'stFeatures'},
     h('h3',{text:'Features'}),
     toggle('chores','🧹','Chore chart','Jobs for everyone, ticked off on Today and the Chores page'),
-    toggle('rewards','⭐','Stars & rewards','Stars from chores, routines and habits, and prizes', !F.on('chores')),
+    toggle('rewards','🏆','Rewards','Stars from chores, routines and habits, and prizes', !F.on('chores')),
     toggle('routines','🌅','Routines & habits','School mornings, bedtime, reading and the like'),
     toggle('meals','🍽️','Meal planner','Meal plan and calendar meals'),
     toggle('shopping','🛒','Shopping list', F.on('meals') ? 'Fills itself from your meal plan; add anything else by hand' : 'Add things by hand; essentials you run low on go on it too'),
@@ -18651,7 +18651,7 @@ const FHAhead = (function(){
         out.push({ d:i, date, t:ev.allDay ? '' : (ev.start || ''), title:ev.title || 'Busy',
           sub:[ev.allDay ? '' : (ev.start || '') + (ev.end ? '–' + ev.end : ''), multi || brkTo, ev.ro ? (ev.who ? ev.who + '’s calendar' : '') : whoText(ev), rep ? '↻ ' + rep : ''].filter(Boolean).join(' · '),
           color:ev.ro ? (ev.color || 'var(--accent,#6C4F8A)') : FHEvents.colorOf(ev.who), key, rep:!!rep || !!ev.fid,
-          open:own ? () => FHEvents.openEditor({ ev, date }) : ev.occ ? () => showPage('occasions') : ev.brk ? () => showPage('routines') : null });
+          open:own ? () => FHEvents.openEditor({ ev, date }) : ev.occ ? () => showPage('occasions') : ev.brk && !fhChildDevice() ? () => showPage('routines') : null });
       });
     }
     // tasks with a date (late ones today)
