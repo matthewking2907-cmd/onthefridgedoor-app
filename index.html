@@ -3073,6 +3073,24 @@ details.ob-mg[open] > summary::after{ transform:rotate(180deg); }
 details.ob-mg > .ob-meals{ padding:0 10px 10px; }
 .fhbk-del.sure{ color:#b3261e; border-color:#b3261e; }
 .fhbk-move{ color:var(--ink); font-weight:600; }
+.nav-item.kid-hidden{ display:none !important; }
+.fhs-steps .fhbk-timer{ display:block; margin:6px 0 4px; }
+.fhbk-sidemeta{ color:var(--muted); margin:0; font-size:.9rem; }
+/* Coming up page (ob_ahead.js) */
+.fhah-h{ margin:4px 0 2px; }
+.fhah-chips{ margin:10px 0 6px; }
+.fhah-n{ opacity:.65; font-weight:600; }
+.fhah-sec{ margin-top:18px; }
+.fhah-sh{ margin:0 0 6px; font-size:1.05rem; }
+.fhah-sh span{ color:var(--muted); font-weight:600; }
+.fhah-day{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:12px 2px 4px; font-size:.92rem; }
+.fhah-day span{ color:var(--muted); font-size:.85rem; }
+.fhah-list{ display:flex; flex-direction:column; gap:6px; }
+.fhah-row{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; text-align:left; font:inherit; color:var(--ink); background:var(--white); border:1.5px solid var(--panel-line); border-left:5px solid var(--ec, var(--accent,#6C4F8A)); border-radius:12px; padding:9px 12px; min-height:44px; box-sizing:border-box; }
+button.fhah-row{ cursor:pointer; }
+.fhah-t{ font-weight:700; overflow-wrap:anywhere; }
+.fhah-row small{ color:var(--muted); font-size:.84rem; }
+.fhah-none{ margin:4px 2px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -3141,6 +3159,7 @@ var FHTheme = (function(){
     <div class="nav-label-grp">Family planner</div>
     <button class="nav-item active" data-page="today"><span class="nav-icon">☀️</span><span class="nav-label">Today</span></button>
     <button class="nav-item" data-page="calendar"><span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span></button>
+    <button class="nav-item" data-page="ahead"><span class="nav-icon">📆</span><span class="nav-label">Coming up</span></button>
     <div class="nav-label-grp">Food &amp; shopping</div>
     <button class="nav-item" data-page="mealplan"><span class="nav-icon">🍽️</span><span class="nav-label">Meal plan</span></button>
     <button class="nav-item" data-page="recipes"><span class="nav-icon">📖</span><span class="nav-label">Recipes</span></button>
@@ -3497,6 +3516,10 @@ var FHTheme = (function(){
       <div class="app"><div id="rewardsContent"></div></div>
     </section>
 
+    <section class="page" id="page-ahead">
+      <div class="app"><div id="aheadContent"></div></div>
+    </section>
+
     <section class="page" id="page-paperwork">
       <div class="app"><div id="paperworkContent"></div></div>
     </section>
@@ -3707,6 +3730,17 @@ const FH_NEEDS_SETUP = !Feature.isSetUp() && !fhLegacyDataExists();
 
 /* Put the cursor in a pop-up's first box only where there's a mouse: on a phone it would throw the keyboard up
    before you've decided what to do. */
+/* A child's own phone or tablet: this device's person (set when it joined, or Settings › Reminders) is a child.
+   Shared screens (no person) and grown-ups' phones are not. Children's devices get a simpler app: Today without the
+   shopping and Coming up (gift reminders), no kitchen display, no Occasions page. Read from storage so it works
+   before the chore chart has loaded. */
+function fhChildDevice(){
+  try{
+    const pr = JSON.parse(fhRawGet('family-hub-push-prefs') || 'null'), pid = pr && pr.person; if(!pid) return false;
+    const ps = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'), p = Array.isArray(ps) ? ps.find(x => x && x.id === pid) : null;
+    return !!(p && p.role === 'child');
+  }catch(e){ return false; }
+}
 /* iPhone or iPad (iPadOS reports itself as a Mac with touch) */
 function fhIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function fhFocusIfDesktop(el){ try{ if(el && window.matchMedia && window.matchMedia('(pointer: fine)').matches) el.focus(); }catch(e){} }
@@ -5579,7 +5613,7 @@ const FHAddOns = (function(){
     document.addEventListener('keydown', onKey);
     draw();
   }
-  return { ALL, byId, suggestions, others, chosen, picked, sideNames, isOn, toggle, isOff, setOff, kept, lines, ownSides, ings, paint, dayRow, planChip, planSheet };
+  return { ALL, byId, suggestions, others, chosen, picked, sideNames, isOn, toggle, isOff, setOff, kept, lines, ownSides, ings, say, paint, dayRow, planChip, planSheet };
 })();
 
 /* ==================== ALLERGENS in each ingredient (FHAllergy, ob_allergens.js) ==================== */
@@ -10952,7 +10986,8 @@ function fhchRender(){
   const today = shStartOfDayLocal(new Date());
   if(!fhchDay) fhchDay = today;
   root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Chores' }),
-    fhchStarsOn() ? h('button', { type:'button', class:'fhch-topbtn', id:'fhchStars', text:'⭐ Stars', onClick:function(){ showPage('rewards'); } }) : null,
+    // each child picks their own picture (a paw, a rainbow…), so the button says Rewards; nobody collecting, no button
+    fhchStarsOn() && fhchCollectors().length ? h('button', { type:'button', class:'fhch-topbtn', id:'fhchStars', text:'🏆 Rewards', onClick:function(){ showPage('rewards'); } }) : null,
     kid ? null : h('button', { type:'button', class:'fhch-topbtn', id:'fhchEdit', text:'✏️ Jobs', onClick:function(){ fhchMode = 'jobs'; fhchRender(); window.scrollTo(0, 0); } })));
   if(people.length > 1){
     const chips = h('div', { class:'fhe-chips fhch-chips', role:'group', 'aria-label':'Show chores for' });
@@ -11967,7 +12002,7 @@ const FHOcc = (function(){
 
   /* Today: "Coming up" card with open reminders */
   function todayCard(date){
-    if(locked()) return null;
+    if(locked() || fhChildDevice()) return null;   // gift reminders aren't for children's eyes
     const list = open(date); if(!list.length) return null;
     return h('section', { class:'fhd-sec fho-coming' },
       h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:'Coming up' })),
@@ -13738,7 +13773,8 @@ const FHLayout = (function(){
   function fromPreset(kind, pid){ const p = preset(kind, pid); return { preset:p[0], list:fill(kind, p[3].map(x => [x[0], 1, x[1], x[2] ? 1 : 0])) }; }
   function load(kind){
     let v = null; try{ v = JSON.parse(fhRawGet(KEY[kind]) || 'null'); }catch(e){}
-    if(!v || !Array.isArray(v.list)) return fromPreset(kind, PRESETS[kind][0][0]);
+    // a child's own device starts on the Children layout (no shopping or gift reminders)
+    if(!v || !Array.isArray(v.list)) return fromPreset(kind, kind === 'today' && fhChildDevice() ? 'kids' : PRESETS[kind][0][0]);
     const list = v.list.filter(x => Array.isArray(x) && info(kind, x[0])).map(x => {
       let size = SIZES[kind].indexOf(x[2]) >= 0 ? x[2] : (kind === 'today' ? 'card' : 'f');
       if(info(kind, x[0]).kind === 'notile' && size === 'tile') size = 'card';
@@ -14604,6 +14640,7 @@ const FHBook = (function(){
     return out;
   }
   function plural(n, one, many){ return n + ' ' + (n === 1 ? one : many); }
+  function sideCount(){ let n = (FHAddOns.ALL || []).filter(a => a.kind !== 'tweak').length; try{ n += MealApp.getSides().length; }catch(e){} return n; }
 
   /* ---------------- the old panels: moved here (and to Settings) at load ---------------- */
   const PANELS = ['fhbkMealsPanel', 'fhbkSidesPanel', 'portionsPanel'];
@@ -14678,7 +14715,7 @@ const FHBook = (function(){
     root.innerHTML = '';
     const list = all(), mine = list.filter(m => m.isCustom).length;
     root.appendChild(h('div', { class:'fhbk-top' },
-      h('p', { class:'fhbk-count', text:plural(list.length, 'meal', 'meals') + (mine ? ' · ' + mine + ' of yours' : '') }),
+      h('p', { class:'fhbk-count', text:tab === 'sides' ? plural(sideCount(), 'side', 'sides') : tab === 'homemade' ? plural(Object.keys(FH_SCRATCH).length, 'homemade recipe', 'homemade recipes') : plural(list.length, 'meal', 'meals') + (mine ? ' · ' + mine + ' of yours' : '') }),
       locked() ? null : h('button', { type:'button', class:'btn fhbk-add', id:'fhbkAdd', text:tab === 'sides' ? '＋ Add a side' : '＋ Add a recipe', onClick:() => edit(null) })));
     root.appendChild(h('div', { class:'fhbk-tabs', role:'tablist', 'aria-label':'What kind' },
       [['meals', 'Meals'], ['sides', 'Sides'], ['homemade', 'Homemade']].map(t => h('button', { type:'button', role:'tab', class:'fhbk-tab' + (tab === t[0] ? ' on' : ''), 'aria-selected':tab === t[0] ? 'true' : 'false', 'data-tab':t[0], text:t[1],
@@ -14755,9 +14792,39 @@ const FHBook = (function(){
     else root.appendChild(h('p', { class:'ob-hint fhbk-none', text:locked() ? 'No sides of your own yet.' : 'None yet. Tap “Add a side”, or paste a recipe and choose “A side”.' }));
     const app = (FHAddOns.ALL || []).filter(a => a.kind !== 'tweak');
     root.appendChild(h('h3', { class:'fhbk-h', text:'The app’s sides and dips · ' + app.length }));
-    root.appendChild(h('div', { class:'fhbk-list' }, app.map(a => h('div', { class:'fhbk-card static', 'data-addon':a.id },
+    root.appendChild(h('div', { class:'fhbk-list' }, app.map(a => h('button', { type:'button', class:'fhbk-card', 'data-addon':a.id, onClick:() => sideSheet(a) },
       h('span', { class:'fhbk-ico', 'aria-hidden':'true', text:a.kind === 'dip' ? '🥣' : '🍚' }),
       h('span', { class:'fhbk-txt' }, h('b', { text:FHLocale.text(a.name) }), h('small', { text:[a.kind === 'dip' ? 'Dip or sauce' : 'Side', a.mins ? a.mins + ' min' : ''].filter(Boolean).join(' · ') }))))));
+  }
+
+  /* one of the app's sides or dips: its ingredients for the household and its method, with timers */
+  function sideSheet(a){
+    const old = document.getElementById('fhbkSide'); if(old) old.remove();
+    const close = () => { const el = document.getElementById('fhbkSide'); if(el) el.remove(); document.removeEventListener('keydown', onKey); };
+    const onKey = e => { if(e.key === 'Escape') close(); };
+    const size = (() => { try{ return MealApp.getHouseholdSize() || 4; }catch(e){ return 4; } })(), scale = size / 4;
+    const name = FHLocale.text(a.name);
+    const body = h('div', { class:'fhe-form fhbk-sidebody' });
+    body.appendChild(h('p', { class:'fhbk-sidemeta', text:[a.kind === 'dip' ? 'Dip or sauce' : 'Side', a.mins ? a.mins + ' min' : ''].filter(Boolean).join(' · ') }));
+    if(a.note) body.appendChild(h('p', { class:'ob-hint', text:FHLocale.text(a.note) }));
+    const ings = FHAddOns.ings(a);
+    if(ings.length){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Ingredients · ' + size + (size === 1 ? ' person' : ' people') }));
+      body.appendChild(h('ul', { class:'fhs-ings' }, ings.map(i => { const t = fhWholeQty(i.qty * scale, i._n0 || i.name, i.unit);
+        return h('li', {}, i.qty ? h('b', { text:fmt(t, i.unit) + ' ' }) : null, FHRecipes.countName(i.name, t, i.unit, i._n0)); })));
+    }
+    if((a.steps || []).length){
+      body.appendChild(h('p', { class:'fhe-lab', text:'Method' }));
+      body.appendChild(h('ol', { class:'fhs-steps' }, a.steps.map(s => h('li', {}, FHAddOns.say(s.t, {}),
+        s.s ? h('button', { type:'button', class:'fhbk-timer', text:'▶ ' + FHRecipes.fmtMin(Math.round(s.s / 60)) + ' timer', onClick:e => { FHRecipes.startTimer(s.l || name, s.s, name); e.currentTarget.textContent = '⏱ Timer started'; e.currentTarget.disabled = true; } }) : null))));
+    }
+    body.appendChild(h('p', { class:'ob-hint', text:'To have it with a dinner, tap ＋ Sides on that day’s dinner, or ＋ sides under a day on the Meal plan.' }));
+    const m = h('div', { id:'fhbkSide', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet fhbk-sheet', role:'dialog', 'aria-label':name },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:(a.kind === 'dip' ? '🥣 ' : '🍚 ') + name }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhbk-scroll' }, body)));
+    document.body.appendChild(m);
+    document.addEventListener('keydown', onKey);
   }
 
   function homemadeTab(root){
@@ -15270,7 +15337,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Stars & rewards', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Stars & rewards', ahead:'Coming up', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -15280,6 +15347,7 @@ function refreshPage(pageId){
   else if(pageId==='settings') renderSettingsPage();
   else if(pageId==='chores') ChoreApp.renderPage();
   else if(pageId==='rewards') ChoreApp.renderRewards(document.getElementById('rewardsContent'));
+  else if(pageId==='ahead') FHAhead.render(document.getElementById('aheadContent'));
   else if(pageId==='tasklists') ChoreApp.renderFrequencyPage(document.getElementById('taskListsContent'));
   else if(pageId==='shopping') MealApp.renderShoppingListPage(document.getElementById('shoppingListContent'));
   else if(pageId==='essentials') FHEss.render(document.getElementById('essentialsContent'));
@@ -16607,10 +16675,15 @@ function applyFeatureGating(){
   document.body.classList.toggle('meals-off', !Feature.on('meals'));
   const hidden = { rewards:!(Feature.on('chores') && Feature.on('rewards')), mealplan:!Feature.on('meals'), recipes:!Feature.on('meals'), shopping:!Feature.on('shopping'), essentials:!Feature.on('essentials'), chores:!Feature.on('chores'), tasklists:!Feature.on('chores'), tasks:!Feature.on('tasks'), routines:!Feature.on('routines'), occasions:!Feature.on('occasions'), paperwork:!Feature.on('paperwork') };
   { const rb = document.querySelector('.nav-item[data-page="rewards"]'); if(rb) rb.style.display = hidden.rewards ? 'none' : ''; }
+  // a child's own device: no kitchen display, no Occasions (gift ideas) or Paperwork
+  const kid = fhChildDevice();
+  document.body.classList.toggle('fh-kid', kid);
+  ['occasions', 'paperwork'].forEach(function(pg){ const b = document.querySelector('.nav-item[data-page="' + pg + '"]'); if(b) b.classList.toggle('kid-hidden', kid); if(kid) hidden[pg] = true; });
+  { const kb = document.getElementById('navKitchen'); if(kb) kb.classList.toggle('kid-hidden', kid); }
   // hide a menu heading when everything under it is hidden
   document.querySelectorAll('#sidebar .nav-label-grp').forEach(function(lab){
     let any = false, n = lab.nextElementSibling;
-    while(n && !n.classList.contains('nav-label-grp') && !n.classList.contains('nav-spacer')){ if(n.classList.contains('nav-item') && !n.classList.contains('nav-sub') && n.style.display !== 'none') any = true; n = n.nextElementSibling; }
+    while(n && !n.classList.contains('nav-label-grp') && !n.classList.contains('nav-spacer')){ if(n.classList.contains('nav-item') && !n.classList.contains('nav-sub') && n.style.display !== 'none' && !n.classList.contains('kid-hidden')) any = true; n = n.nextElementSibling; }
     lab.style.display = any ? '' : 'none';
   });
   if(typeof currentPage !== 'undefined' && hidden[currentPage]) showPage('today');
@@ -17125,7 +17198,7 @@ const FHKitchen = (function(){
     const sp = sb.querySelector('.nav-spacer'); sb.insertBefore(b, sp || null);
   })();
   // launch straight into it if asked (not while the setup wizard is up)
-  setTimeout(()=>{ if(rawGet(AUTO_KEY) === '1' && !document.getElementById('obOverlay') && !el) open(); }, 700);
+  setTimeout(()=>{ if(rawGet(AUTO_KEY) === '1' && !document.getElementById('obOverlay') && !el && !fhChildDevice()) open(); }, 700);
   return { open, close, isOpen, refresh:render };
 })();
 
@@ -17959,7 +18032,7 @@ const FHPush = (function(){
   const TEST = window.__FH_TEST_PUSH || null;   // automated tests only: pretends this browser supports push
   function vapid(){ return (TEST && TEST.vapid) || (typeof FH_SYNC_BUILD !== 'undefined' && FH_SYNC_BUILD && FH_SYNC_BUILD.vapid) || ''; }
   function prefs(){ let p = null; try{ p = JSON.parse(fhRawGet(PREF_KEY) || 'null'); }catch(e){} return Object.assign({}, DEFAULTS, p || {}); }
-  function savePrefs(p){ fhSaveJSON(PREF_KEY, p); }
+  function savePrefs(p){ fhSaveJSON(PREF_KEY, p); try{ applyFeatureGating(); }catch(e){} }   // the device's person can make it a child's device
   function synced(){ try{ return FHSync.summary().mode === 'ok'; }catch(e){ return false; } }
   function supported(){
     if(TEST) return true;
@@ -18526,6 +18599,153 @@ const FHStart = (function(){
     return box;
   }
   return { items, left, card, doneList };
+})();
+
+/* ==================== COMING UP (FHAhead) ====================
+   One page for everything ahead: plans (the household's events and connected calendars), tasks with a date,
+   birthdays and celebrations with their reminders ("Buy presents"), paperwork renewals, school holidays and trips.
+   Times to show: This week, This month, Next 3 months, 3 to 6 months, 6 months or more; any together (per device
+   family-hub-ahead-ranges). Each thing goes in the first chosen time it falls in, so nothing shows twice; sections
+   are nearest first. Beyond this week, a repeating thing shows once ("and 3 more times"). Bin day is left out.
+   Gift reminders and paperwork stay off a child's device and a locked screen; a child's device shows that child's
+   plans and everyone's. CSS prefix fhah-. */
+const FHAhead = (function(){
+  const PREF = 'family-hub-ahead-ranges';
+  const RANGES = [['week', 'This week'], ['month', 'This month'], ['3m', 'Next 3 months'], ['36', '3 to 6 months'], ['6p', '6 months or more']];
+  const LATER = { month:'Later this month', '3m':'Later in the next 3 months' };
+  const HORIZON = 366;   // days of plans looked at; paperwork has its own dates, however far
+  const DAY = 864e5;
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function d0(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function addMonths(d, n){ const x = new Date(d.getFullYear(), d.getMonth() + n, 1), last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate(); x.setDate(Math.min(d.getDate(), last)); return x; }
+  function dn(a, b){ return Math.round((d0(b) - d0(a)) / DAY); }
+  function parse(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function chosen(){ try{ const v = JSON.parse(fhRawGet(PREF) || 'null'); if(Array.isArray(v)) return v.filter(x => RANGES.some(r => r[0] === x)); }catch(e){} return ['week', 'month', '3m']; }
+  function setChosen(v){ fhRawSet(PREF, JSON.stringify(v)); }
+  function me(){ if(!fhChildDevice()) return ''; try{ return FHPush.prefs().person || ''; }catch(e){ return ''; } }
+
+  /* the end (exclusive) of each time, as days from today */
+  function bounds(today){
+    const wk = 7 - (today.getDay() + 6) % 7, mo = dn(today, new Date(today.getFullYear(), today.getMonth() + 1, 1));
+    const m3 = dn(today, addMonths(today, 3)), m6 = dn(today, addMonths(today, 6));
+    return { week:[0, wk], month:[0, mo], '3m':[0, m3], '36':[m3, m6], '6p':[m6, Infinity] };
+  }
+
+  /* everything ahead: { d (days from today), date, t (time, '' all day), title, sub, color, key (same thing, another day), rep, open } */
+  function collect(today){
+    const out = [], person = me(), quiet = locked() || fhChildDevice();
+    const seen = {};   // a run of days of one thing (a trip, a holiday) shows once, on its first day
+    for(let i = 0; i < HORIZON; i++){
+      const date = addDays(today, i);
+      let list = []; try{ list = FHEvents.forDay(date, person); }catch(e){}
+      list.forEach(ev => {
+        if(ev.bin || ev.paper) return;
+        const key = String(ev.id || ev.title).replace(/:\d{4}-\d{2}-\d{2}$/, '').replace(/^(cal:[^:]+):\d+$/, '$1:' + (ev.title || '') + ':' + (ev.start || ''));
+        if(seen[key] === i - 1){ seen[key] = i; return; }
+        seen[key] = i;
+        const own = !ev.ro;
+        const rep = own && ev.repeat && ev.repeat !== 'none' ? ({ weekly:'every week', fortnightly:'every 2 weeks', monthly:'every month', yearly:'every year' })[ev.repeat] || '' : '';
+        const multi = own && ev.endDate && ev.endDate !== ev.date ? 'until ' + fmtDate(parse(ev.endDate), today) : '';
+        const brkTo = ev.brk ? (() => { try{ const b = FHRoutines.data().breaks.find(x => 'brk:' + x.id === key); return b && b.to && b.to !== b.from ? 'until ' + fmtDate(parse(b.to), today) : ''; }catch(e){ return ''; } })() : '';
+        out.push({ d:i, date, t:ev.allDay ? '' : (ev.start || ''), title:ev.title || 'Busy',
+          sub:[ev.allDay ? '' : (ev.start || '') + (ev.end ? '–' + ev.end : ''), multi || brkTo, ev.ro ? (ev.who ? ev.who + '’s calendar' : '') : whoText(ev), rep ? '↻ ' + rep : ''].filter(Boolean).join(' · '),
+          color:ev.ro ? (ev.color || 'var(--accent,#6C4F8A)') : FHEvents.colorOf(ev.who), key, rep:!!rep || !!ev.fid,
+          open:own ? () => FHEvents.openEditor({ ev, date }) : ev.occ ? () => showPage('occasions') : ev.brk ? () => showPage('routines') : null });
+      });
+    }
+    // tasks with a date (late ones today)
+    if(Feature.on('tasks')){
+      let tasks = []; try{ tasks = FHTasks.load(); }catch(e){}
+      tasks.filter(t => !t.done && t.due && (!person || !t.who || t.who === person)).forEach(t => {
+        const due = parse(t.due); if(!due) return;
+        const i = Math.max(0, dn(today, due)); if(i >= HORIZON) return;
+        out.push({ d:i, date:addDays(today, i), t:t.time || '', title:'☑️ ' + t.title, sub:[t.time || '', dn(today, due) < 0 ? 'Late: was due ' + fmtDate(due, today) : '', whoName(t.who)].filter(Boolean).join(' · '),
+          color:FHEvents.colorOf(t.who), key:'task:' + t.id, open:() => FHTasks.openEditor({ task:t }) });
+      });
+    }
+    // birthday and celebration reminders: from the day each starts (or today, if it's already open)
+    if(!quiet && Feature.on('occasions')){
+      let occ = []; try{ occ = FHOcc.load(); }catch(e){}
+      occ.forEach(o => {
+        const when = FHOcc.next(o, today); if(!when) return;
+        const y = String(when.getFullYear());
+        (o.remind || []).forEach(r => {
+          if((r.done || {})[y]) return;
+          const i = Math.max(0, dn(today, addDays(when, -(+r.days || 0)))); if(i >= HORIZON || i > dn(today, when)) return;
+          out.push({ d:i, date:addDays(today, i), t:'', title:'🎁 ' + r.label, sub:FHOcc.fullTitle(o) + ', ' + fmtDate(when, today), color:'#C2457A', key:'occr:' + o.id + ':' + r.id, open:() => showPage('occasions') });
+        });
+      });
+    }
+    // paperwork: the date it's due, however far ahead
+    if(!quiet && Feature.on('paperwork')){
+      let pw = []; try{ pw = FHPaper.load(); }catch(e){}
+      pw.forEach(x => {
+        const due = parse(x.date); if(!due) return;
+        const i = dn(today, due); if(i < 0) return;
+        const k = FHPaper.KINDS.find(z => z.id === x.kind) || FHPaper.KINDS[FHPaper.KINDS.length - 1];
+        const from = addDays(due, -(+x.days || 0)), by = FHPaper.usableBy(x);
+        out.push({ d:i, date:due, t:'', title:k.icon + ' ' + FHPaper.fullName(x) + ' ' + k.verb, sub:[by ? 'renew by ' + fmtDate(parse(by), today) : '', from > today ? 'reminders from ' + fmtDate(from, today) : 'needs doing now'].filter(Boolean).join(' · '),
+          color:'#4A6FA5', key:'paper:' + x.id, open:() => showPage('paperwork') });
+      });
+    }
+    return out.sort((a, b) => a.d - b.d || (a.t || '').localeCompare(b.t || '') || a.title.localeCompare(b.title));
+  }
+  function whoText(ev){ try{ const ps = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'), ids = Array.isArray(ev.who) ? ev.who : (ev.who && ev.who !== 'all' ? [ev.who] : []); return ps.filter(p => ids.indexOf(p.id) >= 0).map(p => p.name).join(', '); }catch(e){ return ''; } }
+  function whoName(id){ return id ? whoText({ who:id }) : ''; }
+  function fmtDate(d, today){ if(!d) return ''; const o = { weekday:'short', day:'numeric', month:'short' }; if(d.getFullYear() !== today.getFullYear()) o.year = 'numeric'; return d.toLocaleDateString('en-GB', o); }
+  function inText(n){
+    if(n === 0) return 'today'; if(n === 1) return 'tomorrow';
+    if(n < 14) return 'in ' + n + ' days'; if(n < 61) return 'in ' + Math.round(n / 7) + ' weeks';
+    const m = Math.round(n / 30.4); return m < 24 ? 'in ' + m + ' months' : 'in ' + Math.round(n / 365) + ' years';
+  }
+
+  /* split into the chosen times: each thing in the first one it falls in; beyond this week a repeat shows once */
+  function sections(all, today, pick){
+    const b = bounds(today), order = RANGES.map(r => r[0]).filter(id => pick.indexOf(id) >= 0), out = [];
+    order.forEach((id, k) => {
+      const [lo, hi] = b[id];
+      const mine = all.filter(x => x.d >= lo && x.d < hi && !order.slice(0, k).some(p => x.d >= b[p][0] && x.d < b[p][1]));
+      const items = [];
+      if(id === 'week') mine.forEach(x => items.push(Object.assign({ more:0 }, x)));
+      else { const at = {}; mine.forEach(x => { if(at[x.key] != null){ items[at[x.key]].more++; return; } at[x.key] = items.length; items.push(Object.assign({ more:0 }, x)); }); }
+      const overlap = order.slice(0, k).some(p => b[p][0] < hi && lo < b[p][1]);
+      out.push({ id, name:(overlap && LATER[id]) || RANGES.find(r => r[0] === id)[1], items });
+    });
+    return out;
+  }
+
+  function render(root){
+    root = root || document.getElementById('aheadContent'); if(!root) return;
+    const today = d0(new Date()), pick = chosen(), all = collect(today);
+    root.innerHTML = '';
+    root.appendChild(h('h2', { class:'fhah-h', text:'Coming up' }));
+    root.appendChild(h('p', { class:'fhch-note', text:'Plans, tasks, birthdays and reminders in one list, nearest first. Pick one time or several.' }));
+    const counts = {}; RANGES.forEach(r => { counts[r[0]] = sections(all, today, [r[0]])[0].items.length; });
+    root.appendChild(h('div', { class:'ob-chips fhah-chips', role:'group', 'aria-label':'Show' }, RANGES.map(r => {
+      const on = pick.indexOf(r[0]) >= 0;
+      return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), id:'fhahR-' + r[0], 'aria-pressed':on ? 'true' : 'false',
+        onClick:() => { setChosen(on ? pick.filter(x => x !== r[0]) : pick.concat([r[0]])); render(root); } }, r[1], h('span', { class:'fhah-n', text:' ' + counts[r[0]] }));
+    })));
+    if(!pick.length){ root.appendChild(h('p', { class:'ob-hint fhah-none', text:'Pick a time above to see what’s coming up.' })); return; }
+    sections(all, today, pick).forEach(sec => {
+      const box = h('section', { class:'fhah-sec', 'data-range':sec.id }, h('h3', { class:'fhah-sh' }, sec.name, h('span', { text:' · ' + sec.items.length })));
+      if(!sec.items.length) box.appendChild(h('p', { class:'ob-hint fhah-none', text:'Nothing in this time.' }));
+      let last = -1, list = null;
+      sec.items.forEach(x => {
+        if(x.d !== last){
+          last = x.d;
+          box.appendChild(h('div', { class:'fhah-day' }, h('b', { text:x.d === 0 ? 'Today' : x.d === 1 ? 'Tomorrow' : fmtDate(x.date, today) }), h('span', { text:x.d > 1 ? inText(x.d) : '' })));
+          list = h('div', { class:'fhah-list' }); box.appendChild(list);
+        }
+        const sub = [x.sub, x.more ? 'and ' + x.more + ' more time' + (x.more === 1 ? '' : 's') : ''].filter(Boolean).join(' · ');
+        list.appendChild(h(x.open ? 'button' : 'div', Object.assign({ class:'fhah-row', style:'--ec:' + x.color, 'data-key':x.key }, x.open ? { type:'button', onClick:x.open } : {}),
+          h('span', { class:'fhah-t', text:x.title }), sub ? h('small', { text:sub }) : null));
+      });
+      root.appendChild(box);
+    });
+  }
+  return { render, collect, sections, bounds, RANGES };
 })();
 
 /* ==================== MEAL PLAN TOOLS (FHPlanTools) ====================
