@@ -2893,6 +2893,12 @@ body:has(#dragGhost[style*="block"]) .fhun-bar{ display:none; }
 .fhch-seg button.on{ background:var(--white); color:var(--ink); box-shadow:0 1px 3px var(--shadow); }
 .fhch-seg.small{ flex-wrap:wrap; margin:0 0 6px; }
 .fhch-seg.small button{ font-size:.84rem; padding:7px 4px; flex:1 1 auto; }
+.fhch-level button{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; }
+.fhch-level small{ font-weight:500; font-size:.74rem; line-height:1.2; }
+.fhch-lvlist{ margin:0 0 10px; max-height:40vh; overflow:auto; font-size:.9rem; }
+.fhch-lvlist ul{ margin:0 0 8px; padding-left:22px; }
+.fhch-lvlist li{ margin:2px 0; }
+.fhch-lvroom{ font-weight:700; margin:6px 0 2px; }
 .fhch-nav{ display:flex; align-items:center; gap:8px; margin:0 0 10px; }
 .fhch-navb{ font:inherit; font-size:1.3rem; width:38px; height:38px; border-radius:50%; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; flex:none; }
 .fhch-navl{ flex:1; display:flex; flex-direction:column; min-width:0; }
@@ -2987,7 +2993,26 @@ span.fhch-sq.off{ border:0; background:transparent; cursor:default; }
 .fhrw-pics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; padding-bottom:12px; }
 .fhrw-pic{ display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; font-size:.78rem; padding:10px 4px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
 .fhrw-pic.on{ border-color:var(--accent); background:var(--panel); }
-.fhrw-picicon{ font-size:1.6rem; }
+.fhrw-picicon{ font-size:1.6rem; line-height:1; }
+.fhrw-art{ display:inline-block; width:1.25em; height:1.25em; vertical-align:-.28em; }
+.fhrw-art svg{ display:block; width:100%; height:100%; }
+.fhrw-picicon .fhrw-art{ width:2.2rem; height:2.2rem; vertical-align:middle; }
+.fhrw-pic.open{ border-color:var(--accent); border-style:dashed; }
+.fhrw-cols{ display:grid; grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:6px; margin:0 0 12px; }
+.fhrw-col{ display:flex; flex-direction:column; align-items:center; gap:2px; font:inherit; font-size:.76rem; padding:6px 2px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
+.fhrw-col.on{ border-color:var(--accent); background:var(--panel); }
+.fhrw-col .fhrw-art{ width:2.6rem; height:2.6rem; }
+.fhrw-kidpics{ display:flex; gap:10px; align-items:flex-start; margin:10px 2px 4px; cursor:pointer; }
+.fhrw-kidpics input{ width:20px; height:20px; margin-top:2px; accent-color:var(--accent); flex:none; }
+.fhrw-kidpics small{ display:block; color:var(--muted); }
+.fhrw-own{ margin:4px 0 14px; padding:10px 12px; border-radius:12px; background:var(--panel); }
+.fhrw-own.on{ outline:2px solid var(--accent); }
+.fhrw-own .fhe-lab{ margin-top:0; }
+.fhrw-ownrow{ display:flex; gap:8px; align-items:center; }
+.fhrw-ownrow .fhe-in{ min-width:0; }
+.fhrw-ownrow .fhrw-ownemo{ flex:0 0 58px; text-align:center; font-size:1.4rem; padding:6px 4px; }
+.fhrw-ownrow #fhrwOwnName{ flex:1; }
+.fhrw-ownrow .btn{ flex:none; }
 .fhrw-thin{ max-width:120px; }
 /* Settings › Your people (ob_people.js peopleCard) */
 .fhp-prow{ display:flex; align-items:center; gap:8px; margin:0 0 8px; }
@@ -10737,6 +10762,103 @@ function getDaySummary(date){
   return { total, done };
 }
 
+/* ==================== Reward pictures (inside ChoreApp, before chore_page.js) ====================
+   Matthew, 24 Nov 2026: "My daughter wants a bao bun squishy emoji as her reward". Two ways past the fixed emoji list:
+   the app's own drawn pictures (squishy style, as there's no emoji for a bao bun), and Make your own: any emoji from
+   the phone's keyboard with the family's own name for it. A person's reward stays { presetId, icon, label }: drawn
+   ones add `pic` (an id here, so only the id syncs) and keep an emoji `icon` for anywhere that can only show text
+   (the setup list, an older copy of the app). Function declarations only: ChoreApp can draw before later consts exist. */
+function fhRewardFace(y, o){
+  o = o || {};
+  const ink = o.ink || '#3b2b2b', d = o.gap || 7, x = 32;
+  return '<circle cx="' + (x - d) + '" cy="' + y + '" r="2.4" fill="' + ink + '"/><circle cx="' + (x + d) + '" cy="' + y + '" r="2.4" fill="' + ink + '"/>'
+    + '<circle cx="' + (x - d + .8) + '" cy="' + (y - .9) + '" r=".8" fill="#fff"/><circle cx="' + (x + d + .8) + '" cy="' + (y - .9) + '" r=".8" fill="#fff"/>'
+    + '<path d="M' + (x - 3) + ' ' + (y + 3.5) + ' Q' + x + ' ' + (y + 6.5) + ' ' + (x + 3) + ' ' + (y + 3.5) + '" fill="none" stroke="' + ink + '" stroke-width="1.8" stroke-linecap="round"/>'
+    + (o.noCheeks ? '' : '<ellipse cx="' + (x - d - 5) + '" cy="' + (y + 4) + '" rx="3.6" ry="2.1" fill="#ff9fae" opacity=".75"/><ellipse cx="' + (x + d + 5) + '" cy="' + (y + 4) + '" rx="3.6" ry="2.1" fill="#ff9fae" opacity=".75"/>');
+}
+function fhRewardPics(){
+  if(fhRewardPics.cache) return fhRewardPics.cache;
+  const F = fhRewardFace;
+  const L = [
+    ['avocado', 'Avocados', '🥑',
+      '<path d="M32 5c10 0 14 12 18 24s1 30-18 30S10 41 14 29 22 5 32 5z" fill="#5d8a32"/>'
+      + '<path d="M32 10c8 0 11 10 14 21s1 23-14 23-17-12-14-23 6-21 14-21z" fill="#d6eaa0"/>'
+      + '<circle cx="32" cy="42" r="8.5" fill="#b7793d"/><circle cx="29.5" cy="39.5" r="2.4" fill="#d29a5f"/>' + F(27, { gap:6 })],
+    ['strawberry', 'Strawberries', '🍓',
+      '<path d="M32 59C18 51 8 39 10 27c2-10 12-12 22-8 10-4 20-2 22 8 2 12-8 24-22 32z" fill="#f2545b"/>'
+      + '<path d="M19 16l9 3 4-9 4 9 9-3-6 7H25z" fill="#5aab49"/>'
+      + '<g fill="#ffe28a"><ellipse cx="17" cy="29" rx="1.1" ry="1.7"/><ellipse cx="47" cy="29" rx="1.1" ry="1.7"/><ellipse cx="22" cy="47" rx="1.1" ry="1.7"/><ellipse cx="42" cy="47" rx="1.1" ry="1.7"/><ellipse cx="32" cy="51" rx="1.1" ry="1.7"/></g>' + F(33)],
+    ['kitty', 'Kitties', '🐱',
+      '<path d="M11 31L14 9l13 12zM53 31L50 9 37 21z" fill="#f5c08f"/><path d="M15 25l1.5-10 6.5 6zM49 25l-1.5-10-6.5 6z" fill="#ffa9b5"/>'
+      + '<ellipse cx="32" cy="37" rx="23" ry="19" fill="#f5c08f"/>'
+      + '<path d="M8 39l8 1M8 44l8-1M56 39l-8 1M56 44l-8-1" stroke="#b98a5f" stroke-width="1.4" stroke-linecap="round"/>' + F(36)],
+    ['toast', 'Toasties', '🍞',
+      '<path d="M15 26c-8-1-9-12-1-16 6-3 12-3 18-3s12 0 18 3c8 4 7 15-1 16v28c0 2-2 4-4 4H19c-2 0-4-2-4-4z" fill="#e2a052"/>'
+      + '<path d="M19 28c-6-1-6-9 0-12 5-2 9-3 13-3s8 1 13 3c6 3 6 11 0 12v24H19z" fill="#fde5b4"/>' + F(37)],
+    ['panda', 'Pandas', '🐼',
+      '<circle cx="15" cy="18" r="8" fill="#333"/><circle cx="49" cy="18" r="8" fill="#333"/>'
+      + '<circle cx="32" cy="36" r="23" fill="#fff" stroke="#333" stroke-width="1.6"/>'
+      + '<ellipse cx="24" cy="35" rx="5.5" ry="7" transform="rotate(20 24 35)" fill="#333"/><ellipse cx="40" cy="35" rx="5.5" ry="7" transform="rotate(-20 40 35)" fill="#333"/>'
+      + '<circle cx="24.5" cy="34" r="2" fill="#fff"/><circle cx="39.5" cy="34" r="2" fill="#fff"/><ellipse cx="32" cy="42" rx="2.6" ry="1.8" fill="#333"/>'
+      + '<path d="M29 45q3 3 6 0" fill="none" stroke="#333" stroke-width="1.6" stroke-linecap="round"/>'
+      + '<ellipse cx="18" cy="44" rx="3.4" ry="2" fill="#ff9fae" opacity=".75"/><ellipse cx="46" cy="44" rx="3.4" ry="2" fill="#ff9fae" opacity=".75"/>'],
+  ];
+  const out = {};
+  out.bao = { id:'bao', label:'Bao buns', icon:'🥟', cols:fhBaoCols(), draw:fhBaoSvg };   // first in the list; a colour each
+  L.forEach(function(x){ out[x[0]] = { id:x[0], label:x[1], icon:x[2], svg:'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + x[3] + '</svg>' }; });
+  return (fhRewardPics.cache = out);
+}
+// The bao bun squishy, drawn from Matthew's daughter's designs: a sticker (white edge), glossy, sparkly, open smile.
+// Colours: [id, name, top, bottom, outline, pleats, blush]
+function fhBaoCols(){ return [
+  ['classic', 'Classic', '#fffaf0', '#f3e0bd', '#6b4423', '#e4c995', '#f6a5a5'],
+  ['golden', 'Golden', '#fff0b8', '#f2c552', '#7a5212', '#e5b23c', '#f49f78'],
+  ['blue', 'Blue', '#e3f2ff', '#a7d0f4', '#1f4a73', '#8dbfeb', '#efa6c2'],
+  ['pink', 'Pink', '#ffe6ee', '#f4adc3', '#7a2945', '#ec97b0', '#ee8ea8'],
+  ['purple', 'Purple', '#f1e8fc', '#c6aeea', '#4a2c74', '#b097df', '#f0a2c6'],
+  ['green', 'Green', '#e8f5da', '#b5d996', '#2f5a1e', '#95c674', '#e8a68a'],
+  ['galaxy', 'Galaxy', '#74747e', '#26262c', '#111114', '#55555d', '#e4899a']]; }
+function fhBaoSvg(col){
+  const C = fhBaoCols(), c = C.find(function(x){ return x[0] === col; }) || C[0], g = 'fhbao-' + c[0];
+  const bun = 'M6.5 46.5C6.5 31 18 21.5 32 21.5S57.5 31 57.5 46.5c0 5.5-6 7.5-25.5 7.5S6.5 52 6.5 46.5z';
+  const star = function(x, y, r){ return '<path d="M' + x + ' ' + (y - r) + 'Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + 'Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + 'z" fill="#fff"/>'; };
+  const dots = c[0] === 'galaxy' ? [[12, 40], [20, 30], [27, 26], [44, 27], [52, 38], [48, 50], [16, 50], [37, 51], [41, 33]] : [[13, 41], [45, 28], [51, 47], [21, 51]];
+  return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="' + g + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" stop-color="' + c[2] + '"/><stop offset="1" stop-color="' + c[3] + '"/></linearGradient></defs>'
+    + '<path d="' + bun + '" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>'
+    + '<path d="M27.6 25c0-4 1.8-7.4 4.4-7.4s4.4 3.4 4.4 7.4z" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>'
+    + '<path d="' + bun + '" fill="url(#' + g + ')" stroke="' + c[4] + '" stroke-width="2.4" stroke-linejoin="round"/>'
+    + '<path d="M27.4 25.5c0-4.3 2-7.9 4.6-7.9s4.6 3.6 4.6 7.9z" fill="' + c[2] + '"/>'   /* the nub sits over the bun's edge */
+    + '<path d="M26.6 22.6c.6-3.2 2.8-5 5.4-5s4.8 1.8 5.4 5" fill="none" stroke="' + c[4] + '" stroke-width="2.2" stroke-linecap="round"/>'
+    + '<path d="M30 23.5c-3 2-7 3.2-12 3.6M30.8 24c-1.8 2.4-3.8 3.9-6.3 5.1M32 24.2v5.6M33.2 24c1.8 2.4 3.8 3.9 6.3 5.1M34 23.5c3 2 7 3.2 12 3.6" fill="none" stroke="' + c[5] + '" stroke-width="1.7" stroke-linecap="round"/>'
+    + '<ellipse cx="16.5" cy="33" rx="5" ry="2.4" transform="rotate(-24 16.5 33)" fill="#fff" opacity=".5"/><circle cx="13.6" cy="37" r="1.2" fill="#fff" opacity=".55"/>'
+    + star(47, 31, 2.4) + star(51.5, 44, 1.8) + star(14.5, 45, 1.6) + star(44.5, 50, 1.6)
+    + dots.map(function(d){ return '<circle cx="' + d[0] + '" cy="' + d[1] + '" r=".7" fill="#fff" opacity=".85"/>'; }).join('')
+    + '<ellipse cx="25" cy="39.5" rx="2.2" ry="2.7" fill="' + c[4] + '"/><ellipse cx="39" cy="39.5" rx="2.2" ry="2.7" fill="' + c[4] + '"/>'
+    + '<circle cx="25.8" cy="38.5" r=".8" fill="#fff"/><circle cx="39.8" cy="38.5" r=".8" fill="#fff"/>'
+    + '<path d="M28.6 43.4h6.8c-.6 3.4-2 5-3.4 5s-2.8-1.6-3.4-5z" fill="' + c[4] + '"/><ellipse cx="32" cy="46.8" rx="1.8" ry="1.1" fill="#ff8597"/>'
+    + '<ellipse cx="19" cy="44.5" rx="3.8" ry="2.1" fill="' + c[6] + '" opacity=".8"/><ellipse cx="45" cy="44.5" rx="3.8" ry="2.1" fill="' + c[6] + '" opacity=".8"/></svg>';
+}
+function fhRewardSvg(pic, col){ return pic.draw ? pic.draw(col) : pic.svg; }
+// the choices for the picture sheet: the app's drawings as { id:'pic-bao', icon, label, pic }
+function fhRewardPicChoices(){ const P = fhRewardPics(); return Object.keys(P).map(function(k){ return { id:'pic-' + k, icon:P[k].icon, label:P[k].label, pic:k }; }); }
+// a reward's picture as a node: the drawing when there is one, else its emoji
+function fhRewardArt(rw){
+  const P = fhRewardPics(), pic = rw && rw.pic && P[rw.pic];
+  if(pic) return h('span', { class:'fhrw-art', role:'img', 'aria-label':pic.label, html:fhRewardSvg(pic, rw.col) });
+  return h('span', { class:'fhrw-emo', text:(rw && rw.icon) || '⭐' });
+}
+function fhRewardOf(id){ const p = id ? personById(id) : null; return (p && p.reward) || rewardConfig; }
+function fhRewardNode(id){ return fhRewardArt(fhRewardOf(id)); }
+// Make your own: the first emoji typed (the phone's emoji keyboard), whole even when it's several code points
+function fhFirstEmoji(s){
+  s = String(s || '').trim(); if(!s) return '';
+  let first = '';
+  try{ if(typeof Intl !== 'undefined' && Intl.Segmenter){ const it = new Intl.Segmenter(undefined, { granularity:'grapheme' }).segment(s)[Symbol.iterator]().next(); first = it.value ? it.value.segment : ''; } }catch(e){}
+  if(!first) first = Array.from(s)[0] || '';
+  return /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(first) ? first : '';
+}
+
 /* ==================== CHORES PAGE (chore_page.js, inside ChoreApp) ====================
    Replaces the old week of open rooms with: Today (a list, or a board of columns), This week (a grid of squares),
    This month (monthly jobs), and ✏️ Jobs (the household's jobs, one edit sheet each). Ticking goes through the
@@ -10844,7 +10966,7 @@ function fhchRow(o, opts){
     onKeydown:function(e){ if((e.key === 'Enter' || e.key === ' ') && e.target === row){ e.preventDefault(); row.click(); } } },
     h('span', { class:'fhch-tick chore-check', 'aria-hidden':'true', text:o.done ? '✓' : o.n ? String(o.n) : '' }),
     h('span', { class:'fhch-t' }, h('b', { text:o.c.name + (o.max > 1 ? ' (' + Math.min(o.n, o.max) + '/' + o.max + ')' : '') }), sub ? h('small', { text:sub }) : null),
-    fhchStarsOn() && worth > 1 && !o.skip ? h('span', { class:'fhch-star', text:fhRewardIcon(o.who === 'anyone' ? '' : o.who) + worth }) : null,
+    fhchStarsOn() && worth > 1 && !o.skip ? h('span', { class:'fhch-star' }, fhRewardNode(o.who === 'anyone' ? '' : o.who), String(worth)) : null,
     o.skip ? h('span', { class:'fhch-putback', text:'Put back' }) : opts.noAv ? null : fhchAv(o.who),
     opts.noMore || fhchKid() || o.skip ? null : h('button', { type:'button', class:'fhch-more', 'aria-label':'More for ' + o.c.name, text:'⋯', onClick:function(e){ e.stopPropagation(); fhchJobSheet(o); } }));
   return row;
@@ -10904,7 +11026,7 @@ function fhchBoard(date, opts){
         fhchAv(x.p.id), h('b', { text:x.p.name }), h('span', { class:'fhch-coln', text:dn + '/' + x.list.length })),
       h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / x.list.length) + '%' })));
     x.list.forEach(function(o){ col.appendChild(fhchRow(o, { noRoom:true, noWho:true, noAv:true, noMore:true, noFreq:true })); });
-    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar', text:fhRewardIcon(x.p.id) + ' ' + (starsByPerson[x.p.id] || 0) }));
+    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar' }, fhRewardNode(x.p.id), ' ' + (starsByPerson[x.p.id] || 0)));
     board.appendChild(col);
   });
   wrap.appendChild(board);
@@ -10937,7 +11059,7 @@ function fhchPersonDay(pid, date){
   const mine = fhchDayOcc(date, pid).filter(function(o){ return o.who === pid; });
   const dn = mine.filter(function(o){ return o.done; }).length;
   wrap.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(pid) },
-    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', text:fhRewardIcon(pid) + ' ' + (starsByPerson[pid] || 0) }) : null),
+    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big' }, fhRewardNode(pid), ' ' + (starsByPerson[pid] || 0)) : null),
     mine.length ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / mine.length) + '%' })) : null,
     h('small', { text:mine.length ? dn + ' of ' + mine.length + ' done' + fhrwNextText(pid) : 'No jobs of their own today' })));
   mine.forEach(function(o){ wrap.appendChild(fhchRow(o, { noWho:true, noAv:true, noMore:fhchKid() })); });
@@ -10962,7 +11084,7 @@ function fhchJobSheet(o){
     h('p', { class:'fhe-lab', text:(o.done ? 'Done by' : (o.monthly ? 'This month' : 'Just ' + (shSameDate(o.date, new Date()) ? 'today' : 'this day')) + ', give it to') }),
     h('div', { class:'ob-chips' }, chip('anyone', 'Anyone', o.who === 'anyone'), people.map(function(p){ return chip(p.id, p.name, o.who === p.id); })),
     o.swapped && !o.done ? h('button', { type:'button', class:'fhch-link', id:'fhchUsual', text:'Back to the usual (' + assigneeLabel(resolveAssignee(o.c, o.date)) + ')', onClick:function(){ close(); clearOccurrenceOverride(o.key); render(); } }) : null,
-    fhchStarsOn() ? h('p', { class:'fhch-note', text:'Worth ' + fhRewardIcon(o.who === 'anyone' ? '' : o.who) + ' ' + (o.c.stars || 1) + '. ' + (o.done ? 'The stars move to whoever you pick.' : 'Stars go to whoever it’s given to.') }) : null,
+    fhchStarsOn() ? h('p', { class:'fhch-note' }, 'Worth ', fhRewardNode(o.who === 'anyone' ? '' : o.who), ' ' + (o.c.stars || 1) + '. ' + (o.done ? 'The stars move to whoever you pick.' : 'Stars go to whoever it’s given to.')) : null,
     h('div', { class:'fhe-actions' },
       !o.done ? h('button', { type:'button', class:'btn secondary', id:'fhchSkip', text:'Skip ' + (o.monthly ? 'this month' : shSameDate(o.date, new Date()) ? 'today' : 'this day'), onClick:function(){ close(); fhchSetSkip(o, true); } }) : null,
       h('button', { type:'button', class:'btn', id:'fhchEditJob', text:'Edit job', onClick:function(){ close(); fhchEdit(fhchGroupOf(o.c)); } })));
@@ -11047,7 +11169,7 @@ function fhchWeekTab(body, who){
     for(let i = 0; i < 7; i++){ const dd = addDays(mon, i); chores.forEach(function(c){ if(!fhchOn(c, dd)) return; const o = fhchOcc(c, dd); if(o.who === who && !o.skip){ n++; if(o.done) dn++; } }); }
     const wk = fhrwWeek(who, mon), tot = wk.chores + wk.routines + wk.habits;
     body.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(who) },
-      h('div', { class:'fhch-pctop' }, fhchAv(who), h('b', { text:p.name }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', text:fhRewardIcon(who) + ' ' + tot + ' this week' }) : null),
+      h('div', { class:'fhch-pctop' }, fhchAv(who), h('b', { text:p.name }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big' }, fhRewardNode(who), ' ' + tot + ' this week') : null),
       n ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / n) + '%' })) : null,
       h('small', { text:(n ? dn + ' of ' + n + ' jobs done' : 'No jobs this week') + (fhchStarsOn() && !p.noStars ? fhrwNextText(who) : '') })));
   }
@@ -11143,6 +11265,13 @@ function fhchJobs(){
     h('button', { type:'button', class:'fhch-topbtn solid', id:'fhchAdd', text:'＋ Add a job', onClick:function(){ fhchEdit(null); } }),
     h('button', { type:'button', class:'fhch-topbtn', id:'fhchDone', text:'Done', onClick:function(){ fhchMode = ''; fhchRender(); window.scrollTo(0, 0); } })));
   wrap.appendChild(h('p', { class:'fhch-note', text:'Every job the household shares. Tap one to change how often, who does it or what it’s worth.' }));
+  if(typeof OB_CHORE_TPL !== 'undefined'){
+    const lv = fhchLevel();
+    wrap.appendChild(h('div', { class:'fhch-lbl', text:'How much?' }));
+    wrap.appendChild(h('div', { class:'fhch-seg fhch-level', role:'group', id:'fhchLevel', 'aria-label':'How much' }, FHCH_LEVELS.map(function(l){
+      return h('button', { type:'button', class:lv === l[0] ? 'on' : '', 'aria-pressed':lv === l[0] ? 'true' : 'false', 'data-v':String(l[0]),
+        onClick:function(){ if(l[0] !== lv) fhchLevelSheet(l[0]); } }, h('b', { text:l[1] }), h('small', { text:l[2] })); })));
+  }
   const by = fhchPref('group') || 'freq';
   const chips = h('div', { class:'fhe-chips fhch-chips', role:'group', 'aria-label':'Group the jobs' });
   [['freq', 'By how often'], ['person', 'By person'], ['room', 'By room']].forEach(function(x){
@@ -11165,7 +11294,7 @@ function fhchJobs(){
       const desc = [by === 'freq' && c.freq !== 'daily' && c.freq !== 'monthly' ? fhchWhen(c) : by !== 'freq' ? fhchWhen(c) : '', fhchWhoText(g), by !== 'room' && room ? room.label : ''].filter(Boolean).join(' · ');
       wrap.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-chore':c.id, onClick:function(){ fhchEdit(g); } },
         h('span', { class:'fhch-t' }, h('b', { text:c.name }), h('small', { text:desc })),
-        fhchStarsOn() ? h('span', { class:'fhch-star', text:fhRewardIcon('') + (c.stars || 1) }) : null, h('span', { class:'fhch-chev', 'aria-hidden':'true', text:'›' })));
+        fhchStarsOn() ? h('span', { class:'fhch-star' }, fhRewardNode(''), String(c.stars || 1)) : null, h('span', { class:'fhch-chev', 'aria-hidden':'true', text:'›' })));
     });
   });
   if(!chores.length) wrap.appendChild(h('p', { class:'fhch-empty', text:'No jobs yet. Tap ＋ Add a job.' }));
@@ -11240,7 +11369,7 @@ function fhchEdit(g){
     if(fhchStarsOn()){
       body.appendChild(h('div', { class:'fhch-worth' }, h('span', { class:'fhe-lab', text:'Worth' }),
         h('button', { type:'button', class:'fhch-step', 'aria-label':'Fewer stars', text:'−', disabled:f.stars <= 1, onClick:function(){ f.stars = Math.max(1, f.stars - 1); draw(); } }),
-        h('b', { id:'fhchWorth', text:fhRewardIcon('') + ' ' + f.stars }),
+        h('b', { id:'fhchWorth' }, fhRewardNode(''), ' ' + f.stars),
         h('button', { type:'button', class:'fhch-step', 'aria-label':'More stars', text:'+', disabled:f.stars >= 20, onClick:function(){ f.stars = Math.min(20, f.stars + 1); draw(); } }),
         h('small', { class:'fhch-note', text:'A quick job 1, a big one 3' })));
     }
@@ -11298,6 +11427,85 @@ function fhchRoomSheet(r){
         saveKey(KEYS.categories, categories); close(); render(); } })]; });
 }
 
+/* ---- How much? Light / Standard / Thorough after setup (Matthew, 24 Nov 2026). The level is setup's chore templates
+   (OB_CHORE_TPL lvl 1-3); saved jobs don't carry it, so each room's type comes from its emoji and a job counts as the
+   app's when its name matches a template for that room. Going up adds the missing templates, assigned as setup would
+   (obGenerateChores); going down takes off the app's jobs above the level. Jobs the household added or renamed stay. */
+const FHCH_LEVEL_KEY = 'chore-chart-level-v1';
+const FHCH_LEVELS = [[1, 'Light', 'Just the essentials'], [2, 'Standard', 'A balanced routine'], [3, 'Thorough', 'Deep-clean extras too']];
+function fhchRoomType(r){
+  if(typeof OB_ROOM_TYPES === 'undefined' || !r) return '';
+  const t = Object.keys(OB_ROOM_TYPES).find(function(k){ return OB_ROOM_TYPES[k].emoji === r.emoji; }) || '';
+  return t === 'house' && /^cat_/.test(r.id) ? '' : t;   // 🏠 is also the default for a room added by hand
+}
+function fhchNorm(s){ return String(s || '').trim().toLowerCase(); }
+function fhchTplNames(t){ const a = [fhchNorm(t.name)]; try{ a.push(fhchNorm(FHLocale.name(t.name))); }catch(e){} return a; }
+function fhchRoomTpls(r, type){
+  if(type !== 'pets') return (OB_CHORE_TPL[type] || []).map(function(t){ return { t:t }; });
+  // pets: only the animals this household has (any of their jobs on the list)
+  const have = chores.filter(function(c){ return c.cat === r.id; }).map(function(c){ return fhchNorm(c.name); });
+  const out = [];
+  Object.keys(OB_PET_TPL).forEach(function(k){ const ts = OB_PET_TPL[k];
+    if(ts.some(function(t){ return fhchTplNames(t).some(function(n){ return have.indexOf(n) >= 0; }); })) ts.forEach(function(t){ out.push({ t:t, pet:k }); }); });
+  return out;
+}
+function fhchAppJob(c){   // the template a saved job came from, or null
+  const r = categoryById(c.cat), type = fhchRoomType(r); if(!type) return null;
+  const n = fhchNorm(c.name), hit = fhchRoomTpls(r, type).find(function(x){ return fhchTplNames(x.t).indexOf(n) >= 0; });
+  return hit ? hit.t : null;
+}
+function fhchLevel(){
+  const v = parseInt(fhRawGet(FHCH_LEVEL_KEY) || '', 10); if(v >= 1 && v <= 3) return v;
+  let top = 0; chores.forEach(function(c){ const t = fhchAppJob(c); if(t && t.lvl > top) top = t.lvl; });
+  return top || 2;
+}
+function fhchLevelPlan(to){
+  const add = [], drop = [];
+  if(typeof obGenerateChores !== 'function') return { add:add, drop:drop };
+  chores.forEach(function(c){ const t = fhchAppJob(c); if(t && t.lvl > to) drop.push(c); });
+  // what setup would make for these rooms at this level, minus what's already there
+  const rooms = [], pets = {};
+  categories.forEach(function(r){ const type = fhchRoomType(r); if(!type) return;
+    let owner = null;
+    if(type === 'bedroom'){ const own = chores.find(function(c){ const t = c.cat === r.id && fhchAppJob(c); return t && t.who === 'owner'; });
+      if(own) owner = own.assignedTo === ROTATE_PARENTS ? 'parents' : (own.assignedTo !== 'anyone' && !isRotateToken(own.assignedTo) ? own.assignedTo : null); }
+    if(type === 'pets') fhchRoomTpls(r, type).forEach(function(x){ pets[x.pet] = true; });
+    rooms.push({ id:r.id, type:type, label:r.label, owner:owner }); });
+  const tokens = chores.map(function(c){ return c.assignedTo; });
+  const style = tokens.length && tokens.every(function(a){ return a === 'anyone'; }) ? 'anyone' : tokens.length && tokens.every(function(a){ return a === ROTATE_ALL; }) ? 'rotate' : 'smart';
+  const made = obGenerateChores({ people:people, level:to, style:style, pets:pets, rooms:rooms, features:{ rewards:true, chores:true } });
+  made.forEach(function(c){
+    const there = chores.some(function(x){ return x.cat === c.cat && fhchNorm(x.name) === fhchNorm(c.name); });
+    if(!there && drop.indexOf(c) < 0) add.push(c);
+  });
+  return { add:add, drop:drop };
+}
+function fhchLevelSheet(to){
+  const plan = fhchLevelPlan(to), lv = FHCH_LEVELS.find(function(l){ return l[0] === to; });
+  const list = function(cs){   // grouped by room, in the Jobs page's room order
+    const box = h('div', { class:'fhch-lvlist' });
+    categories.forEach(function(r){ const mine = cs.filter(function(c){ return c.cat === r.id; }); if(!mine.length) return;
+      box.appendChild(h('div', { class:'fhch-lvroom', text:r.emoji + ' ' + r.label }));
+      box.appendChild(h('ul', {}, mine.map(function(c){ return h('li', { text:c.name }); }))); });
+    return box; };
+  const body = h('div', {});
+  if(plan.add.length){ body.appendChild(h('p', { class:'fhe-lab', text:'Adds ' + plan.add.length + ' job' + (plan.add.length === 1 ? '' : 's') })); body.appendChild(list(plan.add)); }
+  if(plan.drop.length){ body.appendChild(h('p', { class:'fhe-lab', text:'Takes off ' + plan.drop.length + ' job' + (plan.drop.length === 1 ? '' : 's') })); body.appendChild(list(plan.drop)); }
+  if(!plan.add.length && !plan.drop.length) body.appendChild(h('p', { class:'fhch-note', text:'Your list already fits ' + lv[1] + '. Nothing to add or take off.' }));
+  body.appendChild(h('p', { class:'fhch-note', text:'Jobs you added or renamed yourself stay as they are. You can change any job afterwards.' }));
+  const label = plan.add.length && plan.drop.length ? 'Change ' + (plan.add.length + plan.drop.length) + ' jobs'
+    : plan.add.length ? 'Add ' + plan.add.length + ' job' + (plan.add.length === 1 ? '' : 's')
+    : plan.drop.length ? 'Take off ' + plan.drop.length + ' job' + (plan.drop.length === 1 ? '' : 's') : 'Switch to ' + lv[1];
+  fhchSheet('fhchLvl', lv[1] + ': ' + lv[2].toLowerCase(), body, function(close){ return [
+    h('button', { type:'button', class:'btn secondary', text:'Cancel', onClick:close }),
+    h('button', { type:'button', class:'btn', id:'fhchLvlGo', text:label, onClick:function(){
+      if(plan.drop.length) chores = chores.filter(function(x){ return plan.drop.indexOf(x) < 0; });
+      plan.add.forEach(function(c){ chores.push(c); });
+      if(plan.add.length || plan.drop.length) saveKey(KEYS.chores, chores);
+      saveKey(FHCH_LEVEL_KEY, to); try{ fhRawSet(FHCH_LEVEL_KEY, String(to)); }catch(e){}
+      close(); render(); } })]; });
+}
+
 /* ==================== STARS & REWARDS page ==================== */
 function fhrwNext(pid, total){
   return rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; }).find(function(m){ return (!m.who || m.who === pid) && m.threshold > total; }) || null;
@@ -11337,19 +11545,29 @@ function fhrwRender(root){
     const src = [['Chores', wk.chores], ['Routines', wk.routines], ['Habits', wk.habits]].filter(function(x){ return x[1]; });
     const prev = rewardMilestones.filter(function(m){ return (!m.who || m.who === p.id) && m.threshold <= t; }).reduce(function(a, m){ return Math.max(a, m.threshold); }, 0);
     root.appendChild(h('div', { class:'fhch-pc fhrw-card', style:'--pc:' + fhchHue(p.id), 'data-person':p.id },
-      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big', text:fhRewardIcon(p.id) + ' ' + t })),
+      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big' }, fhRewardNode(p.id), ' ' + t)),
       h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No stars yet this week' })),
       n ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * (t - prev) / Math.max(1, n.threshold - prev)) + '%' })) : null,
       h('small', { text:n ? 'Next: ' + n.text + ' at ' + n.threshold + ' (' + (n.threshold - t) + ' to go)' : rewardMilestones.length ? 'Every prize reached 🎉' : 'No prizes set yet' })));
   });
   if((starsByPerson.family || 0) > 0 || chores.some(function(c){ return c.assignedTo === 'anyone'; })){
     root.appendChild(h('div', { class:'fhch-pc fhrw-card fhrw-pool', 'data-person':'family' },
-      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:'Family pool' }), h('span', { class:'fhch-big', text:fhRewardIcon('') + ' ' + (starsByPerson.family || 0) })),
+      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:'Family pool' }), h('span', { class:'fhch-big' }, fhRewardNode(''), ' ' + (starsByPerson.family || 0))),
       h('small', { text:'Anyone jobs land here when nobody says who did them.' })));
   }
   if(not.length) root.appendChild(h('p', { class:'fhch-note', text:fhchAnd(not.map(function(p){ return p.name; })) + (not.length === 1 ? ' isn’t' : ' aren’t') + ' collecting stars.' }));
   if(!coll.length) root.appendChild(h('p', { class:'fhch-empty', text:'Nobody is collecting stars yet.' }));
-  if(kid) return;
+  if(kid){
+    // a child's own phone or tablet: they can change their own picture, if the grown-ups allow it
+    const me = fhchMe(), mp = me && personById(me);
+    if(mp && !mp.noStars && fhrwKidPics() && !fhchLocked()){
+      root.appendChild(h('div', { class:'fhch-lbl', text:'Your picture' }));
+      root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-collect':mp.id, onClick:function(){ fhrwPic(mp, true); } },
+        fhchAv(mp.id), h('span', { class:'fhch-t' }, h('b', { text:mp.name }), h('small', {}, 'Collects ', fhRewardNode(mp.id), ' ' + ((mp.reward && mp.reward.label) || rewardConfig.label).toLowerCase())),
+        h('span', { class:'fhch-chev', text:'Change' })));
+    }
+    return;
+  }
   // prizes
   root.appendChild(h('div', { class:'fhch-lbl', text:'Prizes' }));
   const sorted = rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; });
@@ -11364,9 +11582,21 @@ function fhrwRender(root){
   root.appendChild(h('div', { class:'fhch-lbl', text:'Who collects stars' }));
   people.forEach(function(p){
     root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-collect':p.id, onClick:function(){ fhrwPic(p); } },
-      fhchAv(p.id), h('span', { class:'fhch-t' }, h('b', { text:p.name }), h('small', { text:p.noStars ? 'Not collecting' : 'Collects ' + fhRewardIcon(p.id) + ' ' + ((p.reward && p.reward.label) || rewardConfig.label).toLowerCase() })),
+      fhchAv(p.id), h('span', { class:'fhch-t' }, h('b', { text:p.name }), p.noStars ? h('small', { text:'Not collecting' }) : h('small', {}, 'Collects ', fhRewardNode(p.id), ' ' + ((p.reward && p.reward.label) || rewardConfig.label).toLowerCase())),
       h('span', { class:'fhch-chev', text:'Change' })));
   });
+  if(people.some(function(p){ return p.role === 'child'; })){
+    const on = fhrwKidPics();
+    root.appendChild(h('label', { class:'fhrw-kidpics' },
+      h('input', { type:'checkbox', id:'fhrwKidPics', checked:on, onChange:function(e){ fhrwKidPics(e.target.checked); render(); } }),
+      h('span', {}, h('b', { text:'Children choose their own picture' }), h('small', { text:'On their own phone or tablet, under Rewards.' }))));
+  }
+}
+// can a child change their own picture on their own device? Shared with the household; missing = yes
+const FHRW_KIDPICS_KEY = 'chore-chart-kid-pics-v1';
+function fhrwKidPics(set){
+  if(set !== undefined){ const v = set ? 'on' : 'off'; saveKey(FHRW_KIDPICS_KEY, v); try{ fhRawSet(FHRW_KIDPICS_KEY, JSON.stringify(v)); }catch(e){} return set; }
+  try{ return JSON.parse(fhRawGet(FHRW_KIDPICS_KEY) || '"on"') !== 'off'; }catch(e){ return true; }
 }
 function fhrwPrize(m){
   const f = { threshold:m ? m.threshold : '', text:m ? m.text : '', who:m ? (m.who || '') : '' };
@@ -11391,17 +11621,60 @@ function fhrwPrize(m){
         if(!m) rewardMilestones.push(rec);
         saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } })]; });
 }
-function fhrwPic(p){
+function fhrwPic(p, self){
   const cur = p.noStars ? 'none' : ((p.reward && p.reward.presetId) || rewardConfig.presetId);
-  const grid = h('div', { class:'fhrw-pics' });
-  REWARD_PRESETS.concat([{ id:'none', icon:'🚫', label:'Not collecting' }]).forEach(function(r){
-    grid.appendChild(h('button', { type:'button', class:'fhrw-pic' + (cur === r.id ? ' on' : ''), 'aria-pressed':cur === r.id ? 'true' : 'false', 'data-pic':r.id,
-      onClick:function(){
-        if(r.id === 'none') p.noStars = true; else { delete p.noStars; p.reward = { presetId:r.id, icon:r.icon, label:r.label }; }
-        saveKey(KEYS.people, people); const m = document.getElementById('fhrwPicEd'); if(m) m.remove(); render(); } },
-      h('span', { class:'fhrw-picicon', 'aria-hidden':'true', text:r.icon }), h('span', { text:r.label })));
-  });
-  fhchSheet('fhrwPicEd', p.name + ' collects', h('div', {}, h('p', { class:'fhch-note', text:'Their stars look like this on every screen. Not collecting hides their stars.' }), grid), function(){ return []; });
+  const pick = function(rw){
+    if(!rw) p.noStars = true; else { delete p.noStars; p.reward = rw; }
+    saveKey(KEYS.people, people); const m = document.getElementById('fhrwPicEd'); if(m) m.remove(); render(); };
+  const tile = function(r, onPick){ const on = cur === r.id;
+    return h('button', { type:'button', class:'fhrw-pic' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-pic':r.id, onClick:onPick },
+      h('span', { class:'fhrw-picicon' }, fhRewardArt(r)), h('span', { text:r.label })); };
+  const grid = function(list){ const g = h('div', { class:'fhrw-pics' });
+    list.forEach(function(r){ g.appendChild(tile(r, function(){ pick(r.id === 'none' ? null : r.pic ? { presetId:r.id, icon:r.icon, label:r.label, pic:r.pic } : { presetId:r.id, icon:r.icon, label:r.label }); })); });
+    return g; };
+  // squishies: one with colours opens its colours first (the bao bun); the rest pick straight away
+  const P = fhRewardPics(), mine = p.reward && p.reward.pic && !p.noStars ? p.reward : null;
+  let open = mine && P[mine.pic] && P[mine.pic].cols ? mine.pic : '';
+  const sq = h('div', {});
+  const drawSq = function(){
+    sq.innerHTML = '';
+    const g = h('div', { class:'fhrw-pics' });
+    fhRewardPicChoices().forEach(function(r){
+      const pic = P[r.pic], col = mine && mine.pic === r.pic ? mine.col : '';
+      const t = tile(Object.assign({}, r, { col:col }), function(){
+        if(pic.cols){ open = open === r.pic ? '' : r.pic; drawSq(); return; }
+        pick({ presetId:r.id, icon:r.icon, label:r.label, pic:r.pic }); });
+      if(open === r.pic) t.classList.add('open');
+      g.appendChild(t); });
+    sq.appendChild(g);
+    if(open){ const pic = P[open], cur = mine && mine.pic === open ? (mine.col || pic.cols[0][0]) : '';
+      sq.appendChild(h('p', { class:'fhe-lab', text:'Which colour?' }));
+      sq.appendChild(h('div', { class:'fhrw-cols', id:'fhrwCols' }, pic.cols.map(function(c){ const on = cur === c[0];
+        return h('button', { type:'button', class:'fhrw-col' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-col':c[0],
+          onClick:function(){ pick({ presetId:'pic-' + open, icon:pic.icon, label:pic.label, pic:open, col:c[0] }); } },
+          fhRewardArt({ pic:open, col:c[0] }), h('span', { text:c[1] })); }))); }
+  };
+  drawSq();
+  // Make your own: an emoji from the phone's keyboard and a name for it
+  const own = p.reward && p.reward.presetId === 'own' ? p.reward : null;
+  const emo = h('input', { class:'fhe-in fhrw-ownemo', id:'fhrwOwnEmo', value:own ? own.icon : '', placeholder:'🙂', 'aria-label':'Emoji', autocomplete:'off' });
+  const nm = h('input', { class:'fhe-in', id:'fhrwOwnName', value:own ? own.label : '', maxlength:'30', placeholder:'e.g. Bubble teas', 'aria-label':'What they’re called' });
+  const err = h('div', { class:'fhe-err' });
+  emo.addEventListener('input', function(){ const e = fhFirstEmoji(emo.value); if(e && emo.value !== e) emo.value = e; });
+  const ownBox = h('div', { class:'fhrw-own' + (own ? ' on' : ''), 'data-pic':'own' },
+    h('p', { class:'fhe-lab', text:'Make your own' }),
+    h('p', { class:'fhch-note', text:'Pick any emoji from your phone’s keyboard and give it a name.' }),
+    h('div', { class:'fhrw-ownrow' }, emo, nm,
+      h('button', { type:'button', class:'btn', id:'fhrwOwnSave', text:'Use it', onClick:function(){
+        const e = fhFirstEmoji(emo.value), n = nm.value.trim();
+        if(!e){ err.textContent = 'Pick an emoji (the 🙂 key on your keyboard).'; emo.focus(); return; }
+        if(!n){ err.textContent = 'What are they called?'; nm.focus(); return; }
+        pick({ presetId:'own', icon:e, label:n }); } })), err);
+  fhchSheet('fhrwPicEd', self ? 'Your picture' : p.name + ' collects', h('div', {},
+    h('p', { class:'fhch-note', text:self ? 'Your stars look like this on every screen.' : 'Their stars look like this on every screen. Not collecting hides their stars.' }),
+    h('p', { class:'fhe-lab', text:'Squishies' }), sq,
+    ownBox,
+    h('p', { class:'fhe-lab', text:'Emojis' }), grid(self ? REWARD_PRESETS : REWARD_PRESETS.concat([{ id:'none', icon:'🚫', label:'Not collecting' }]))), function(){ return []; });
 }
 
 const __ready = init();
@@ -15799,6 +16072,7 @@ function obApply(S){
   }
   fhSaveJSON('chore-chart-categories-v1', cats);
   fhSaveJSON('chore-chart-chores-v1', chores);
+  if(F.chores) fhSaveJSON('chore-chart-level-v1', S.level || 2);   // Chores › Jobs › How much? starts here
   fhSaveJSON('family-hub-starter-chores-v1', chores);
   fhSaveJSON('chore-chart-completions-v2', {});
   fhSaveJSON('chore-chart-stars-v1', {});
@@ -15884,6 +16158,7 @@ function obApplyAddon(S, which){
     const cats = rooms.filter(r=>withChores[r.id]).map(r=>({ id:r.id, label:r.label, emoji:r.emoji, hue:r.hue }));
     fhSaveJSON('chore-chart-categories-v1', cats);
     fhSaveJSON('chore-chart-chores-v1', chores);
+    fhSaveJSON('chore-chart-level-v1', S.level || 2);
     fhSaveJSON('family-hub-starter-chores-v1', chores);
     fhSaveJSON('chore-chart-anchor-v1', fhMondayISO());
     Feature.markProvisioned('chores');
