@@ -3023,6 +3023,21 @@ span.fhch-sq.off{ border:0; background:transparent; cursor:default; }
 .fhrw-hint p{ margin:0 0 4px; font-weight:700; font-size:.88rem; }
 .fhrw-hint small{ display:block; color:var(--muted); font-size:.78rem; margin-top:4px; }
 .fhrw-restart{ width:100%; margin:0 0 8px; }
+/* extra stars */
+.fhrw-boosts{ display:flex; flex-direction:column; gap:4px; margin:0 0 8px; }
+.fhrw-boost{ display:flex; align-items:center; gap:8px; font-size:.86rem; background:var(--star-tint, var(--panel)); border-radius:10px; padding:5px 10px; }
+.fhrw-bn{ flex:none; font-weight:800; color:var(--star); white-space:nowrap; }
+.fhrw-bwhy{ flex:1; min-width:0; overflow-wrap:anywhere; }
+.fhrw-boost small, .fhrw-bmore{ flex:none; color:var(--muted); font-size:.76rem; }
+.fhrw-boostbtn{ display:block; margin:8px 0 0 auto; font:inherit; font-size:.84rem; font-weight:800; padding:6px 12px; border-radius:10px; border:2px solid var(--accent); background:transparent; color:var(--accent); cursor:pointer; }
+.fhrw-blist{ display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.fhrw-brow{ display:flex; align-items:center; gap:10px; background:var(--panel); border-radius:10px; padding:6px 8px 6px 10px; }
+.fhrw-brow .fhch-t{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.fhrw-brow .fhch-t small{ color:var(--muted); font-size:.78rem; overflow-wrap:anywhere; }
+.fhrw-bx{ flex:none; width:36px; height:36px; border-radius:50%; border:0; background:transparent; color:var(--muted); font:inherit; font-size:1rem; cursor:pointer; }
+.fhrw-toast{ position:fixed; left:12px; right:12px; bottom:14px; z-index:3400; max-width:520px; margin:0 auto; display:flex; gap:12px; align-items:center; justify-content:space-between;
+  background:var(--ink); color:var(--cream, #fff); padding:12px 14px; border-radius:12px; box-shadow:0 6px 24px var(--shadow, rgba(0,0,0,.3)); font-size:.95rem; }
+.fhrw-toast button{ flex:none; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 14px; font:inherit; font-weight:700; cursor:pointer; }
 .fhrw-pics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; padding-bottom:12px; }
 .fhrw-pic{ display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; font-size:.78rem; padding:10px 4px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
 .fhrw-pic.on{ border-color:var(--accent); background:var(--panel); }
@@ -3846,6 +3861,12 @@ function fhPortionGroup(l){
   return 'meat';
 }
 
+/* "stars" only when that's what the household (or these people) chose to collect, otherwise "rewards" (ChoreApp.rewardWord) */
+function fhRwWord(ids, n, cap){
+  try{ return ChoreApp.rewardWord(ids, n, cap); }catch(e){}
+  const w = n === 1 ? 'reward' : 'rewards'; return cap ? 'R' + w.slice(1) : w;
+}
+
 const FH_CONV = {"plain flour":{"base":"g","per":{"tbsp":8},"approx":true},"mozzarella":{"base":"g","per":{"each":125}},"soft cheese":{"base":"g","per":{"tub":180}},"smoked bacon":{"base":"g","per":{"each":30},"say":"rasher","approx":true},"salmon fillet":{"base":"each","per":{"g":0.008333}},"red cabbage":{"base":"each","per":{"quarter":0.25,"g":0.00125}},"puff pastry sheet":{"base":"sheet","per":{"piece":1,"pack":1}}};
 /* ==================== SHOPPING LIST: one line per item, and "2 more" after a tick ====================
    The base list keyed lines by exact name + unit, so "Potatoes 500 g" and "Potatoes 1 kg", or "Honey 1 tsp" and
@@ -4501,7 +4522,7 @@ const FHPeople = (function(){
         name, role, ps.length > 1 ? del : null));
       if(colourFor === p.id) card.appendChild(h('div', { class:'fhp-swatches' }, HUES.map(function(hue){
         return h('button', { type:'button', class:'fhp-sw' + (hue === p.hue ? ' on' : ''), style:'--ec:hsl(' + hue + ',55%,48%)', 'aria-label':'Colour', onClick:function(){ colourFor = ''; setFields(p.id, { hue:hue }); try{ ChoreApp.render(); }catch(e){} redo(); } }); })));
-      if(removing === p.id) card.appendChild(h('p', { class:'fhp-warn', text:'Their chores become Anyone jobs. Their stars, food needs and reminders go too.' }));
+      if(removing === p.id) card.appendChild(h('p', { class:'fhp-warn', text:'Their chores become Anyone jobs. Their rewards, food needs and reminders go too.' }));
     });
     const nn = h('input', { class:'fhe-in', id:'fhpNewName', maxlength:'30', placeholder:'Name', 'aria-label':'New person’s name' });
     const nr = h('select', { class:'fhp-role', id:'fhpNewRole', 'aria-label':'Grown-up or child' }, [['parent', 'Grown-up'], ['child', 'Child'], ['other', 'Other']].map(function(r){ return h('option', { value:r[0], text:r[1] }); }));
@@ -10915,6 +10936,16 @@ function fhchKid(){
 function fhchMe(){ try{ const p = personById(FHPush.prefs().person); return p ? p.id : ''; }catch(e){ return ''; } }
 function fhchStarsOn(){ try{ return Feature.on('rewards'); }catch(e){ return true; } }
 function fhchCollectors(){ return people.filter(function(p){ return !p.noStars; }); }
+/* the word for what's collected (Matthew 25 Nov 2026): "stars" only when that's the picture they've chosen, otherwise
+   "rewards". ids: a person's id, a list, 'together', or nothing (everyone collecting); n === 1 gives the singular */
+function fhrwW(ids, n, cap){
+  if(typeof ids === 'string') ids = ids === 'together' ? fhchCollectors().map(function(p){ return p.id; }) : [ids];
+  const def = (rewardConfig && rewardConfig.presetId) || 'stars';
+  const list = ids && ids.length ? ids.map(personById).filter(Boolean) : fhchCollectors();
+  const stars = list.length ? list.every(function(p){ return ((p.reward && p.reward.presetId) || def) === 'stars'; }) : def === 'stars';
+  const w = (stars ? 'star' : 'reward') + (n === 1 ? '' : 's');
+  return cap ? w.charAt(0).toUpperCase() + w.slice(1) : w;
+}
 function fhchHue(id){ const p = personById(id); return p ? 'hsl(' + p.hue + ',55%,46%)' : 'var(--muted)'; }
 
 /* ---- occurrences ---- */
@@ -11059,7 +11090,7 @@ function fhchBoard(date, opts){
         fhchAv(x.p.id), h('b', { text:x.p.name }), h('span', { class:'fhch-coln', text:dn + '/' + x.list.length })),
       h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / x.list.length) + '%' })));
     x.list.forEach(function(o){ col.appendChild(fhchRow(o, { noRoom:true, noWho:true, noAv:true, noMore:true, noFreq:true })); });
-    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar', title:'Stars this week' }, fhRewardNode(x.p.id), ' ' + fhrwSum(fhrwWeek(x.p.id)), h('small', { text:' this week' })));
+    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar', title:fhrwW(x.p.id, 0, true) + ' this week' }, fhRewardNode(x.p.id), ' ' + fhrwSum(fhrwWeek(x.p.id)), h('small', { text:' this week' })));
     board.appendChild(col);
   });
   wrap.appendChild(board);
@@ -11092,7 +11123,7 @@ function fhchPersonDay(pid, date){
   const mine = fhchDayOcc(date, pid).filter(function(o){ return o.who === pid; });
   const dn = mine.filter(function(o){ return o.done; }).length;
   wrap.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(pid) },
-    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(pid), ' ' + fhrwSum(fhrwWeek(pid)), h('small', { text:' this week' })) : null),
+    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', title:fhrwW(pid, 0, true) + ' this week' }, fhRewardNode(pid), ' ' + fhrwSum(fhrwWeek(pid)), h('small', { text:' this week' })) : null),
     mine.length ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / mine.length) + '%' })) : null,
     h('small', { text:mine.length ? dn + ' of ' + mine.length + ' done' + fhrwNextText(pid) : 'No jobs of their own today' })));
   mine.forEach(function(o){ wrap.appendChild(fhchRow(o, { noWho:true, noAv:true, noMore:fhchKid() })); });
@@ -11117,7 +11148,7 @@ function fhchJobSheet(o){
     h('p', { class:'fhe-lab', text:(o.done ? 'Done by' : (o.monthly ? 'This month' : 'Just ' + (shSameDate(o.date, new Date()) ? 'today' : 'this day')) + ', give it to') }),
     h('div', { class:'ob-chips' }, chip('anyone', 'Anyone', o.who === 'anyone'), people.map(function(p){ return chip(p.id, p.name, o.who === p.id); })),
     o.swapped && !o.done ? h('button', { type:'button', class:'fhch-link', id:'fhchUsual', text:'Back to the usual (' + assigneeLabel(resolveAssignee(o.c, o.date)) + ')', onClick:function(){ close(); clearOccurrenceOverride(o.key); render(); } }) : null,
-    fhchStarsOn() ? h('p', { class:'fhch-note' }, 'Worth ', fhRewardNode(o.who === 'anyone' ? '' : o.who), ' ' + (o.c.stars || 1) + '. ' + (o.done ? 'The stars move to whoever you pick.' : 'Stars go to whoever it’s given to.')) : null,
+    fhchStarsOn() ? h('p', { class:'fhch-note' }, 'Worth ', fhRewardNode(o.who === 'anyone' ? '' : o.who), ' ' + (o.c.stars || 1) + '. ' + (o.done ? 'The ' + fhrwW(o.who === 'anyone' ? null : o.who) + ' move to whoever you pick.' : fhrwW(o.who === 'anyone' ? null : o.who, 0, true) + ' go to whoever it’s given to.')) : null,
     h('div', { class:'fhe-actions' },
       !o.done ? h('button', { type:'button', class:'btn secondary', id:'fhchSkip', text:'Skip ' + (o.monthly ? 'this month' : shSameDate(o.date, new Date()) ? 'today' : 'this day'), onClick:function(){ close(); fhchSetSkip(o, true); } }) : null,
       h('button', { type:'button', class:'btn', id:'fhchEditJob', text:'Edit job', onClick:function(){ close(); fhchEdit(fhchGroupOf(o.c)); } })));
@@ -11393,7 +11424,7 @@ function fhchEdit(g){
       const fake = { id:'_', freq:f.freq, weekday:f.weekday, parity:f.parity, assignedTo:f.turns, minAge:c0 ? c0.minAge : undefined };
       const roster = rosterForRotateToken(f.turns, fake);
       body.appendChild(h('p', { class:'fhch-note', text:roster.length ? fhchAnd(roster.map(function(p){ return p.name; })) + ' take turns, ' + (f.freq === 'daily' ? 'a day each' : f.freq === 'monthly' ? 'a month each' : 'a week each') + '.' : 'Nobody in that group yet.' }));
-    } else body.appendChild(h('p', { class:'fhch-note', text:'Whoever does it ticks it' + (fhchStarsOn() ? ' and says who it was, so the stars go to them.' : '.') }));
+    } else body.appendChild(h('p', { class:'fhch-note', text:'Whoever does it ticks it' + (fhchStarsOn() ? ' and says who it was, so the ' + fhrwW() + ' go to them.' : '.') }));
     if(categories.length){
       body.appendChild(h('p', { class:'fhe-lab', text:'Room' }));
       body.appendChild(h('div', { class:'ob-chips fhch-roompick' }, categories.map(function(r){ const on = f.cat === r.id;
@@ -11401,9 +11432,9 @@ function fhchEdit(g){
     }
     if(fhchStarsOn()){
       body.appendChild(h('div', { class:'fhch-worth' }, h('span', { class:'fhe-lab', text:'Worth' }),
-        h('button', { type:'button', class:'fhch-step', 'aria-label':'Fewer stars', text:'−', disabled:f.stars <= 1, onClick:function(){ f.stars = Math.max(1, f.stars - 1); draw(); } }),
+        h('button', { type:'button', class:'fhch-step', 'aria-label':'Fewer ' + fhrwW(), text:'−', disabled:f.stars <= 1, onClick:function(){ f.stars = Math.max(1, f.stars - 1); draw(); } }),
         h('b', { id:'fhchWorth' }, fhRewardNode(''), ' ' + f.stars),
-        h('button', { type:'button', class:'fhch-step', 'aria-label':'More stars', text:'+', disabled:f.stars >= 20, onClick:function(){ f.stars = Math.min(20, f.stars + 1); draw(); } }),
+        h('button', { type:'button', class:'fhch-step', 'aria-label':'More ' + fhrwW(), text:'+', disabled:f.stars >= 20, onClick:function(){ f.stars = Math.min(20, f.stars + 1); draw(); } }),
         h('small', { class:'fhch-note', text:'A quick job 1, a big one 3' })));
     }
     body.appendChild(err);
@@ -11558,7 +11589,7 @@ function fhrwIs(who, pid){ return pid === 'family' ? who === 'anyone' : who === 
 function fhrwRoutinesOn(){ try{ return typeof FHRoutines !== 'undefined' && Feature.on('routines'); }catch(e){ return false; } }
 /* the stars a person (or 'family', the Anyone pool) earned between two dates, by where they came from */
 function fhrwRange(pid, start, end){
-  const out = { chores:0, routines:0, habits:0 }, s = toISODate(start), e = toISODate(end), byId = {};
+  const out = { chores:0, routines:0, habits:0, extra:0 }, s = toISODate(start), e = toISODate(end), byId = {};
   chores.forEach(function(c){ byId[c.id] = c; });
   const at = fhchJSON(FHCH_AT);
   Object.keys(completions).forEach(function(key){
@@ -11574,16 +11605,17 @@ function fhrwRange(pid, start, end){
     Object.keys(L).forEach(function(d){ if(d < s || d > e) return; const day = L[d] || {};
       Object.keys(day).forEach(function(id){ const r = (day[id] || {})[pid]; if(r && +r.st) out[kinds[id] === 'habit' ? 'habits' : 'routines'] += +r.st; }); });
   }catch(err){}
+  if(pid !== 'family') fhrwBoostList(pid, s, e).forEach(function(b){ out.extra += +b.n || 0; });
   return out;
 }
-function fhrwSum(r){ return r.chores + r.routines + r.habits; }
+function fhrwSum(r){ return r.chores + r.routines + r.habits + (r.extra || 0); }
 function fhrwWho(pid){ return pid === 'together' ? fhchCollectors().map(function(p){ return p.id; }).concat(['family']) : [pid]; }
 function fhrwStars(pid, start, end){ return fhrwWho(pid).reduce(function(a, id){ return a + fhrwSum(fhrwRange(id, start, end)); }, 0); }
 function fhrwTotal(pid){ return fhrwWho(pid).reduce(function(a, id){ return a + (starsByPerson[id] || 0); }, 0); }
 /* this week's stars by where they came from */
 function fhrwWeek(pid, mon){
   mon = mon || currentMonday();
-  if(pid === 'together') return fhrwWho(pid).reduce(function(a, id){ const r = fhrwRange(id, mon, addDays(mon, 6)); a.chores += r.chores; a.routines += r.routines; a.habits += r.habits; return a; }, { chores:0, routines:0, habits:0 });
+  if(pid === 'together') return fhrwWho(pid).reduce(function(a, id){ const r = fhrwRange(id, mon, addDays(mon, 6)); a.chores += r.chores; a.routines += r.routines; a.habits += r.habits; a.extra += r.extra; return a; }, { chores:0, routines:0, habits:0, extra:0 });
   return fhrwRange(pid, mon, addDays(mon, 6));
 }
 /* the day, week or month a prize is counting now */
@@ -11650,6 +11682,7 @@ function fhrwFirstDay(){
   let first = '';
   Object.keys(completions).forEach(function(k){ let d = k.slice(k.lastIndexOf('::') + 2); if(d.length === 7) d += '-01'; if(completions[k] && (!first || d < first)) first = d; });
   try{ Object.keys(FHRoutines.log()).forEach(function(d){ if(!first || d < first) first = d; }); }catch(e){}
+  fhrwBoostList().forEach(function(b){ if(!first || b.d < first) first = b.d; });
   return first;
 }
 function fhrwAvg(pid, every){
@@ -11671,7 +11704,7 @@ function fhrwHint(every, who){
     lines.push(p.name + ': up to ' + fhrwMax(id, per.start, per.end) + ' ' + when + (avg === null ? '' : ' · about ' + avg + unit + ' lately'));
   });
   if(who !== 'together'){ const any = fhrwMax('family', per.start, per.end); if(any) lines.push('Plus up to ' + any + ' from Anyone jobs, for whoever does them.'); }
-  lines.push('“Up to” counts their own jobs, routines and habits. “Lately” is the last 4 weeks.');
+  lines.push('“Up to” counts their own jobs, routines and habits; extra ' + fhrwW(who || null) + ' come on top. “Lately” is the last 4 weeks.');
   return lines;
 }
 /* one prize on a person's card: how far this day, week or month, and Had it for a grown-up */
@@ -11693,11 +11726,11 @@ function fhrwRender(root){
   root.innerHTML = ''; fhchLoad();
   const kid = fhchKid();
   root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Rewards' })));
-  root.appendChild(h('p', { class:'fhch-note', text:'Stars come from chores, routines and habits. Each person collects their own.' }));
+  root.appendChild(h('p', { class:'fhch-note', text:fhrwW(null, 0, true) + ' come from chores, routines and habits. Each person collects their own.' }));
   const coll = fhchCollectors(), not = people.filter(function(p){ return p.noStars; });
-  const srcLine = function(wk, all){
-    const src = [['Chores', wk.chores], ['Routines', wk.routines], ['Habits', wk.habits]].filter(function(x){ return x[1]; });
-    return h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No stars yet this week' }),
+  const srcLine = function(wk, all, pid){
+    const src = [['Chores', wk.chores], ['Routines', wk.routines], ['Habits', wk.habits], ['Extra', wk.extra]].filter(function(x){ return x[1]; });
+    return h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No ' + fhrwW(pid || null) + ' yet this week' }),
       all === null ? null : h('span', { class:'fhrw-all', text:all + ' all time' }));
   };
   // a child's own phone or tablet: just their card (and Together)
@@ -11705,21 +11738,23 @@ function fhrwRender(root){
   (meP && !meP.noStars ? [meP] : coll).forEach(function(p){
     const wk = fhrwWeek(p.id), mine = fhrwSorted(rewardMilestones.filter(function(m){ return fhrwFor(m, p.id); }));
     root.appendChild(h('div', { class:'fhch-pc fhrw-card', style:'--pc:' + fhchHue(p.id), 'data-person':p.id },
-      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(p.id), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
-      srcLine(wk, starsByPerson[p.id] || 0),
+      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big', title:fhrwW(p.id, 0, true) + ' this week' }, fhRewardNode(p.id), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
+      srcLine(wk, starsByPerson[p.id] || 0, p.id),
+      fhrwBoostLines(p.id),
       mine.length ? h('div', { class:'fhrw-prows' }, mine.map(function(m){ return fhrwRow(m, p.id, kid); }))
-        : h('small', { text:rewardMilestones.length ? 'No prizes for ' + p.name + ' yet' : 'No prizes set yet' })));
+        : h('small', { text:rewardMilestones.length ? 'No prizes for ' + p.name + ' yet' : 'No prizes set yet' }),
+      kid ? null : h('button', { type:'button', class:'fhrw-boostbtn', 'data-person':p.id, text:'＋ Extra ' + fhrwW(p.id), 'aria-label':'Extra ' + fhrwW(p.id) + ' for ' + p.name, onClick:function(){ fhrwBoost({ pid:p.id }); } })));
   });
   const tog = fhrwSorted(rewardMilestones.filter(function(m){ return m.who === 'together'; }));
   if(tog.length || (starsByPerson.family || 0) > 0 || chores.some(function(c){ return c.assignedTo === 'anyone'; })){
     const wk = fhrwWeek(tog.length ? 'together' : 'family');
     root.appendChild(h('div', { class:'fhch-pc fhrw-card fhrw-pool', 'data-person':'family' },
-      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:tog.length ? 'Together' : 'Family pool' }), h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(''), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
-      h('small', { class:'fhrw-poolnote', text:tog.length ? 'Everyone’s stars added up, plus the family pool: ' + (starsByPerson.family || 0) + ' from Anyone jobs nobody claimed.' : 'Anyone jobs land here when nobody says who did them.' }),
+      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:tog.length ? 'Together' : 'Family pool' }), h('span', { class:'fhch-big', title:fhrwW('together', 0, true) + ' this week' }, fhRewardNode(''), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
+      h('small', { class:'fhrw-poolnote', text:tog.length ? 'Everyone’s ' + fhrwW() + ' added up, plus the family pool: ' + (starsByPerson.family || 0) + ' from Anyone jobs nobody claimed.' : 'Anyone jobs land here when nobody says who did them.' }),
       tog.length ? h('div', { class:'fhrw-prows' }, tog.map(function(m){ return fhrwRow(m, 'together', kid); })) : null));
   }
-  if(not.length) root.appendChild(h('p', { class:'fhch-note', text:fhchAnd(not.map(function(p){ return p.name; })) + (not.length === 1 ? ' isn’t' : ' aren’t') + ' collecting stars.' }));
-  if(!coll.length) root.appendChild(h('p', { class:'fhch-empty', text:'Nobody is collecting stars yet.' }));
+  if(not.length) root.appendChild(h('p', { class:'fhch-note', text:fhchAnd(not.map(function(p){ return p.name; })) + (not.length === 1 ? ' isn’t' : ' aren’t') + ' collecting ' + fhrwW() + '.' }));
+  if(!coll.length) root.appendChild(h('p', { class:'fhch-empty', text:'Nobody is collecting ' + fhrwW() + ' yet.' }));
   if(kid){
     // a child's own phone or tablet: they can change their own picture, if the grown-ups allow it
     const me = fhchMe(), mp = me && personById(me);
@@ -11734,8 +11769,8 @@ function fhrwRender(root){
   // prizes
   root.appendChild(h('div', { class:'fhch-lbl', text:'Prizes' }));
   const sorted = fhrwSorted(rewardMilestones);
-  if(!sorted.length) root.appendChild(h('p', { class:'fhch-note', text:'No prizes yet. Add one, like screen time at 5 stars a day, or a film night at 20 a week.' }));
-  else root.appendChild(h('p', { class:'fhch-note', text:'Each prize counts only the stars earned that day, week or month, and starts again after. Nothing is taken off.' }));
+  if(!sorted.length) root.appendChild(h('p', { class:'fhch-note', text:'No prizes yet. Add one, like screen time at 5 ' + fhrwW() + ' a day, or a film night at 20 a week.' }));
+  else root.appendChild(h('p', { class:'fhch-note', text:'Each prize counts only the ' + fhrwW() + ' earned that day, week or month, and starts again after. Nothing is taken off.' }));
   sorted.forEach(function(m){
     const who = m.who === 'together' ? 'Together' : m.who && personById(m.who) ? personById(m.who).name + ' only' : 'Everyone';
     root.appendChild(h('button', { type:'button', class:'fhch-jrow fhrw-plist', 'data-prize':m.id, onClick:function(){ fhrwPrize(m); } },
@@ -11744,7 +11779,7 @@ function fhrwRender(root){
   });
   root.appendChild(h('button', { type:'button', class:'btn secondary fhrw-add', id:'fhrwAddPrize', text:'＋ Add a prize', onClick:function(){ fhrwPrize(null); } }));
   // who collects, and with what picture
-  root.appendChild(h('div', { class:'fhch-lbl', text:'Who collects stars' }));
+  root.appendChild(h('div', { class:'fhch-lbl', text:'Who collects ' + fhrwW() }));
   people.forEach(function(p){
     root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-collect':p.id, onClick:function(){ fhrwPic(p); } },
       fhchAv(p.id), h('span', { class:'fhch-t' }, h('b', { text:p.name }), p.noStars ? h('small', { text:'Not collecting' }) : h('small', {}, 'Collects ', fhRewardNode(p.id), ' ' + ((p.reward && p.reward.label) || rewardConfig.label).toLowerCase())),
@@ -11757,6 +11792,111 @@ function fhrwRender(root){
       h('span', {}, h('b', { text:'Children choose their own picture' }), h('small', { text:'On their own phone or tablet, under Rewards.' }))));
   }
 }
+/* ---- extra stars: a grown-up gives stars for something that isn't a job (being kind, eating up a dinner they don't
+   love). Synced chore-chart-boosts-v1 { id:{ p:personId, n, why, d:'YYYY-MM-DD', at } }, kept a year. They go on the
+   running total as well, and count towards prizes on their own day, like any other star. Never on a child's device. */
+const FHRW_BOOST = 'chore-chart-boosts-v1';
+const FHRW_WHY = ['Ate up their dinner', 'Tried something new', 'Kind to someone', 'Helped without being asked', 'Great behaviour'];
+function fhrwBoostList(pid, s, e){
+  const B = fhchJSON(FHRW_BOOST);
+  return Object.keys(B).map(function(id){ return Object.assign({ id:id }, B[id]); })
+    .filter(function(b){ return b.p && +b.n > 0 && /^\d{4}-\d{2}-\d{2}$/.test(b.d || '') && (!pid || b.p === pid) && (!s || b.d >= s) && (!e || b.d <= e); })
+    .sort(function(a, b){ return a.d !== b.d ? (a.d < b.d ? 1 : -1) : String(b.at || '').localeCompare(String(a.at || '')); });
+}
+function fhrwCanBoost(){ return fhchStarsOn() && !fhchKid() && fhchCollectors().length > 0; }
+function fhrwGive(pids, n, why, date){
+  if(!fhrwCanBoost()) return [];
+  n = Math.max(1, Math.min(50, parseInt(n, 10) || 1));
+  const B = fhchJSON(FHRW_BOOST), d = toISODate(date || new Date()), at = new Date().toISOString(), ids = [];
+  (pids || []).forEach(function(pid, i){
+    const p = personById(pid); if(!p || p.noStars) return;
+    const id = 'bo_' + Date.now().toString(36) + i + Math.random().toString(36).slice(2, 6);
+    B[id] = { p:pid, n:n, why:String(why || '').trim().slice(0, 60), d:d, at:at }; ids.push(id);
+    adjustStars(pid, n);
+  });
+  const cut = toISODate(addDays(new Date(), -366));
+  Object.keys(B).forEach(function(k){ if(!B[k] || String(B[k].d || '') < cut) delete B[k]; });
+  fhSaveJSON(FHRW_BOOST, B);
+  return ids;
+}
+function fhrwTakeBack(id){
+  if(fhchKid()) return false;
+  const B = fhchJSON(FHRW_BOOST), b = B[id]; if(!b) return false;
+  delete B[id]; fhSaveJSON(FHRW_BOOST, B);
+  if(personById(b.p)) adjustStars(b.p, -(+b.n || 0));
+  return true;
+}
+function fhrwDayWord(d){
+  const t = fhrwToday(), x = fhrwDate(d), ago = Math.round((t - x) / 864e5);
+  return ago === 0 ? 'Today' : ago === 1 ? 'Yesterday' : x.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+}
+/* on a person's Rewards card: this week's extra stars and what for */
+function fhrwBoostLines(pid){
+  const mon = currentMonday(), bl = fhrwBoostList(pid, toISODate(mon), toISODate(addDays(mon, 6)));
+  if(!bl.length) return null;
+  return h('div', { class:'fhrw-boosts' }, bl.slice(0, 3).map(function(b){
+    return h('div', { class:'fhrw-boost', 'data-boost':b.id }, h('span', { class:'fhrw-bn' }, '+' + b.n + ' ', fhRewardNode(pid)), h('span', { class:'fhrw-bwhy', text:b.why || 'Extra ' + fhrwW(pid) }), h('small', { text:fhrwDayWord(b.d) })); }),
+    bl.length > 3 ? h('small', { class:'fhrw-bmore', text:'and ' + (bl.length - 3) + ' more this week' }) : null);
+}
+/* the Extra stars sheet: who, how many, what for, today or yesterday; the last 2 weeks' with ✕ to take them back */
+function fhrwBoost(o){
+  o = o || {};
+  if(!fhrwCanBoost()) return;
+  const coll = fhchCollectors(), today = toISODate(new Date()), yday = toISODate(addDays(new Date(), -1));
+  const asked = o.date ? toISODate(o.date) : today;
+  const f = { who:o.pid && personById(o.pid) ? [o.pid] : coll.length === 1 ? [coll[0].id] : [], n:1, why:o.why || '', day:asked > today ? today : asked };
+  const done = function(){ try{ render(); }catch(e){} if(typeof o.onDone === 'function') try{ o.onDone(); }catch(e){} };
+  const whoBox = h('div', {}), nBox = h('div', {}), whyBox = h('div', {}), dayBox = h('div', {}), list = h('div', {});
+  const err = h('div', { class:'fhe-err' });
+  const why = h('input', { class:'fhe-in', id:'fhrwWhy', maxlength:'60', placeholder:'Or type your own', 'aria-label':'What for', value:f.why,
+    onInput:function(){ f.why = why.value; drawWhy(); } });
+  const go = h('button', { type:'button', class:'btn', id:'fhrwBoostGo', text:'Give' });
+  const label = function(){ go.textContent = 'Give ' + f.n + ' ' + fhrwW(f.who.length ? f.who : null, f.n) + (f.who.length > 1 ? ' each' : ''); };
+  const drawWho = function(){ whoBox.innerHTML = '';
+    const all = coll.length > 1 && f.who.length === coll.length;
+    whoBox.appendChild(h('div', { class:'ob-chips', id:'fhrwBoostWho' }, coll.map(function(p){ const on = f.who.indexOf(p.id) >= 0;
+      return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-person':p.id, text:p.name,
+        onClick:function(){ f.who = on ? f.who.filter(function(x){ return x !== p.id; }) : f.who.concat([p.id]); drawWho(); label(); } }); })
+      .concat(coll.length > 1 ? [h('button', { type:'button', class:'ob-chip' + (all ? ' on' : ''), 'aria-pressed':all ? 'true' : 'false', 'data-person':'all', text:'Everyone',
+        onClick:function(){ f.who = all ? [] : coll.map(function(p){ return p.id; }); drawWho(); label(); } })] : []))); };
+  const drawN = function(){ nBox.innerHTML = ''; nBox.appendChild(fhchSeg([[1, '1'], [2, '2'], [3, '3'], [5, '5']], f.n, function(v){ f.n = v; drawN(); label(); }, 'fhrwBoostN')); };
+  const drawWhy = function(){ whyBox.innerHTML = '';
+    const mine = []; fhrwBoostList().forEach(function(b){ if(b.why && FHRW_WHY.indexOf(b.why) < 0 && mine.indexOf(b.why) < 0 && mine.length < 4) mine.push(b.why); });
+    whyBox.appendChild(h('div', { class:'ob-chips', id:'fhrwBoostWhys' }, FHRW_WHY.concat(mine).map(function(t){ const on = f.why.trim() === t;
+      return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-why':t, text:t,
+        onClick:function(){ f.why = on ? '' : t; why.value = f.why; drawWhy(); } }); }))); };
+  const drawDay = function(){ dayBox.innerHTML = '';
+    const opts = [[today, 'Today'], [yday, 'Yesterday']]; if(f.day < yday) opts.push([f.day, fhrwDayWord(f.day)]);
+    dayBox.appendChild(fhchSeg(opts, f.day, function(v){ f.day = v; drawDay(); }, 'fhrwBoostDay')); };
+  const drawList = function(){ list.innerHTML = '';
+    const bl = fhrwBoostList('', toISODate(addDays(new Date(), -13)), today); if(!bl.length) return;
+    list.appendChild(h('p', { class:'fhe-lab', text:'Lately' }));
+    list.appendChild(h('div', { class:'fhrw-blist' }, bl.slice(0, 12).map(function(b){ const p = personById(b.p);
+      return h('div', { class:'fhrw-brow', 'data-boost':b.id }, fhchAv(b.p), h('span', { class:'fhch-t' }, h('b', { text:(p ? p.name : 'Someone') + ' +' + b.n }), h('small', { text:(b.why || 'Extra ' + fhrwW(b.p)) + ' · ' + fhrwDayWord(b.d) })),
+        h('button', { type:'button', class:'fhrw-bx', 'aria-label':'Take back ' + b.n + ' from ' + (p ? p.name : 'them'), text:'✕', onClick:function(){ fhrwTakeBack(b.id); drawList(); done(); } })); }))); };
+  drawWho(); drawN(); drawWhy(); drawDay(); drawList(); label();
+  fhchSheet('fhrwBoostEd', 'Extra ' + fhrwW(f.who.length ? f.who : null), h('div', {},
+    h('p', { class:'fhch-note', text:'For something that isn’t a job: being kind, trying a new food, eating up a dinner they don’t love. They count towards prizes like the rest.' }),
+    h('p', { class:'fhe-lab', text:'For' }), whoBox,
+    h('p', { class:'fhe-lab', text:'How many' }), nBox,
+    h('p', { class:'fhe-lab', text:'What for' }), whyBox, why,
+    h('p', { class:'fhe-lab', text:'When' }), dayBox, err, list), function(close){
+      go.onclick = function(){
+        if(!f.who.length){ err.textContent = 'Who are they for?'; return; }
+        const ids = fhrwGive(f.who, f.n, f.why, fhrwDate(f.day)); close(); done();
+        fhrwBoostToast(ids, f.who, f.n, f.why, done); };
+      return [go]; });
+}
+function fhrwBoostToast(ids, who, n, why, done){
+  const old = document.getElementById('fhrwBoostDone'); if(old) old.remove();
+  if(!ids.length) return;
+  const names = fhchAnd(who.map(function(id){ const p = personById(id); return p ? p.name : ''; }).filter(Boolean));
+  const t = h('div', { id:'fhrwBoostDone', class:'fhrw-toast', role:'status' },
+    h('span', { text:'+' + n + ' for ' + names + (why ? ' · ' + why.trim() : '') }),
+    h('button', { type:'button', id:'fhrwBoostUndo', text:'Undo', onClick:function(){ ids.forEach(fhrwTakeBack); t.remove(); done(); } }));
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.remove(); }, 5000);
+}
 // can a child change their own picture on their own device? Shared with the household; missing = yes
 const FHRW_KIDPICS_KEY = 'chore-chart-kid-pics-v1';
 function fhrwKidPics(set){
@@ -11765,14 +11905,15 @@ function fhrwKidPics(set){
 }
 function fhrwPrize(m){
   const f = { threshold:m ? m.threshold : '', text:m ? m.text : '', who:m ? (m.who || '') : '', every:m ? fhrwEvery(m) : 'week' };
-  const th = h('input', { class:'fhe-in fhrw-thin', id:'fhrwTh', type:'number', min:'1', max:'9999', value:String(f.threshold), placeholder:'20', 'aria-label':'Stars needed' });
+  const th = h('input', { class:'fhe-in fhrw-thin', id:'fhrwTh', type:'number', min:'1', max:'9999', value:String(f.threshold), placeholder:'20', 'aria-label':fhrwW(null, 0, true) + ' needed' });
   const tx = h('input', { class:'fhe-in', id:'fhrwText', value:f.text, maxlength:'60', placeholder:'e.g. Film night', 'aria-label':'Prize' });
   const err = h('div', { class:'fhe-err' });
   const hint = h('div', { class:'fhrw-hint', id:'fhrwHint', 'aria-live':'polite' });
   const drawHint = function(){ hint.innerHTML = ''; fhrwHint(f.every, f.who).forEach(function(t, i, a){ hint.appendChild(h(i === a.length - 1 ? 'small' : 'p', { text:t })); }); };
-  const NOTE = { day:'Counts the stars earned each day. Starts again every morning.', week:'Counts the stars earned Monday to Sunday. Starts again every Monday.',
-    month:'Counts the stars earned each month. Starts again on the 1st.',
-    once:m && fhrwEvery(m) === 'once' ? (m.from ? 'Counts the stars earned since ' + fhrwDate(m.from).toLocaleDateString('en-GB', { day:'numeric', month:'long' }) + '. For something further off, like a day out.' : 'Counts every star since they started.') : 'Counts from today until it’s had. For something further off, like a day out.' };
+  const sw = fhrwW(m && m.who && m.who !== 'together' ? m.who : null);
+  const NOTE = { day:'Counts the ' + sw + ' earned each day. Starts again every morning.', week:'Counts the ' + sw + ' earned Monday to Sunday. Starts again every Monday.',
+    month:'Counts the ' + sw + ' earned each month. Starts again on the 1st.',
+    once:m && fhrwEvery(m) === 'once' ? (m.from ? 'Counts the ' + sw + ' earned since ' + fhrwDate(m.from).toLocaleDateString('en-GB', { day:'numeric', month:'long' }) + '. For something further off, like a day out.' : 'Counts every ' + fhrwW(m && m.who && m.who !== 'together' ? m.who : null, 1) + ' since they started.') : 'Counts from today until it’s had. For something further off, like a day out.' };
   const evBox = h('div', {});
   const drawEv = function(){ evBox.innerHTML = '';
     evBox.appendChild(h('div', { class:'fhch-seg', id:'fhrwEvery', role:'group', 'aria-label':'Each' }, FHRW_EVERY.map(function(x){
@@ -11783,7 +11924,7 @@ function fhrwPrize(m){
   const draw = function(){ whoBox.innerHTML = '';
     whoBox.appendChild(h('div', { class:'ob-chips' }, [['', 'Everyone']].concat(people.map(function(p){ return [p.id, p.name]; })).concat(together ? [['together', 'Together']] : []).map(function(x){
       return h('button', { type:'button', class:'ob-chip' + (f.who === x[0] ? ' on' : ''), 'aria-pressed':f.who === x[0] ? 'true' : 'false', 'data-person':x[0] || 'all', text:x[1], onClick:function(){ f.who = x[0]; draw(); drawHint(); } }); })));
-    const n = f.who === '' ? 'Each person earns it with their own stars.' : f.who === 'together' ? 'Everyone’s stars added up, plus Anyone jobs nobody claimed. One prize for the family.' : '';
+    const n = f.who === '' ? 'Each person earns it with their own ' + fhrwW() + '.' : f.who === 'together' ? 'Everyone’s ' + fhrwW() + ' added up, plus Anyone jobs nobody claimed. One prize for the family.' : '';
     if(n) whoBox.appendChild(h('p', { class:'fhch-note', text:n })); };
   drawEv(); draw(); drawHint();
   const restart = m && fhrwEvery(m) === 'once' ? h('button', { type:'button', class:'btn secondary fhrw-restart', id:'fhrwRestart', text:'Start counting again from today', onClick:function(){
@@ -11791,14 +11932,14 @@ function fhrwPrize(m){
     saveKey(KEYS.rewardMilestones, rewardMilestones); const sh = document.getElementById('fhrwPrizeEd'); if(sh) sh.remove(); render(); } }) : null;
   fhchSheet('fhrwPrizeEd', m ? 'Edit prize' : 'Add a prize', h('div', {},
     h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Prize' }), tx),
-    h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Stars needed' }), th),
+    h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:fhrwW(null, 0, true) + ' needed' }), th),
     h('p', { class:'fhe-lab', text:'Each' }), evBox,
     h('p', { class:'fhe-lab', text:'For' }), whoBox, hint, restart, err), function(close){ return [
       m ? h('button', { type:'button', class:'btn secondary', id:'fhrwDel', text:'Delete', onClick:function(){ rewardMilestones = rewardMilestones.filter(function(x){ return x.id !== m.id; }); saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } }) : null,
       h('button', { type:'button', class:'btn', id:'fhrwSave', text:'Save', onClick:function(){
         const n = parseInt(th.value, 10), t = tx.value.trim();
         if(!t){ err.textContent = 'What’s the prize?'; return; }
-        if(!n || n < 1){ err.textContent = 'How many stars does it take?'; return; }
+        if(!n || n < 1){ err.textContent = 'How many ' + fhrwW(f.who && f.who !== 'together' ? f.who : null) + ' does it take?'; return; }
         const rec = m || { id:'rw_' + Date.now() };
         const wasOnce = m && fhrwEvery(m) === 'once';
         rec.threshold = n; rec.text = t; if(f.who) rec.who = f.who; else delete rec.who;
@@ -11857,7 +11998,7 @@ function fhrwPic(p, self){
         if(!n){ err.textContent = 'What are they called?'; nm.focus(); return; }
         pick({ presetId:'own', icon:e, label:n }); } })), err);
   fhchSheet('fhrwPicEd', self ? 'Your picture' : p.name + ' collects', h('div', {},
-    h('p', { class:'fhch-note', text:self ? 'Your stars look like this on every screen.' : 'Their stars look like this on every screen. Not collecting hides their stars.' }),
+    h('p', { class:'fhch-note', text:self ? 'What you collect looks like this on every screen.' : 'What they collect looks like this on every screen. Not collecting hides it.' }),
     h('p', { class:'fhe-lab', text:'Squishies' }), sq,
     ownBox,
     h('p', { class:'fhe-lab', text:'Emojis' }), grid(self ? REWARD_PRESETS : REWARD_PRESETS.concat([{ id:'none', icon:'🚫', label:'Not collecting' }]))), function(){ return []; });
@@ -11876,6 +12017,11 @@ const __ready = init();
     prizeProgress: fhrwProgress,
     prizeHint: fhrwHint,
     starsBetween: fhrwStars,
+    canBoost: fhrwCanBoost,
+    rewardWord: fhrwW,
+    boost: fhrwBoost,
+    giveStars: fhrwGive,
+    boosts: fhrwBoostList,
     people: function(){ return people.slice(); },
     addPerson: function(name, role){ const n = (name || '').trim(); if(!n) return null; const id = 'p_' + Date.now().toString(36); people.push({ id:id, name:n, role:role || 'other', hue:PRESET_HUES[people.length % PRESET_HUES.length] }); saveKey(KEYS.people, people); render(); return id; },
     removePerson: function(id){ deletePerson(id); },
@@ -11986,6 +12132,20 @@ function buildMealCard(date, mcOpts){
       MealApp.openDateSides(date, function(){ try{ refreshCurrentPage(); }catch(err){} try{ if(FHKitchen.isOpen()) FHKitchen.refresh(); }catch(err){} });
     });
     card.appendChild(sidesBtn);
+  }
+  // ⭐ Ate up: extra stars for eating up (a grown-up’s device, tonight or last night)
+  const fhAgo = Math.round((new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) - new Date(date.getFullYear(), date.getMonth(), date.getDate())) / 864e5);
+  if(info.mealId && (fhAgo === 0 || fhAgo === 1) && typeof ChoreApp !== 'undefined' && ChoreApp.canBoost && ChoreApp.canBoost()){
+    const boostBtn = document.createElement('button');
+    boostBtn.type = 'button';
+    boostBtn.className = 'btn small secondary meal-change-btn fhd-boost-btn';
+    boostBtn.textContent = '⭐ Ate up';
+    boostBtn.setAttribute('aria-label', 'Extra stars for eating up ' + (info.mealName || 'dinner'));
+    boostBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      ChoreApp.boost({ why:'Ate up their dinner', date:date, onDone:function(){ try{ refreshCurrentPage(); }catch(err){} } });
+    });
+    card.appendChild(boostBtn);
   }
 
   return card;
@@ -14615,14 +14775,14 @@ const FHRoutines = (function(){
           text:(iso(x) === iso(new Date()) ? 'Today' : x.toLocaleDateString('en-GB', { weekday:'short', day:'numeric' })) + (full ? ' ✓' : ''),
           onClick:() => { d = x; pick = ''; draw(); } }); })));
       const left = routine ? (it.steps || []).filter(x => st.s.indexOf(x.id) < 0).map(x => x.t) : [];
-      const now = st.complete ? (f.full ? 'Done on time' + (f.given ? ', ' + f.given + '★' : '') + '.' : f.cur === 'keep' ? 'Done, waiting for a grown-up to check.' : 'Done late, no stars.')
+      const now = st.complete ? (f.full ? 'Done on time' + (f.given ? ', ' + f.given + ' ' + fhRwWord([pid], f.given) : '') + '.' : f.cur === 'keep' ? 'Done, waiting for a grown-up to check.' : 'Done late, no ' + fhRwWord([pid]) + '.')
         : routine ? (st.doneN ? 'Ticked ' + st.doneN + ' of ' + st.total + '. Not ticked: ' + left.join(', ') + '.' : 'Nothing ticked.')
         : (st.doneN ? 'Counted ' + st.n + ' of ' + st.goal + '.' : 'Not ticked.');
       body.appendChild(h('p', { class:'fhrt-fixnow', id:'fhrtFixNow', text:now }));
-      const opts = [['ontime', routine ? 'They did it on time' : 'They did it', 'Forgot to tick. ' + (routine ? 'Ticks every step' : 'Ticks it') + (stars ? ' and gives ' + stars + '★' : '') + '.']];
-      if(routine) opts.push(['late', 'Done, but late', 'Ticks every step, no stars.']);
+      const opts = [['ontime', routine ? 'They did it on time' : 'They did it', 'Forgot to tick. ' + (routine ? 'Ticks every step' : 'Ticks it') + (stars ? ' and gives ' + stars + ' ' + fhRwWord([pid], stars) : '') + '.']];
+      if(routine) opts.push(['late', 'Done, but late', 'Ticks every step, no ' + fhRwWord([pid]) + '.']);
       if(f.cur === 'keep') opts.push(['keep', 'Leave it as it is', st.complete ? 'Waiting to be checked' : st.doneN + ' of ' + st.total]);
-      opts.push(['none', 'Not done', f.given ? 'Clears the ticks and takes back ' + f.given + '★.' : 'Clears the ticks.']);
+      opts.push(['none', 'Not done', f.given ? 'Clears the ticks and takes back ' + f.given + ' ' + fhRwWord([pid], f.given) + '.' : 'Clears the ticks.']);
       body.appendChild(h('div', { class:'fhrt-fixopts', role:'radiogroup', 'aria-label':'What happened' }, opts.map(o => h('button', { type:'button', role:'radio', class:'fhrt-fixopt' + (pick === o[0] ? ' on' : ''),
         'aria-checked':pick === o[0] ? 'true' : 'false', 'data-how':o[0], onClick:() => { pick = o[0]; draw(); } },
         h('span', { class:'fhrt-fixdot', 'aria-hidden':'true' }), h('span', {}, h('b', { text:o[1] }), h('small', { text:o[2] }))))));
@@ -14674,7 +14834,7 @@ const FHRoutines = (function(){
     return box;
   }
   function needsCheck(it, date, pid){ const st = stateOf(it, date, pid); return it.ticks === 'check' && st.complete && !st.ok; }
-  function checkBtn(it, pid, date){ return !childDevice() && needsCheck(it, date, pid) ? h('button', { type:'button', class:'fhrt-ok', text:'✓ OK, stars', 'aria-label':'Check ' + it.name + ' for ' + (person(pid) || {}).name, onClick:e => { e.stopPropagation(); approve(it.id, pid, date); } }) : null; }
+  function checkBtn(it, pid, date){ return !childDevice() && needsCheck(it, date, pid) ? h('button', { type:'button', class:'fhrt-ok', text:'✓ OK, ' + fhRwWord([pid]), 'aria-label':'Check ' + it.name + ' for ' + (person(pid) || {}).name, onClick:e => { e.stopPropagation(); approve(it.id, pid, date); } }) : null; }
   function openChecklist(it, pid, date){
     if(document.getElementById('fhrtSheet')) return;
     const p = person(pid) || { name:'' };
@@ -14838,7 +14998,7 @@ const FHRoutines = (function(){
     return h('div', { class:'fho-card fhrt-card' },
       h('button', { type:'button', class:'fho-card-main', onClick:() => locked() ? null : editor(it), disabled:locked() },
         h('span', { class:'fho-emoji', text:it.kind === 'routine' ? (mins(it.by) < 720 ? '🌅' : mins(it.by) < 1080 ? '🎒' : '🌙') : '⭐' }),
-        h('span', { class:'fho-card-txt' }, h('b', { text:it.name }), h('small', { text:meta + (+it.stars ? ' · ' + it.stars + '★' : '') }))),
+        h('span', { class:'fho-card-txt' }, h('b', { text:it.name }), h('small', { text:meta + (+it.stars ? ' · ' + it.stars + ' ' + fhRwWord(it.who, +it.stars) : '') }))),
       who.map(p => { const w = weekDots(it, p.id), fix = !childDevice();
         return h(fix ? 'button' : 'div', { class:'fhrt-prog' + (fix ? ' fhrt-fixable' : ''), style:'--pc:' + colorOf(p.id), 'data-person':p.id, type:fix ? 'button' : null,
           'aria-label':fix ? p.name + ', ' + it.name + ': ' + (w.n ? w.hit + ' of ' + w.n : 'new') + '. Fix a day' : null, onClick:fix ? () => fixSheet(it, p.id) : null }, h('b', { text:p.name }),
@@ -14852,7 +15012,7 @@ const FHRoutines = (function(){
     const d = data(), lk = locked();
     root.appendChild(h('div', { class:'fho-headrow' },
       h('div', {}, h('h2', { class:'fho-h', text:'Routines & habits' }),
-        h('p', { class:'fho-sub', text:'Routines are steps done by a time, like teeth and shoes by 8:00. Habits are once a day, like reading. Both can earn stars on the chore chart.' }))));
+        h('p', { class:'fho-sub', text:'Routines are steps done by a time, like teeth and shoes by 8:00. Habits are once a day, like reading. Both can earn ' + fhRwWord() + ' towards prizes.' }))));
     const group = (id, title, kind, btnText) => {
       const list = d.items.filter(it => it.kind === kind);
       const sec = h('section', { class:'fho-group', id }, h('div', { class:'fho-group-h' }, h('h3', { text:title }),
@@ -14915,7 +15075,7 @@ const FHRoutines = (function(){
     const err = h('div', { class:'fhe-err' });
     const name = h('input', { class:'fhe-in', id:'fhrtName', value:it.name, maxlength:'40', placeholder:kind === 'routine' ? 'e.g. School morning' : 'e.g. Read', 'aria-label':'Name' });
     const days = sel('fhrtDays', 'Days', [['school', 'School days'], ['every', 'Every day'], ['weekends', 'Weekends']], it.days);
-    const stars = sel('fhrtStars', 'Stars', [0, 1, 2, 3, 4, 5].map(n => [n, n ? n + (n === 1 ? ' star' : ' stars') : 'No stars']), +it.stars || 0);
+    const stars = sel('fhrtStars', fhRwWord(it.who, 0, true), [0, 1, 2, 3, 4, 5].map(n => [n, n ? n + ' ' + fhRwWord(it.who, n) : 'None']), +it.stars || 0);
     const ticks = sel('fhrtTicks', 'Who ticks', TICKS, it.ticks || 'child');
     let body;
     if(kind === 'routine'){
@@ -14948,7 +15108,7 @@ const FHRoutines = (function(){
         h('p', { class:'fhe-lab', text:'Steps' }), stepsBox, hint,
         h('div', { class:'fhrt-rems' }, h('p', { class:'fhe-lab', text:'Reminders' }),
           chk('start', 'Nudge them when it’s time to start'), chk('late', 'And 10 minutes before, if steps are left'), chk('parents', 'Tell the grown-ups at the time who isn’t done')),
-        h('div', { class:'fhpw-two' }, field('Stars when done on time', stars), field('Who ticks', ticks)));
+        h('div', { class:'fhpw-two' }, field(fhRwWord(it.who, 0, true) + ' when done on time', stars), field('Who ticks', ticks)));
       body.__get = () => { it.by = by.value || '08:00'; it.until = until.value || hhmm((mins(it.by) || 0) + 60); };
     } else {
       it.goal = it.goal || { type:'tick', n:1, unit:'' };
@@ -14969,7 +15129,7 @@ const FHRoutines = (function(){
         field('Name', name), h('p', { class:'fhe-lab', text:'How it’s counted' }), goalBox,
         h('p', { class:'fhe-lab', text:'Who' }), whoChips(it.who), field('Days', days),
         h('label', { class:'fhrt-chk' }, remOn, h('span', { text:'Remind them at' }), remAt),
-        h('div', { class:'fhpw-two' }, field('Stars a day', stars), field('Who ticks', ticks)));
+        h('div', { class:'fhpw-two' }, field(fhRwWord(it.who, 0, true) + ' a day', stars), field('Who ticks', ticks)));
       body.__get = () => { it.remind = { at:remOn.checked ? (remAt.value || '18:30') : '' }; if(it.goal.type === 'tick'){ it.goal.n = 1; it.goal.unit = ''; } };
     }
     body.appendChild(err);
@@ -16645,12 +16805,12 @@ const OBW = (function(){
       h('input',{type:'checkbox',checked:!!F[key]&&!disabled,disabled:!!disabled,onChange:e=>{ F[key]=e.target.checked; error=''; render(); }}));
     return [ ...title('What do you want to use?','Switch on only what suits your family. You can change this any time in Settings.'),
       row('chores','🧹','Chore chart','Daily, weekly and monthly jobs shared between everyone.'),
-      row('rewards','🏆','Rewards','Stars (or anything you like) for chores and routines, with prizes later.', !F.chores, !F.chores?'Needs the chore chart':''),
+      row('rewards','🏆','Rewards','Rewards to collect for chores and routines, with prizes later.', !F.chores, !F.chores?'Needs the chore chart':''),
       row('meals','🍽️','Meal planner','A 4-week rolling plan with a library of family meals.'),
       row('shopping','🛒','Shopping list', F.meals ? 'Built automatically from your meal plan, scaled to your household. Add anything else by hand.' : 'A shopping list you fill yourself. Switch on the meal planner too and it fills itself from your meals.'),
       row('essentials','🧻','Household essentials','Tap when you run low on toilet roll, bin bags and the like. It goes on your next shop.', !F.shopping, !F.shopping?'Needs the shopping list':''),
       row('tasks','☑️','Tasks','One-off jobs like “return parcel”, with who and by when. Dated tasks show on the calendar.'),
-      row('routines','🌅','Routines & habits','School mornings, bedtime, reading practice: steps to tick, with stars if you like.'),
+      row('routines','🌅','Routines & habits','School mornings, bedtime, reading practice: steps to tick, with rewards if you like.'),
       row('occasions','🎂','Birthdays & occasions','Birthdays and anniversaries with a reminder before, and gift ideas.'),
       row('paperwork','📄','Paperwork','Passports, MOT, insurance and deals that end, with a reminder in time.'),
       h('p',{class:'ob-label',text:'When you open the calendar, show'}),
@@ -16745,8 +16905,8 @@ const OBW = (function(){
       out.push(box);
     });
     if(F.rewards){
-      out.push(h('p',{class:'ob-label',text:'Stars'}));
-      out.push(h('p',{class:'ob-hint',text:'Everyone collects their own. Pick what each person’s stars look like.'}));
+      out.push(h('p',{class:'ob-label',text:'Rewards'}));
+      out.push(h('p',{class:'ob-hint',text:'Everyone collects their own. Pick what each person collects.'}));
       const prow = h('div',{class:'ob-list'});
       S.people.forEach((p,i)=>{
         prow.appendChild(h('div',{class:'ob-person'},
@@ -16755,7 +16915,7 @@ const OBW = (function(){
           select(OB_REWARD_CHOICES.map(r=>[r.id,r.icon+' '+r.label]), S.personRewards[p.id]||'stars', v=>{ S.personRewards[p.id]=v; saveDraft(); })));
       });
       out.push(prow);
-      out.push(h('p',{class:'ob-hint',text:'Prizes come later, on the Rewards page, once everyone has a few stars.'}));
+      out.push(h('p',{class:'ob-hint',text:'Prizes come later, on the Rewards page, once everyone has collected a few.'}));
     }
     return out;
   }
@@ -16960,7 +17120,7 @@ const OBW = (function(){
         on && body ? body() : null); };
     const out = [ ...title('Anything else that would help?', 'Tick any to set up now. The rest stay in the menu for later.') ];
     const names = kids.map(p=>p.name), andN = names.length < 2 ? (names[0] || '') : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
-    if(F.routines !== false && kids.length) out.push(opt('morning', '🌅 School mornings for ' + andN, 'Breakfast, teeth, dressed, hair and bag by 8:00' + (F.rewards && F.chores ? ', with stars' : '') + '. Change the steps any time in Routines.'));
+    if(F.routines !== false && kids.length) out.push(opt('morning', '🌅 School mornings for ' + andN, 'Breakfast, teeth, dressed, hair and bag by 8:00' + (F.rewards && F.chores ? ', with rewards' : '') + '. Change the steps any time in Routines.'));
     out.push(opt('bins', '🗑️ Bin day', 'Which day, and whether the bins alternate. It shows on the day and in the evening reminder.', ()=> h('div',{class:'ob-xbody'},
       h('div',{class:'ob-chips',id:'obBinDay'}, OB_DAY_SHORT.map((d,i)=>chip(d, X.binDay===i, ()=>{ X.binDay = i; keep(); }))),
       h('label',{class:'ob-check'}, h('input',{type:'checkbox',id:'obBinAlt',checked:!!X.binAlt,onChange:e=>{ X.binAlt = e.target.checked; saveDraft(); }}), h('span',{text:'They alternate: general waste this week, recycling next week'})))));
@@ -17283,7 +17443,7 @@ function renderSettingsPage(){
   root.appendChild(h('div',{class:'st-card',id:'stFeatures'},
     h('h3',{text:'Features'}),
     toggle('chores','🧹','Chore chart','Jobs for everyone, ticked off on Today and the Chores page'),
-    toggle('rewards','🏆','Rewards','Stars from chores, routines and habits, and prizes', !F.on('chores')),
+    toggle('rewards','🏆','Rewards','Rewards for chores, routines and habits, and prizes', !F.on('chores')),
     toggle('routines','🌅','Routines & habits','School mornings, bedtime, reading and the like'),
     toggle('meals','🍽️','Meal planner','Meal plan and calendar meals'),
     toggle('shopping','🛒','Shopping list', F.on('meals') ? 'Fills itself from your meal plan; add anything else by hand' : 'Add things by hand; essentials you run low on go on it too'),
