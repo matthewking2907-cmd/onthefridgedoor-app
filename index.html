@@ -2643,6 +2643,20 @@ body.kid-locked .fhly-btn{ display:none !important; }
 .fhrt-dots span.part{ background:color-mix(in srgb, var(--pc,#6C4F8A) 45%, transparent); }
 .fhrt-dots span.today{ outline:2px solid var(--pc,#6C4F8A); outline-offset:-2px; background:transparent; }
 .fhrt-prog small{ min-width:70px; text-align:right; color:var(--muted,#777); font-weight:700; }
+button.fhrt-prog{ width:100%; font:inherit; color:inherit; background:none; border:0; border-radius:10px; padding:4px 2px; cursor:pointer; text-align:left; }
+button.fhrt-prog:hover, button.fhrt-prog:focus-visible{ background:color-mix(in srgb, var(--pc,#6C4F8A) 8%, transparent); }
+.fhrt-fixlink{ flex:none; font-size:.76rem; font-weight:800; color:var(--accent); padding-left:4px; }
+.fhrt-fixhint{ display:block; color:var(--muted,#777); font-size:.76rem; margin:2px 2px 0; }
+.fhrt-missed .fhrt-mid small{ white-space:normal; }
+.fhrt-fixdays{ margin:0 0 10px; }
+.fhrt-fixnow{ margin:0 0 10px; color:var(--muted); font-weight:600; }
+.fhrt-fixopts{ display:flex; flex-direction:column; gap:8px; margin:0 0 6px; }
+.fhrt-fixopt{ display:flex; gap:10px; align-items:flex-start; width:100%; text-align:left; font:inherit; color:var(--ink); padding:10px 12px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); cursor:pointer; }
+.fhrt-fixopt.on{ border-color:var(--accent); background:var(--panel); }
+.fhrt-fixopt b{ display:block; }
+.fhrt-fixopt small{ display:block; color:var(--muted); font-size:.8rem; }
+.fhrt-fixdot{ flex:none; width:18px; height:18px; margin-top:2px; border-radius:50%; border:2px solid var(--muted); }
+.fhrt-fixopt.on .fhrt-fixdot{ border-color:var(--accent); background:radial-gradient(circle, var(--accent) 45%, transparent 50%); }
 .fhrt-brk{ font:inherit; color:inherit; display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; margin-top:8px; border-radius:12px; border:1.5px solid var(--panel-line,#ddd); background:var(--white,#fff); text-align:left; cursor:pointer; }
 .fhrt-brk b{ flex:1; }
 .fhrt-brk small{ color:var(--muted,#777); font-weight:600; }
@@ -2990,6 +3004,25 @@ span.fhch-sq.off{ border:0; background:transparent; cursor:default; }
 .fhrw-tag{ background:var(--panel); border-radius:999px; padding:2px 8px; color:var(--ink); font-weight:700; }
 .fhrw-th{ flex:none; min-width:38px; text-align:center; font-weight:800; color:var(--star); }
 .fhrw-add{ width:100%; margin:4px 0 6px; }
+.fhch-big small, .fhch-colstar small{ font-size:.72rem; font-weight:700; color:var(--muted); }
+.fhrw-all{ margin-left:auto; font-weight:700; }
+.fhrw-prows{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.fhrw-prow{ background:var(--cream, var(--panel)); border-radius:10px; padding:8px 10px 2px; }
+.fhrw-prtop{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.fhrw-prtop .fhch-t{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.fhrw-prtop .fhch-t small{ font-size:.78rem; }
+.fhrw-prow .fhch-bar{ margin:2px 0 8px; }
+.fhrw-prow .fhch-bar.full i{ background:var(--good); }
+.fhrw-pill{ flex:none; font-size:.76rem; font-weight:800; padding:3px 9px; border-radius:999px; background:var(--panel); color:var(--muted); white-space:nowrap; }
+.fhrw-pill.ok{ background:var(--good-tint); color:var(--good); }
+.fhrw-pill.had{ background:var(--panel); color:var(--ink); }
+.fhrw-had{ flex:none; font:inherit; font-size:.8rem; font-weight:800; padding:5px 10px; border-radius:10px; border:2px solid var(--accent); background:transparent; color:var(--accent); cursor:pointer; white-space:nowrap; }
+.fhrw-had.on{ border-color:var(--panel-line); color:var(--ink); background:var(--panel); }
+.fhrw-poolnote{ display:block; margin-bottom:4px; }
+.fhrw-hint{ background:var(--panel); border-radius:12px; padding:10px 12px; margin:4px 0 10px; }
+.fhrw-hint p{ margin:0 0 4px; font-weight:700; font-size:.88rem; }
+.fhrw-hint small{ display:block; color:var(--muted); font-size:.78rem; margin-top:4px; }
+.fhrw-restart{ width:100%; margin:0 0 8px; }
 .fhrw-pics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; padding-bottom:12px; }
 .fhrw-pic{ display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; font-size:.78rem; padding:10px 4px; border-radius:12px; border:2px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
 .fhrw-pic.on{ border-color:var(--accent); background:var(--panel); }
@@ -11026,7 +11059,7 @@ function fhchBoard(date, opts){
         fhchAv(x.p.id), h('b', { text:x.p.name }), h('span', { class:'fhch-coln', text:dn + '/' + x.list.length })),
       h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / x.list.length) + '%' })));
     x.list.forEach(function(o){ col.appendChild(fhchRow(o, { noRoom:true, noWho:true, noAv:true, noMore:true, noFreq:true })); });
-    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar' }, fhRewardNode(x.p.id), ' ' + (starsByPerson[x.p.id] || 0)));
+    if(fhchStarsOn() && !x.p.noStars) col.appendChild(h('div', { class:'fhch-colstar', title:'Stars this week' }, fhRewardNode(x.p.id), ' ' + fhrwSum(fhrwWeek(x.p.id)), h('small', { text:' this week' })));
     board.appendChild(col);
   });
   wrap.appendChild(board);
@@ -11059,7 +11092,7 @@ function fhchPersonDay(pid, date){
   const mine = fhchDayOcc(date, pid).filter(function(o){ return o.who === pid; });
   const dn = mine.filter(function(o){ return o.done; }).length;
   wrap.appendChild(h('div', { class:'fhch-pc', style:'--pc:' + fhchHue(pid) },
-    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big' }, fhRewardNode(pid), ' ' + (starsByPerson[pid] || 0)) : null),
+    h('div', { class:'fhch-pctop' }, fhchAv(pid), h('b', { text:p.name + '’s jobs' }), fhchStarsOn() && !p.noStars ? h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(pid), ' ' + fhrwSum(fhrwWeek(pid)), h('small', { text:' this week' })) : null),
     mine.length ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * dn / mine.length) + '%' })) : null,
     h('small', { text:mine.length ? dn + ' of ' + mine.length + ' done' + fhrwNextText(pid) : 'No jobs of their own today' })));
   mine.forEach(function(o){ wrap.appendChild(fhchRow(o, { noWho:true, noAv:true, noMore:fhchKid() })); });
@@ -11506,32 +11539,154 @@ function fhchLevelSheet(to){
       close(); render(); } })]; });
 }
 
-/* ==================== STARS & REWARDS page ==================== */
-function fhrwNext(pid, total){
-  return rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; }).find(function(m){ return (!m.who || m.who === pid) && m.threshold > total; }) || null;
+/* ==================== REWARDS page ====================
+   Prizes by day, week or month (Matthew 25 Nov 2026: "I don't want to -5 off their total when they have their screen time").
+   A prize (chore-chart-reward-milestones-v1) is { id, threshold, text, who?, every?, from?, had? }:
+   who: missing = each collector on their own, a person's id, or 'together' (everyone's stars added up, plus the family pool);
+   every: 'day' | 'week' (Monday to Sunday) | 'month' | 'once' (missing = once, as prizes were before);
+   from: a once prize counts stars since this date (missing = the all-time total, so older prizes read as they did);
+   had: { 'personId|period': ISO } when a grown-up ticked Had it (kept 70 days; a child's device can't).
+   A prize only counts the stars earned in its own day, week or month, and every star counts towards all of them, so
+   having the daily prize never moves the weekly one, and nothing is ever spent. Stars are worked out from what was done
+   (chore ticks with their dates, the routine log), so unticking and a fixed day land on the right day. The running
+   total (starsByPerson) stays as "all time". */
+const FHRW_EVERY = [['day', 'Day'], ['week', 'Week'], ['month', 'Month'], ['once', 'Once']];
+function fhrwEvery(m){ return m && (m.every === 'day' || m.every === 'week' || m.every === 'month') ? m.every : 'once'; }
+function fhrwDate(s){ const x = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(s || ''); return x ? new Date(+x[1], +x[2] - 1, x[3] ? +x[3] : 1) : null; }
+function fhrwToday(now){ now = now || new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+function fhrwIs(who, pid){ return pid === 'family' ? who === 'anyone' : who === pid; }
+function fhrwRoutinesOn(){ try{ return typeof FHRoutines !== 'undefined' && Feature.on('routines'); }catch(e){ return false; } }
+/* the stars a person (or 'family', the Anyone pool) earned between two dates, by where they came from */
+function fhrwRange(pid, start, end){
+  const out = { chores:0, routines:0, habits:0 }, s = toISODate(start), e = toISODate(end), byId = {};
+  chores.forEach(function(c){ byId[c.id] = c; });
+  const at = fhchJSON(FHCH_AT);
+  Object.keys(completions).forEach(function(key){
+    const i = key.lastIndexOf('::'); if(i < 0 || !completions[key]) return;
+    const c = byId[key.slice(0, i)], d = key.slice(i + 2); if(!c) return;
+    const monthly = d.length === 7, day = monthly ? ((at[key] || '').slice(0, 10) || d + '-01') : d;   // a monthly job counts on the day it was done
+    if(day < s || day > e) return;
+    const o = fhchOcc(c, fhrwDate(d), monthly);
+    if(fhrwIs(o.who, pid)) out.chores += Math.min(o.n, o.max) * (c.stars || 1);
+  });
+  if(pid !== 'family') try{
+    const L = FHRoutines.log(), kinds = {}; FHRoutines.data().items.forEach(function(it){ kinds[it.id] = it.kind; });
+    Object.keys(L).forEach(function(d){ if(d < s || d > e) return; const day = L[d] || {};
+      Object.keys(day).forEach(function(id){ const r = (day[id] || {})[pid]; if(r && +r.st) out[kinds[id] === 'habit' ? 'habits' : 'routines'] += +r.st; }); });
+  }catch(err){}
+  return out;
 }
-function fhrwNextText(pid){
-  if(!fhchStarsOn()) return '';
-  const p = personById(pid); if(!p || p.noStars) return '';
-  const t = starsByPerson[pid] || 0, n = fhrwNext(pid, t);
-  return n ? ' · ' + (n.threshold - t) + ' more to ' + n.text : '';
-}
+function fhrwSum(r){ return r.chores + r.routines + r.habits; }
+function fhrwWho(pid){ return pid === 'together' ? fhchCollectors().map(function(p){ return p.id; }).concat(['family']) : [pid]; }
+function fhrwStars(pid, start, end){ return fhrwWho(pid).reduce(function(a, id){ return a + fhrwSum(fhrwRange(id, start, end)); }, 0); }
+function fhrwTotal(pid){ return fhrwWho(pid).reduce(function(a, id){ return a + (starsByPerson[id] || 0); }, 0); }
 /* this week's stars by where they came from */
 function fhrwWeek(pid, mon){
   mon = mon || currentMonday();
-  const out = { chores:0, routines:0, habits:0 }, end = toISODate(addDays(mon, 6)), start = toISODate(mon);
-  for(let i = 0; i < 7; i++){
-    const d = addDays(mon, i);
-    chores.forEach(function(c){ if(!fhchOn(c, d)) return; const o = fhchOcc(c, d); if(o.who === pid && o.n) out.chores += Math.min(o.n, o.max) * (c.stars || 1); });
+  if(pid === 'together') return fhrwWho(pid).reduce(function(a, id){ const r = fhrwRange(id, mon, addDays(mon, 6)); a.chores += r.chores; a.routines += r.routines; a.habits += r.habits; return a; }, { chores:0, routines:0, habits:0 });
+  return fhrwRange(pid, mon, addDays(mon, 6));
+}
+/* the day, week or month a prize is counting now */
+function fhrwPeriod(m, now){
+  const t = fhrwToday(now), ev = fhrwEvery(m);
+  if(ev === 'day') return { key:toISODate(t), start:t, end:t, label:'Today' };
+  if(ev === 'week'){ const mon = mondayOf(t); return { key:'w' + toISODate(mon), start:mon, end:addDays(mon, 6), label:'This week' }; }
+  if(ev === 'month') return { key:ymKey(t), start:new Date(t.getFullYear(), t.getMonth(), 1), end:new Date(t.getFullYear(), t.getMonth() + 1, 0), label:t.toLocaleDateString('en-GB', { month:'long' }) };
+  const f = fhrwDate(m && m.from);
+  return { key:'once' + ((m && m.from) || ''), start:f, end:t, label:f ? 'Since ' + f.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : 'All time' };
+}
+function fhrwFor(m, pid){ return pid === 'together' ? m.who === 'together' : (!m.who || m.who === pid); }
+function fhrwProgress(m, pid, now){
+  const per = fhrwPeriod(m, now), got = per.start ? fhrwStars(pid, per.start, per.end) : fhrwTotal(pid);
+  const had = (m.had || {})[pid + '|' + per.key] || '';
+  return { per:per, got:got, need:m.threshold, earned:got >= m.threshold, had:had };
+}
+function fhrwHad(m, pid, on){
+  const per = fhrwPeriod(m), had = m.had = m.had || {}, cut = toISODate(addDays(new Date(), -70));
+  if(on) had[pid + '|' + per.key] = new Date().toISOString(); else delete had[pid + '|' + per.key];
+  Object.keys(had).forEach(function(k){ if(k.indexOf('|once') < 0 && String(had[k]).slice(0, 10) < cut) delete had[k]; });
+  if(!Object.keys(had).length) delete m.had;
+  saveKey(KEYS.rewardMilestones, rewardMilestones);
+}
+function fhrwHadWord(at, ev){
+  const d = new Date(at); if(isNaN(d)) return 'Had it';
+  if(ev === 'day') return 'Had it';
+  if(ev === 'week') return 'Had it ' + (toISODate(d) === toISODate(new Date()) ? 'today' : d.toLocaleDateString('en-GB', { weekday:'short' }));
+  return 'Had it ' + d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+}
+function fhrwSorted(list){ const o = { day:0, week:1, month:2, once:3 }; return list.slice().sort(function(a, b){ return o[fhrwEvery(a)] - o[fhrwEvery(b)] || a.threshold - b.threshold; }); }
+function fhrwEveryWord(m){
+  const ev = fhrwEvery(m);
+  if(ev !== 'once') return 'Each ' + ev;
+  const f = fhrwDate(m.from); return f ? 'Once, since ' + f.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : 'Once, all time';
+}
+/* "· 7 more to Squishy hunt" under a person's jobs: the closest prize not yet earned this time round */
+function fhrwNextText(pid){
+  if(!fhchStarsOn()) return '';
+  const p = personById(pid); if(!p || p.noStars) return '';
+  let best = null;
+  rewardMilestones.forEach(function(m){ if(!fhrwFor(m, pid)) return; const g = fhrwProgress(m, pid); if(g.earned || g.had) return;
+    const left = g.need - g.got; if(!best || left < best.left) best = { left:left, m:m }; });
+  return best ? ' · ' + best.left + ' more to ' + best.m.text : '';
+}
+/* the most a person could earn in a stretch of days: their own jobs, routines and habits ('family' = Anyone jobs) */
+function fhrwMax(pid, start, end){
+  if(pid === 'together') return fhrwWho(pid).reduce(function(a, id){ return a + fhrwMax(id, start, end); }, 0);
+  let n = 0;
+  const rt = pid !== 'family' && fhrwRoutinesOn();
+  for(let d = new Date(start); d <= end; d = addDays(d, 1)){
+    chores.forEach(function(c){ if(c.freq === 'monthly' || !fhchOn(c, d)) return; const o = fhchOcc(c, d); if(fhrwIs(o.who, pid) && !o.skip) n += o.max * (c.stars || 1); });
+    if(rt) try{ FHRoutines.itemsFor(d, pid).forEach(function(it){ n += Math.max(0, +it.stars || 0); }); }catch(e){}
   }
-  chores.forEach(function(c){ if(c.freq !== 'monthly') return; [mon, addDays(mon, 6)].forEach(function(d, j){ if(j && ymKey(d) === ymKey(mon)) return;
-    const o = fhchOcc(c, d, true), at = (fhchS.at[o.key] || '').slice(0, 10); if(o.who === pid && o.done && at >= start && at <= end) out.chores += o.max * (c.stars || 1); }); });
-  try{
-    const L = FHRoutines.log(), kinds = {}; FHRoutines.data().items.forEach(function(it){ kinds[it.id] = it.kind; });
-    for(let i = 0; i < 7; i++){ const day = L[toISODate(addDays(mon, i))] || {};
-      Object.keys(day).forEach(function(id){ const r = (day[id] || {})[pid]; if(r && +r.st) out[kinds[id] === 'habit' ? 'habits' : 'routines'] += +r.st; }); }
-  }catch(e){}
-  return out;
+  // monthly jobs, when the stretch takes in the whole month
+  for(let d = new Date(start.getFullYear(), start.getMonth(), 1); d <= end; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)){
+    if(d < start || new Date(d.getFullYear(), d.getMonth() + 1, 0) > end) continue;
+    chores.forEach(function(c){ if(c.freq !== 'monthly') return; const o = fhchOcc(c, d, true); if(fhrwIs(o.who, pid)) n += o.max * (c.stars || 1); });
+  }
+  return n;
+}
+/* what they've earned lately: the last 4 weeks (or since the household's first tick, if that's at least a week), per day, week or month */
+function fhrwFirstDay(){
+  let first = '';
+  Object.keys(completions).forEach(function(k){ let d = k.slice(k.lastIndexOf('::') + 2); if(d.length === 7) d += '-01'; if(completions[k] && (!first || d < first)) first = d; });
+  try{ Object.keys(FHRoutines.log()).forEach(function(d){ if(!first || d < first) first = d; }); }catch(e){}
+  return first;
+}
+function fhrwAvg(pid, every){
+  const first = fhrwDate(fhrwFirstDay()); if(!first) return null;
+  const y = addDays(fhrwToday(), -1), days = Math.min(28, Math.round((y - first) / 864e5) + 1);
+  if(days < 7) return null;
+  const perDay = fhrwStars(pid, addDays(y, 1 - days), y) / days;
+  return Math.round(perDay * (every === 'day' ? 1 : every === 'month' ? 30.4 : 7));
+}
+/* the prize sheet's help: the most each person can earn in that time, and what they've been earning */
+function fhrwHint(every, who){
+  const ev = every === 'once' ? 'week' : every, per = fhrwPeriod({ every:ev });
+  const when = ev === 'day' ? 'today' : ev === 'week' ? 'this week' : 'in ' + per.label, unit = ev === 'day' ? ' a day' : ev === 'week' ? ' a week' : ' a month';
+  const ids = who === 'together' ? ['together'] : who ? [who] : fhchCollectors().map(function(p){ return p.id; });
+  const lines = every === 'once' ? ['In a week, to give you an idea:'] : [];
+  ids.forEach(function(id){
+    const p = id === 'together' ? { name:'Everyone together' } : personById(id); if(!p) return;
+    const avg = fhrwAvg(id, ev);
+    lines.push(p.name + ': up to ' + fhrwMax(id, per.start, per.end) + ' ' + when + (avg === null ? '' : ' · about ' + avg + unit + ' lately'));
+  });
+  if(who !== 'together'){ const any = fhrwMax('family', per.start, per.end); if(any) lines.push('Plus up to ' + any + ' from Anyone jobs, for whoever does them.'); }
+  lines.push('“Up to” counts their own jobs, routines and habits. “Lately” is the last 4 weeks.');
+  return lines;
+}
+/* one prize on a person's card: how far this day, week or month, and Had it for a grown-up */
+function fhrwRow(m, pid, kid){
+  const g = fhrwProgress(m, pid), ev = fhrwEvery(m);
+  const tail = g.had
+    ? (kid ? h('span', { class:'fhrw-pill had', text:fhrwHadWord(g.had, ev) })
+           : h('button', { type:'button', class:'fhrw-had on', 'aria-pressed':'true', 'aria-label':fhrwHadWord(g.had, ev) + '. Tap to undo', text:'✓ ' + fhrwHadWord(g.had, ev), onClick:function(){ fhrwHad(m, pid, false); render(); } }))
+    : g.earned
+      ? [h('span', { class:'fhrw-pill ok', text:'Earned' }), kid ? null : h('button', { type:'button', class:'fhrw-had', 'aria-pressed':'false', text:'Had it', onClick:function(){ fhrwHad(m, pid, true); render(); } })]
+      : h('span', { class:'fhrw-pill', text:(g.need - g.got) + ' to go' });
+  return h('div', { class:'fhrw-prow' + (g.earned ? ' earned' : '') + (g.had ? ' had' : ''), 'data-prize':m.id, 'data-every':ev },
+    h('div', { class:'fhrw-prtop' }, h('span', { class:'fhrw-th', text:String(m.threshold) }),
+      h('span', { class:'fhch-t' }, h('b', { text:m.text }), h('small', { text:g.per.label + ' · ' + g.got + ' of ' + g.need })), tail),
+    h('div', { class:'fhch-bar' + (g.earned ? ' full' : '') }, h('i', { style:'width:' + Math.min(100, Math.round(100 * g.got / Math.max(1, g.need))) + '%' })));
 }
 function fhrwRender(root){
   if(!root) return;
@@ -11540,20 +11695,28 @@ function fhrwRender(root){
   root.appendChild(h('div', { class:'fhch-top' }, h('h2', { class:'fhch-h', text:'Rewards' })));
   root.appendChild(h('p', { class:'fhch-note', text:'Stars come from chores, routines and habits. Each person collects their own.' }));
   const coll = fhchCollectors(), not = people.filter(function(p){ return p.noStars; });
-  coll.forEach(function(p){
-    const t = starsByPerson[p.id] || 0, wk = fhrwWeek(p.id), n = fhrwNext(p.id, t);
+  const srcLine = function(wk, all){
     const src = [['Chores', wk.chores], ['Routines', wk.routines], ['Habits', wk.habits]].filter(function(x){ return x[1]; });
-    const prev = rewardMilestones.filter(function(m){ return (!m.who || m.who === p.id) && m.threshold <= t; }).reduce(function(a, m){ return Math.max(a, m.threshold); }, 0);
+    return h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No stars yet this week' }),
+      all === null ? null : h('span', { class:'fhrw-all', text:all + ' all time' }));
+  };
+  // a child's own phone or tablet: just their card (and Together)
+  const meId = kid ? fhchMe() : '', meP = meId && personById(meId);
+  (meP && !meP.noStars ? [meP] : coll).forEach(function(p){
+    const wk = fhrwWeek(p.id), mine = fhrwSorted(rewardMilestones.filter(function(m){ return fhrwFor(m, p.id); }));
     root.appendChild(h('div', { class:'fhch-pc fhrw-card', style:'--pc:' + fhchHue(p.id), 'data-person':p.id },
-      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big' }, fhRewardNode(p.id), ' ' + t)),
-      h('div', { class:'fhrw-src' }, src.length ? [h('span', { text:'This week:' })].concat(src.map(function(x){ return h('span', { class:'fhrw-tag', text:x[0] + ' ' + x[1] }); })) : h('span', { text:'No stars yet this week' })),
-      n ? h('div', { class:'fhch-bar' }, h('i', { style:'width:' + Math.round(100 * (t - prev) / Math.max(1, n.threshold - prev)) + '%' })) : null,
-      h('small', { text:n ? 'Next: ' + n.text + ' at ' + n.threshold + ' (' + (n.threshold - t) + ' to go)' : rewardMilestones.length ? 'Every prize reached 🎉' : 'No prizes set yet' })));
+      h('div', { class:'fhch-pctop' }, fhchAv(p.id), h('b', { text:p.name }), h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(p.id), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
+      srcLine(wk, starsByPerson[p.id] || 0),
+      mine.length ? h('div', { class:'fhrw-prows' }, mine.map(function(m){ return fhrwRow(m, p.id, kid); }))
+        : h('small', { text:rewardMilestones.length ? 'No prizes for ' + p.name + ' yet' : 'No prizes set yet' })));
   });
-  if((starsByPerson.family || 0) > 0 || chores.some(function(c){ return c.assignedTo === 'anyone'; })){
+  const tog = fhrwSorted(rewardMilestones.filter(function(m){ return m.who === 'together'; }));
+  if(tog.length || (starsByPerson.family || 0) > 0 || chores.some(function(c){ return c.assignedTo === 'anyone'; })){
+    const wk = fhrwWeek(tog.length ? 'together' : 'family');
     root.appendChild(h('div', { class:'fhch-pc fhrw-card fhrw-pool', 'data-person':'family' },
-      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:'Family pool' }), h('span', { class:'fhch-big' }, fhRewardNode(''), ' ' + (starsByPerson.family || 0))),
-      h('small', { text:'Anyone jobs land here when nobody says who did them.' })));
+      h('div', { class:'fhch-pctop' }, fhchAv('anyone'), h('b', { text:tog.length ? 'Together' : 'Family pool' }), h('span', { class:'fhch-big', title:'Stars this week' }, fhRewardNode(''), ' ' + fhrwSum(wk), h('small', { text:' this week' }))),
+      h('small', { class:'fhrw-poolnote', text:tog.length ? 'Everyone’s stars added up, plus the family pool: ' + (starsByPerson.family || 0) + ' from Anyone jobs nobody claimed.' : 'Anyone jobs land here when nobody says who did them.' }),
+      tog.length ? h('div', { class:'fhrw-prows' }, tog.map(function(m){ return fhrwRow(m, 'together', kid); })) : null));
   }
   if(not.length) root.appendChild(h('p', { class:'fhch-note', text:fhchAnd(not.map(function(p){ return p.name; })) + (not.length === 1 ? ' isn’t' : ' aren’t') + ' collecting stars.' }));
   if(!coll.length) root.appendChild(h('p', { class:'fhch-empty', text:'Nobody is collecting stars yet.' }));
@@ -11570,11 +11733,13 @@ function fhrwRender(root){
   }
   // prizes
   root.appendChild(h('div', { class:'fhch-lbl', text:'Prizes' }));
-  const sorted = rewardMilestones.slice().sort(function(a, b){ return a.threshold - b.threshold; });
-  if(!sorted.length) root.appendChild(h('p', { class:'fhch-note', text:'No prizes yet. Add one, like a film night at 20.' }));
+  const sorted = fhrwSorted(rewardMilestones);
+  if(!sorted.length) root.appendChild(h('p', { class:'fhch-note', text:'No prizes yet. Add one, like screen time at 5 stars a day, or a film night at 20 a week.' }));
+  else root.appendChild(h('p', { class:'fhch-note', text:'Each prize counts only the stars earned that day, week or month, and starts again after. Nothing is taken off.' }));
   sorted.forEach(function(m){
-    root.appendChild(h('button', { type:'button', class:'fhch-jrow', 'data-prize':m.id, onClick:function(){ fhrwPrize(m); } },
-      h('span', { class:'fhrw-th', text:String(m.threshold) }), h('span', { class:'fhch-t' }, h('b', { text:m.text }), h('small', { text:m.who && personById(m.who) ? personById(m.who).name + ' only' : 'Everyone' })),
+    const who = m.who === 'together' ? 'Together' : m.who && personById(m.who) ? personById(m.who).name + ' only' : 'Everyone';
+    root.appendChild(h('button', { type:'button', class:'fhch-jrow fhrw-plist', 'data-prize':m.id, onClick:function(){ fhrwPrize(m); } },
+      h('span', { class:'fhrw-th', text:String(m.threshold) }), h('span', { class:'fhch-t' }, h('b', { text:m.text }), h('small', { text:fhrwEveryWord(m) + ' · ' + who })),
       h('span', { class:'fhch-chev', 'aria-hidden':'true', text:'›' })));
   });
   root.appendChild(h('button', { type:'button', class:'btn secondary fhrw-add', id:'fhrwAddPrize', text:'＋ Add a prize', onClick:function(){ fhrwPrize(null); } }));
@@ -11599,25 +11764,46 @@ function fhrwKidPics(set){
   try{ return JSON.parse(fhRawGet(FHRW_KIDPICS_KEY) || '"on"') !== 'off'; }catch(e){ return true; }
 }
 function fhrwPrize(m){
-  const f = { threshold:m ? m.threshold : '', text:m ? m.text : '', who:m ? (m.who || '') : '' };
+  const f = { threshold:m ? m.threshold : '', text:m ? m.text : '', who:m ? (m.who || '') : '', every:m ? fhrwEvery(m) : 'week' };
   const th = h('input', { class:'fhe-in fhrw-thin', id:'fhrwTh', type:'number', min:'1', max:'9999', value:String(f.threshold), placeholder:'20', 'aria-label':'Stars needed' });
   const tx = h('input', { class:'fhe-in', id:'fhrwText', value:f.text, maxlength:'60', placeholder:'e.g. Film night', 'aria-label':'Prize' });
   const err = h('div', { class:'fhe-err' });
+  const hint = h('div', { class:'fhrw-hint', id:'fhrwHint', 'aria-live':'polite' });
+  const drawHint = function(){ hint.innerHTML = ''; fhrwHint(f.every, f.who).forEach(function(t, i, a){ hint.appendChild(h(i === a.length - 1 ? 'small' : 'p', { text:t })); }); };
+  const NOTE = { day:'Counts the stars earned each day. Starts again every morning.', week:'Counts the stars earned Monday to Sunday. Starts again every Monday.',
+    month:'Counts the stars earned each month. Starts again on the 1st.',
+    once:m && fhrwEvery(m) === 'once' ? (m.from ? 'Counts the stars earned since ' + fhrwDate(m.from).toLocaleDateString('en-GB', { day:'numeric', month:'long' }) + '. For something further off, like a day out.' : 'Counts every star since they started.') : 'Counts from today until it’s had. For something further off, like a day out.' };
+  const evBox = h('div', {});
+  const drawEv = function(){ evBox.innerHTML = '';
+    evBox.appendChild(h('div', { class:'fhch-seg', id:'fhrwEvery', role:'group', 'aria-label':'Each' }, FHRW_EVERY.map(function(x){
+      return h('button', { type:'button', class:f.every === x[0] ? 'on' : '', 'aria-pressed':f.every === x[0] ? 'true' : 'false', 'data-v':x[0], text:x[1], onClick:function(){ f.every = x[0]; drawEv(); drawHint(); } }); })));
+    evBox.appendChild(h('p', { class:'fhch-note', text:NOTE[f.every] })); };
   const whoBox = h('div', {});
-  const draw = function(){ whoBox.innerHTML = ''; whoBox.appendChild(h('div', { class:'ob-chips' }, [['', 'Everyone']].concat(people.map(function(p){ return [p.id, p.name]; })).map(function(x){
-    return h('button', { type:'button', class:'ob-chip' + (f.who === x[0] ? ' on' : ''), 'aria-pressed':f.who === x[0] ? 'true' : 'false', 'data-person':x[0] || 'all', text:x[1], onClick:function(){ f.who = x[0]; draw(); } }); }))); };
-  draw();
+  const together = fhchCollectors().length > 1 || f.who === 'together';
+  const draw = function(){ whoBox.innerHTML = '';
+    whoBox.appendChild(h('div', { class:'ob-chips' }, [['', 'Everyone']].concat(people.map(function(p){ return [p.id, p.name]; })).concat(together ? [['together', 'Together']] : []).map(function(x){
+      return h('button', { type:'button', class:'ob-chip' + (f.who === x[0] ? ' on' : ''), 'aria-pressed':f.who === x[0] ? 'true' : 'false', 'data-person':x[0] || 'all', text:x[1], onClick:function(){ f.who = x[0]; draw(); drawHint(); } }); })));
+    const n = f.who === '' ? 'Each person earns it with their own stars.' : f.who === 'together' ? 'Everyone’s stars added up, plus Anyone jobs nobody claimed. One prize for the family.' : '';
+    if(n) whoBox.appendChild(h('p', { class:'fhch-note', text:n })); };
+  drawEv(); draw(); drawHint();
+  const restart = m && fhrwEvery(m) === 'once' ? h('button', { type:'button', class:'btn secondary fhrw-restart', id:'fhrwRestart', text:'Start counting again from today', onClick:function(){
+    m.from = toISODate(new Date()); if(m.had) Object.keys(m.had).forEach(function(k){ if(k.indexOf('|once') >= 0) delete m.had[k]; });
+    saveKey(KEYS.rewardMilestones, rewardMilestones); const sh = document.getElementById('fhrwPrizeEd'); if(sh) sh.remove(); render(); } }) : null;
   fhchSheet('fhrwPrizeEd', m ? 'Edit prize' : 'Add a prize', h('div', {},
     h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Prize' }), tx),
     h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Stars needed' }), th),
-    h('p', { class:'fhe-lab', text:'For' }), whoBox, err), function(close){ return [
+    h('p', { class:'fhe-lab', text:'Each' }), evBox,
+    h('p', { class:'fhe-lab', text:'For' }), whoBox, hint, restart, err), function(close){ return [
       m ? h('button', { type:'button', class:'btn secondary', id:'fhrwDel', text:'Delete', onClick:function(){ rewardMilestones = rewardMilestones.filter(function(x){ return x.id !== m.id; }); saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } }) : null,
       h('button', { type:'button', class:'btn', id:'fhrwSave', text:'Save', onClick:function(){
         const n = parseInt(th.value, 10), t = tx.value.trim();
         if(!t){ err.textContent = 'What’s the prize?'; return; }
         if(!n || n < 1){ err.textContent = 'How many stars does it take?'; return; }
         const rec = m || { id:'rw_' + Date.now() };
+        const wasOnce = m && fhrwEvery(m) === 'once';
         rec.threshold = n; rec.text = t; if(f.who) rec.who = f.who; else delete rec.who;
+        if(f.every === 'once'){ delete rec.every; if(!wasOnce) rec.from = toISODate(new Date()); }
+        else { rec.every = f.every; delete rec.from; }
         if(!m) rewardMilestones.push(rec);
         saveKey(KEYS.rewardMilestones, rewardMilestones); close(); render(); } })]; });
 }
@@ -11687,7 +11873,9 @@ const __ready = init();
     board: fhchBoard,
     personSheet: fhchPersonSheet,
     weekStars: fhrwWeek,
-    nextPrize: fhrwNext,
+    prizeProgress: fhrwProgress,
+    prizeHint: fhrwHint,
+    starsBetween: fhrwStars,
     people: function(){ return people.slice(); },
     addPerson: function(name, role){ const n = (name || '').trim(); if(!n) return null; const id = 'p_' + Date.now().toString(36); people.push({ id:id, name:n, role:role || 'other', hue:PRESET_HUES[people.length % PRESET_HUES.length] }); saveKey(KEYS.people, people); render(); return id; },
     removePerson: function(id){ deletePerson(id); },
@@ -14383,6 +14571,69 @@ const FHRoutines = (function(){
     const l = log(), r = rec(l, date, it, pid, true); r.ok = new Date().toISOString();
     settle(l, it, date, pid); saveLog(l);
   }
+  /* a grown-up puts a day right (Matthew 25 Nov 2026: "if a child forgot"): 'ontime' = did it, forgot to tick (every step,
+     stars as if ticked by the time), 'late' = done but late (every step, no stars), 'none' = not done (clears it, takes
+     back its stars). Kept as r.fix. Not on a child's device or a locked screen. */
+  function fixDay(itemId, pid, date, how){
+    if(childDevice()) return false;
+    const it = data().items.find(x => x.id === itemId); if(!it) return false;
+    const l = log(), r = rec(l, date, it, pid, true);
+    if(how === 'none'){ r.s = []; r.n = 0; delete r.done; delete r.ok; delete r.fix; }
+    else {
+      if(it.kind === 'habit') r.n = it.goal && it.goal.type === 'count' ? Math.max(1, +it.goal.n || 1) : 1;
+      else r.s = (it.steps || []).map(x => x.id);
+      const by = it.kind === 'routine' ? mins(it.by) : null, at = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+      if(by !== null) at.setHours(Math.floor(by / 60), by % 60 + (how === 'late' ? 1 : 0), 0, 0);
+      r.done = at.toISOString(); r.ok = new Date().toISOString(); r.fix = r.ok;
+    }
+    settle(l, it, date, pid); saveLog(l); return true;
+  }
+  /* the last 7 days it was on for them, newest first */
+  function fixDays(it, pid){
+    const t = new Date(), out = [];
+    for(let i = 0; i < 7; i++){ const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() - i);
+      if(it.created && iso(d) < it.created) break;
+      if(activeOn(it, d, pid)) out.push(d); }
+    return out;
+  }
+  function fixState(it, pid, d){
+    const st = stateOf(it, d, pid), given = +(rec(log(), d, it, pid, false).st || 0);
+    const full = st.complete && onTime(it, d, st.at) && (it.ticks !== 'check' || st.ok);
+    return { st, given, full, cur:st.complete ? (full || !onTime(it, d, st.at) ? (full ? 'ontime' : 'late') : 'keep') : st.doneN ? 'keep' : 'none' };
+  }
+  function fixSheet(it, pid, date){
+    if(document.getElementById('fhrtFix') || childDevice()) return;
+    const p = person(pid) || { name:'' }, routine = it.kind === 'routine', stars = Math.max(0, +it.stars || 0);
+    const days = fixDays(it, pid); if(!days.length) return;
+    let d = date && days.find(x => iso(x) === iso(date)) || days.find(x => !fixState(it, pid, x).full) || days[0], pick = '';
+    const body = h('div', { class:'fhrt-fix' });
+    const draw = () => {
+      body.innerHTML = '';
+      const f = fixState(it, pid, d), st = f.st; if(!pick) pick = f.cur;
+      body.appendChild(h('div', { class:'ob-chips fhrt-fixdays', role:'group', 'aria-label':'Which day' }, days.map(x => { const on = iso(x) === iso(d), full = fixState(it, pid, x).full;
+        return h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-date':iso(x),
+          text:(iso(x) === iso(new Date()) ? 'Today' : x.toLocaleDateString('en-GB', { weekday:'short', day:'numeric' })) + (full ? ' ✓' : ''),
+          onClick:() => { d = x; pick = ''; draw(); } }); })));
+      const left = routine ? (it.steps || []).filter(x => st.s.indexOf(x.id) < 0).map(x => x.t) : [];
+      const now = st.complete ? (f.full ? 'Done on time' + (f.given ? ', ' + f.given + '★' : '') + '.' : f.cur === 'keep' ? 'Done, waiting for a grown-up to check.' : 'Done late, no stars.')
+        : routine ? (st.doneN ? 'Ticked ' + st.doneN + ' of ' + st.total + '. Not ticked: ' + left.join(', ') + '.' : 'Nothing ticked.')
+        : (st.doneN ? 'Counted ' + st.n + ' of ' + st.goal + '.' : 'Not ticked.');
+      body.appendChild(h('p', { class:'fhrt-fixnow', id:'fhrtFixNow', text:now }));
+      const opts = [['ontime', routine ? 'They did it on time' : 'They did it', 'Forgot to tick. ' + (routine ? 'Ticks every step' : 'Ticks it') + (stars ? ' and gives ' + stars + '★' : '') + '.']];
+      if(routine) opts.push(['late', 'Done, but late', 'Ticks every step, no stars.']);
+      if(f.cur === 'keep') opts.push(['keep', 'Leave it as it is', st.complete ? 'Waiting to be checked' : st.doneN + ' of ' + st.total]);
+      opts.push(['none', 'Not done', f.given ? 'Clears the ticks and takes back ' + f.given + '★.' : 'Clears the ticks.']);
+      body.appendChild(h('div', { class:'fhrt-fixopts', role:'radiogroup', 'aria-label':'What happened' }, opts.map(o => h('button', { type:'button', role:'radio', class:'fhrt-fixopt' + (pick === o[0] ? ' on' : ''),
+        'aria-checked':pick === o[0] ? 'true' : 'false', 'data-how':o[0], onClick:() => { pick = o[0]; draw(); } },
+        h('span', { class:'fhrt-fixdot', 'aria-hidden':'true' }), h('span', {}, h('b', { text:o[1] }), h('small', { text:o[2] }))))));
+    };
+    draw();
+    sheet('fhrtFix', p.name + ' · ' + it.name, body, close => [
+      h('button', { type:'button', class:'btn', id:'fhrtFixGo', text:'Save', onClick:() => {
+        const f = fixState(it, pid, d);
+        if(pick && pick !== 'keep' && pick !== f.cur) fixDay(it.id, pid, d, pick);
+        close(); try{ refreshCurrentPage(); }catch(e){} } })]);
+  }
   function stepsMin(it){ return (it.steps || []).reduce((a, x) => a + (+x.min || 0), 0); }
   function startAt(it){ const by = mins(it.by); return by === null ? null : hhmm(by - stepsMin(it)); }
 
@@ -14437,10 +14688,31 @@ const FHRoutines = (function(){
     m.addEventListener('click', e => { if(e.target.closest('.fhrt-step')) setTimeout(draw, 30); });
   }
   /* Today: the routines strip (a row per child), or the child's own checklist on their device / name chip */
+  /* today's routines that have left Today unfinished (past "show until"), for a grown-up to fix */
+  function missed(date, onlyPid, cur){
+    const now = new Date();
+    if(childDevice() || iso(date) !== iso(now)) return [];
+    const m = now.getHours() * 60 + now.getMinutes(), out = [];
+    people().filter(p => !onlyPid || p.id === onlyPid).forEach(p => itemsFor(date, p.id, 'routine').forEach(it => {
+      if(cur.some(c => c.it.id === it.id && c.pid === p.id)) return;
+      const end = mins(it.until) !== null ? mins(it.until) : (mins(it.by) || 0) + 60;
+      if(m >= end && !stateOf(it, date, p.id).complete) out.push({ it, pid:p.id });
+    }));
+    return out;
+  }
+  function missedRow(c, date){
+    const st = stateOf(c.it, date, c.pid), p = person(c.pid) || { name:'' };
+    return h('button', { type:'button', class:'fhrt-row fhrt-missed', style:'--pc:' + colorOf(c.pid), 'data-person':c.pid, 'aria-label':p.name + ', ' + c.it.name + ': ' + st.doneN + ' of ' + st.total + ', not finished. Fix', onClick:() => fixSheet(c.it, c.pid, date) },
+      h('span', { class:'fhrt-av', 'aria-hidden':'true', text:p.name.charAt(0) }),
+      h('span', { class:'fhrt-mid' }, h('small', { text:p.name + ' · ' + c.it.name + ' · ' + st.doneN + ' of ' + st.total + ' · not finished' })),
+      h('span', { class:'fhrt-pill late', text:'Fix' }));
+  }
   function todayNode(date, onlyPid){
     const cur = current(date).filter(c => !onlyPid || c.pid === onlyPid);
-    if(!cur.length) return null;
+    const miss = missed(date, onlyPid, cur);
+    if(!cur.length && !miss.length) return null;
     const wrap = h('div', { class:'fhrt-strip' });
+    miss.forEach(c => wrap.appendChild(missedRow(c, date)));
     const single = onlyPid || (cur.length === 1 && childDevice());
     cur.forEach(c => {
       const st = stateOf(c.it, date, c.pid), p = person(c.pid), lt = leftText(c.it, date, st);
@@ -14463,6 +14735,8 @@ const FHRoutines = (function(){
   function todayFace(date, onlyPid){
     const node = todayNode(date, onlyPid); if(!node) return null;
     const cur = current(date).filter(c => !onlyPid || c.pid === onlyPid);
+    if(!cur.length){ const miss = missed(date, onlyPid, cur); let dn = 0, tt = 0; miss.forEach(c => { const st = stateOf(c.it, date, c.pid); dn += st.doneN; tt += st.total; });
+      return { node, title:'Routines', value:dn + ' of ' + tt, sub:'Not finished · tap to fix', bar:tt ? dn / tt : null }; }
     let done = 0, total = 0; cur.forEach(c => { const st = stateOf(c.it, date, c.pid); done += st.doneN; total += st.total; });
     const names = Array.from(new Set(cur.map(c => c.it.name)));
     const lt = leftText(cur[0].it, date, stateOf(cur[0].it, date, cur[0].pid));
@@ -14565,10 +14839,12 @@ const FHRoutines = (function(){
       h('button', { type:'button', class:'fho-card-main', onClick:() => locked() ? null : editor(it), disabled:locked() },
         h('span', { class:'fho-emoji', text:it.kind === 'routine' ? (mins(it.by) < 720 ? '🌅' : mins(it.by) < 1080 ? '🎒' : '🌙') : '⭐' }),
         h('span', { class:'fho-card-txt' }, h('b', { text:it.name }), h('small', { text:meta + (+it.stars ? ' · ' + it.stars + '★' : '') }))),
-      who.map(p => { const w = weekDots(it, p.id);
-        return h('div', { class:'fhrt-prog', style:'--pc:' + colorOf(p.id) }, h('b', { text:p.name }),
+      who.map(p => { const w = weekDots(it, p.id), fix = !childDevice();
+        return h(fix ? 'button' : 'div', { class:'fhrt-prog' + (fix ? ' fhrt-fixable' : ''), style:'--pc:' + colorOf(p.id), 'data-person':p.id, type:fix ? 'button' : null,
+          'aria-label':fix ? p.name + ', ' + it.name + ': ' + (w.n ? w.hit + ' of ' + w.n : 'new') + '. Fix a day' : null, onClick:fix ? () => fixSheet(it, p.id) : null }, h('b', { text:p.name }),
           h('span', { class:'fhrt-dots', 'aria-hidden':'true' }, w.days.map(c => h('span', { class:c }))),
-          h('small', { text:w.n ? w.hit + '/' + w.n + (w.run > 2 ? ' · ' + w.run + ' in a row' : '') : 'New' })); }));
+          h('small', { text:w.n ? w.hit + '/' + w.n + (w.run > 2 ? ' · ' + w.run + ' in a row' : '') : 'New' }), fix ? h('span', { class:'fhrt-fixlink', 'aria-hidden':'true', text:'Fix' }) : null); }),
+      who.length && !childDevice() ? h('small', { class:'fhrt-fixhint', text:'Forgot to tick? Tap a name to put a day right.' }) : null);
   }
   function daysLabel(d){ return d === 'school' ? 'school days' : d === 'weekends' ? 'weekends' : 'every day'; }
   function render(root){
@@ -14747,7 +15023,7 @@ const FHRoutines = (function(){
         saveData(dd); close(); } })]);
   }
 
-  return { KEY, LOG, TEMPLATES, data, log, activeOn, itemsFor, kitFor, stateOf, tickStep, setCount, approve, canTick, current, todayFace, habitsFace, kitchenNode, todayNode, habitsNode,
+  return { KEY, LOG, TEMPLATES, data, log, activeOn, itemsFor, kitFor, stateOf, tickStep, setCount, approve, fixDay, fixSheet, canTick, current, todayFace, habitsFace, kitchenNode, todayNode, habitsNode,
     events, pushItems, kitLines, render, editor, breakEditor, kitEditor, startAt };
 })();
 
