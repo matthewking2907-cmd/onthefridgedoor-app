@@ -1,7 +1,7 @@
 // Minimal offline cache for On the FridgeDoor — caches the app shell on install so
 // it still opens (with whatever data localStorage already has) with no
 // signal, and always tries the network first for a fresh copy when online.
-const CACHE_NAME = 'family-hub-onboarding-v96';
+const CACHE_NAME = 'family-hub-onboarding-v97';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const SHARE_CACHE = 'fh-share';   // what another app shared, until the app picks it up (src/ob_quickadd.js)
 

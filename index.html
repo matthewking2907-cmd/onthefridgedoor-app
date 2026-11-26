@@ -3165,6 +3165,36 @@ button.fhah-row{ cursor:pointer; }
 .fhah-row small{ color:var(--muted); font-size:.84rem; }
 .fhah-none{ margin:4px 2px; }
 
+/* adapt a recipe (ob_adapt.js): above the recipe viewer */
+.fhad-back{ z-index:5100; }
+.fhad-sheet{ overflow-y:auto; }
+.fhr-adapt{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; margin:14px 0 4px; padding:12px 14px; font:inherit; text-align:left; cursor:pointer;
+  border:2px dashed var(--accent); border-radius:14px; background:transparent; color:var(--ink); }
+.fhr-adapt b{ color:var(--accent); }
+.fhr-adapt small{ color:var(--muted); font-size:.8rem; }
+.fhad-ways{ margin-bottom:10px; }
+.fhad-text{ width:100%; box-sizing:border-box; }
+.fhad-status{ margin:8px 0; color:var(--muted); font-size:.9rem; }
+.fhad-problem{ background:var(--panel); border-radius:12px; padding:12px 14px; margin:8px 0; }
+.fhad-name{ width:100%; box-sizing:border-box; font-weight:700; }
+.fhad-summary{ margin:6px 0 10px; }
+.fhad-box{ border-radius:12px; padding:10px 14px; margin:0 0 10px; background:var(--panel); }
+.fhad-box ul{ margin:6px 0 0; padding-left:18px; }
+.fhad-box li{ margin:3px 0; overflow-wrap:anywhere; }
+.fhad-tips{ border-left:4px solid var(--star); }
+.fhad-ings, .fhad-steps{ margin:4px 0 10px; padding-left:20px; }
+.fhad-ings li, .fhad-steps li{ margin:4px 0; overflow-wrap:anywhere; }
+.fhad-ings li.new{ font-weight:600; }
+.fhad-new{ display:inline-block; margin-left:6px; font-size:.72rem; font-weight:800; padding:1px 7px; border-radius:999px; background:var(--good-tint, var(--panel)); color:var(--good, var(--ink)); }
+.fhad-out{ font-size:.9rem; color:var(--muted); margin:0 0 10px; }
+.fhad-check, .fhad-model, .fhad-note{ margin-top:8px; }
+.fhr-versions{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:0 18px 10px; }
+.fhr-vchips{ display:flex; flex-wrap:wrap; gap:6px; }
+.fhr-ver{ font:inherit; font-size:.84rem; font-weight:700; padding:5px 12px; border-radius:999px; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); cursor:pointer; }
+.fhr-ver.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.fhr-cookver{ font:inherit; font-size:.84rem; font-weight:800; padding:5px 12px; border-radius:10px; border:2px solid var(--accent); background:transparent; color:var(--accent); cursor:pointer; }
+.fhr-vnote{ color:var(--muted); font-size:.8rem; }
+
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
 /* Runs in <head> so the right colours are in place before the first paint. */
@@ -4965,6 +4995,13 @@ const FHRecipes = (function(){
     }
     return base;
   }
+  /* a recipe and its versions (Adapt a recipe saves them with versionOf): [{ id, label }], the original first */
+  function versions(meal){
+    let all = []; try{ all = MealApp.getAllMeals(); }catch(e){}
+    const root = meal.versionOf && all.some(m => m.id === meal.versionOf) ? meal.versionOf : meal.id;
+    const vs = all.filter(m => m.versionOf === root && m.id !== root);
+    return vs.length ? [{ id:root, label:'Original' }].concat(vs.map(m => ({ id:m.id, label:m.versionLabel || m.name }))) : [];
+  }
   function total(r){ return r.p + r.c + r.w; }
   function hands(r){ return r.p + r.c; }
   function fmtMin(min){
@@ -5330,15 +5367,32 @@ const FHRecipes = (function(){
     if(!r.long.length) right.appendChild(h('p', { class:'ob-hint', text:'No method saved yet.' + (locked() ? '' : ' Tap ✏️ Edit to add the steps.') }));
     right.appendChild(addHosts.bottom);
     if(meal.link) right.appendChild(h('p', {}, h('a', { class:'meal-link', href:meal.link, target:'_blank', rel:'noopener', text:'🔗 Your own recipe link' })));
+    // ✨ Adapt this recipe (owner's account only): slow cooker, air fryer, vegetarian… as a new recipe
+    if(typeof FHAdapt !== 'undefined' && FHAdapt.available() && (meal.ingredients || []).length) right.appendChild(h('button', { type:'button', class:'fhr-adapt', id:'fhrAdapt', onClick:() => FHAdapt.open(meal.id, date) },
+      h('b', { text:'✨ Adapt this recipe' }), h('small', { text:'Slow cooker, air fryer, vegetarian, quicker…' })));
     body.appendChild(h('p', { class:'fhr-safe', text:'Cook meat until steaming hot with no pink, and follow packet instructions where they differ. Diet tags come from the ingredient list: check packaging, especially if anyone has an allergy.' }));
     renderMethod();
     renderAddOns();
 
+    // versions: switch between the original and its adapted versions; on a planned night, cook this one instead
+    const fam = versions(meal);
+    let verRow = null;
+    if(fam.length){
+      let info = null; try{ info = date ? MealApp.getDayDisplay(date) : null; }catch(e){}
+      const planned = info && fam.some(v => v.id === info.mealId) ? info.mealId : '';
+      const dayWord = date ? (shSameDate(date, new Date()) ? 'tonight' : 'on ' + date.toLocaleDateString('en-GB', { weekday:'long' })) : '';
+      verRow = h('div', { class:'fhr-versions' },
+        h('div', { class:'fhr-vchips', id:'fhrVersions', role:'group', 'aria-label':'Versions of this recipe' }, fam.map(v => h('button', { type:'button', class:'fhr-ver' + (v.id === meal.id ? ' on' : ''), 'aria-pressed':v.id === meal.id ? 'true' : 'false', 'data-ver':v.id, text:v.label,
+          onClick:() => { if(v.id !== meal.id) open(v.id, date); } }))),
+        planned && planned !== meal.id && !locked() && typeof FHDays !== 'undefined' ? h('button', { type:'button', class:'fhr-cookver', id:'fhrCookVer', text:'Cook this version ' + dayWord,
+          onClick:() => { close(); FHDays.choose(date, meal.id, info); } })
+          : planned === meal.id ? h('small', { class:'fhr-vnote', text:'On the plan ' + dayWord }) : null);
+    }
     const sheet = h('div', { class:'fhr-sheet', role:'dialog', 'aria-modal':'true', 'aria-label':meal.name + ' recipe' },
       h('div', { class:'fhr-head' }, h('h2', { text:meal.name }),
         locked() || typeof FHBook === 'undefined' ? null : h('button', { type:'button', class:'fhr-edit', id:'fhrEdit', text:'✏️ Edit', 'aria-label':'Edit ' + meal.name, onClick:() => { close(); FHBook.edit(meal.id); } }),
         h('button', { type:'button', class:'fhr-close', 'aria-label':'Close recipe', text:'✕', onClick:close })),
-      body);
+      verRow, body);
     const overlay = h('div', { id:'fhrOverlay', class:'fhr-overlay', onClick:e => { if(e.target === overlay) close(); } }, sheet);
     document.body.appendChild(overlay);
     document.body.classList.add('fhr-lock');
@@ -5359,7 +5413,7 @@ const FHRecipes = (function(){
       ? { qty:'', name:'Homemade ' + FHLocale.name(FHScratch.raw(i)).toLowerCase() }
       : { qty: i.qty ? fmtQ(lineTotal(i, size, scale), i.unit) : '', name: countName(i.name, lineTotal(i, size, scale), i.unit, i._n0) }) };
   }
-  return { ingLines, changesFor, countName, plural, niceQty, get, recipeFor, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
+  return { versions, ingLines, changesFor, countName, plural, niceQty, get, recipeFor, total, hands, fmtMin, dietTags, passes, state, filterBar, mountFilter, activeCount, reset, timeSuffix, badges, cardBits, open, close, startTimer };
 })();
 FHLocale.applyRecipes();
 
@@ -8930,6 +8984,7 @@ function saveRecipe(o){
   if(o.servesOverride) meal.servesOverride = o.servesOverride; else delete meal.servesOverride;
   meal.link = o.link || '';
   if(o.steps && o.steps.length) meal.steps = o.steps; else delete meal.steps;
+  if(meal.isCustom && o.versionOf && o.versionOf !== meal.id){ meal.versionOf = o.versionOf; meal.versionLabel = String(o.versionLabel || '').slice(0, 40); }
   saveMealChange(meal);
   if(!meal.isCustom && mealOverrides[meal.id]){
     if(meal.steps) mealOverrides[meal.id].steps = meal.steps; else delete mealOverrides[meal.id].steps;
@@ -15575,12 +15630,14 @@ const FHBook = (function(){
       name:pre ? pre.name || '' : meal ? meal.name : '',
       kind:side ? 'side' : meal ? 'meal' : pre && pre.kind || (tab === 'sides' ? 'side' : 'meal'),
       cat:meal && !side ? meal.cat : pre && pre.cat || (cats()[0] || {}).id || '',
-      cuisine:meal ? meal.cuisine || '' : '',
+      cuisine:meal ? meal.cuisine || '' : pre && pre.cuisine || '',
       serves:meal && meal.servesOverride ? String(meal.servesOverride) : '',
       ings:(pre ? pre.ingredients : meal ? meal.ingredients || [] : []).map(i => Object.assign({}, i)),
       steps:pre ? pre.steps.map(s => Object.assign({}, s)) : meal && meal.steps ? meal.steps.map(s => ({ t:s.t, m:s.s ? Math.round(s.s / 60) : 0 })) : appSteps.map(s => Object.assign({}, s)),
-      link:meal ? meal.link || '' : pre && pre.link || ''
+      link:meal ? meal.link || '' : pre && pre.link || '',
+      versionOf:!meal && pre && pre.versionOf || '', versionLabel:!meal && pre && pre.versionLabel || ''
     };
+    const verOf = st.versionOf ? all().find(m => m.id === st.versionOf) : null;
     const close = () => { const el = document.getElementById('fhbkEdit'); if(el) el.remove(); document.removeEventListener('keydown', onKey); };
     const onKey = e => { if(e.key === 'Escape') close(); };
     const body = h('div', { class:'fhe-form fhbk-form' });
@@ -15588,7 +15645,8 @@ const FHBook = (function(){
     const draw = () => {
       const keepY = body.parentNode ? body.parentNode.scrollTop : 0;
       body.innerHTML = '';
-      if(!meal) body.appendChild(h('button', { type:'button', class:'fhbk-pastebtn', id:'fhbkPasteBtn', onClick:() => { close(); paste(); } },
+      if(verOf) body.appendChild(h('p', { class:'ob-hint fhbk-version', id:'fhbkVersion', text:'Saved as a version of ' + verOf.name + ', kept alongside it. Switch between them at the top of the recipe.' }));
+      if(!meal && !verOf) body.appendChild(h('button', { type:'button', class:'fhbk-pastebtn', id:'fhbkPasteBtn', onClick:() => { close(); paste(); } },
         h('b', { text:'📋 Paste a recipe instead' }), h('small', { text:'from a website, a note or a message' })));
       // a meal or a side: new recipes and the household's own (the app's meals stay meals)
       if(!meal || meal.isCustom){
@@ -15662,11 +15720,12 @@ const FHBook = (function(){
         tab = 'sides';
       }else{
         const o = { id:meal && !side ? meal.id : null, name:name, cat:st.cat, cuisine:st.cuisine.trim(), servesOverride:sv > 0 ? sv : null, ingredients:ings, steps:sameAsApp ? null : steps, link:link };
+        if(verOf){ o.versionOf = verOf.id; o.versionLabel = st.versionLabel; }
         newId = side ? MealApp.sideToMeal(side.id, o) : MealApp.saveRecipe(o);
         if(side) tab = 'meals';
       }
       close(); render();
-      if(newId && FHRecipes.recipeFor(newId)) FHRecipes.open(newId);
+      if(newId && FHRecipes.recipeFor(newId)) FHRecipes.open(newId, pre && pre.date || undefined);
     };
     const m = h('div', { id:'fhbkEdit', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet fhbk-sheet', role:'dialog', 'aria-label':meal ? 'Edit ' + meal.name : 'Add a recipe' },
@@ -19850,6 +19909,129 @@ const FHQuick = (function(){
   window.addEventListener('load', () => { takeShare().then(s => { if(s) whenReady(() => openShared(s)); }); });
 
   return { available, bar, sheet, clean, apply, context, summary, takeShare, openShared };
+})();
+
+/* ==================== ADAPT A RECIPE (owner's account only, like Quick add) ====================
+   "✨ Adapt this recipe" under a recipe's method: pick how (slow cooker, air fryer, vegetarian…) or type it, and the
+   send-reminders function asks Claude to rewrite the whole recipe for 4 people (action 'adapt', checked against
+   fh_admins on the server). The app shows what changed, the tips, the ingredients (new ones marked, ones taken out
+   listed) and the method; nothing is saved until the parent opens it in the recipe editor and taps Save, as a new
+   recipe of its own. The original is never changed. Sent: the recipe's name, ingredients and method, and the request. */
+const FHAdapt = (function(){
+  const WAYS = [['slow', '🍲 Slow cooker'], ['pressure', '⚡ Pressure cooker'], ['airfryer', '🌀 Air fryer'], ['oven', '🔥 All in the oven'],
+    ['quick', '⏱ Quicker'], ['freeze', '🧊 To freeze'], ['veggie', '🥕 Vegetarian'], ['vegan', '🌱 Vegan'], ['mild', '🧒 Milder']];
+  const UNITS = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'each', 'clove', 'tin', 'jar', 'pack', 'bunch', 'piece', 'slice', 'bag', 'pinch', 'handful'];
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function available(){
+    try{ const s = FHSync.summary(); return !!(s.configured && s.mode === 'ok' && s.household && s.household.admin) && !locked() && !FHSync.isDevice(); }catch(e){ return false; }
+  }
+  function mealOf(id){ try{ return MealApp.getAllMeals().find(m => m.id === id) || (MealApp.getSides ? MealApp.getSides().find(s => s.id === id) : null) || null; }catch(e){ return null; } }
+  function key(i){ try{ return fhIngKey(i); }catch(e){ return String(i && i.name || '').toLowerCase(); } }
+  function section(name){ try{ return fhGuessSection(name); }catch(e){ return 'other'; } }
+  /* what goes to the server: the meal as the household has it, amounts for 4 */
+  function recipeOf(meal){
+    const r = FHRecipes.recipeFor(meal.id);
+    const ings = (meal.ingredients || []).filter(i => i && i.name).map(i => ({ name:String(i._n0 || i.name), qty:i.perPerson ? (+i.qty || 0) * 4 : (+i.qty || 0), unit:i.unit || 'each' }));
+    const steps = r && r.long && r.long.length ? r.long.map(s => s.t) : (meal.steps || []).map(s => s.t);
+    return { name:meal.name, ingredients:ings, steps:steps.filter(Boolean) };
+  }
+  /* the answer, made safe for the app: real units, numbers, short text */
+  function clean(r){
+    const txt = (s, n) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n);
+    const ings = (Array.isArray(r.ingredients) ? r.ingredients : []).map(i => ({ name:txt(i && i.name, 60), qty:Math.max(0, Math.round((+((i && i.qty)) || 0) * 100) / 100), unit:UNITS.indexOf(i && i.unit) >= 0 ? i.unit : 'each' }))
+      .filter(i => i.name);
+    const steps = (Array.isArray(r.steps) ? r.steps : []).map(s => ({ t:txt(s && s.t, 400), m:Math.max(0, Math.min(600, parseInt(s && s.min, 10) || 0)) })).filter(s => s.t);
+    const list = (a, n) => (Array.isArray(a) ? a : []).map(x => txt(x, 200)).filter(Boolean).slice(0, n);
+    return { ok:r.ok !== false && !!ings.length && !!steps.length, problem:txt(r.problem, 400), name:txt(r.name, 60), summary:txt(r.summary, 300),
+      ingredients:ings, steps:steps, changes:list(r.changes, 12), tips:list(r.tips, 8), model:r.model || '', usage:r.usage || null };
+  }
+  function qtyText(i){
+    if(!i.qty) return '';
+    const q = FHRecipes.niceQty(i.qty, i.unit);
+    return q + (i.unit === 'each' ? '' : ' ' + FHRecipes.plural(i.unit, i.qty));
+  }
+  /* the editor's prefill: names, sections and shelf life kept from the original where the ingredient stays */
+  function prefill(meal, a, name, label, date){
+    const was = {}; (meal.ingredients || []).forEach(i => { was[key(i)] = i; });
+    const ings = a.ingredients.map(i => {
+      const o = was[key(i)], out = { name:i.name, qty:i.qty, unit:i.unit, section:o && o.section ? o.section : section(i.name) };
+      if(o && o.shelfLifeDays) out.shelfLifeDays = o.shelfLifeDays;
+      return out;
+    });
+    const out = { name:name, kind:meal.isSide ? 'side' : 'meal', cat:meal.isSide ? undefined : meal.cat, cuisine:meal.cuisine || '', ingredients:ings, steps:a.steps.map(s => ({ t:s.t, m:s.m })), link:meal.link || '', date:date };
+    if(!meal.isSide){ out.versionOf = meal.versionOf || meal.id; out.versionLabel = label || 'Your version'; }
+    return out;
+  }
+
+  function open(id, date){
+    if(!available() || document.getElementById('fhadSheet')) return;
+    const meal = mealOf(id); if(!meal || !(meal.ingredients || []).length) return;
+    const picked = [];
+    // the version's name in the switcher: what was picked ("Slow cooker & Milder"), or "Your version" for typed words
+    const label = () => picked.map(w => (WAYS.find(x => x[0] === w) || ['', ''])[1].replace(/^\S+\s/, '')).join(' & ') || 'Your version';
+    const close = () => { const m = document.getElementById('fhadSheet'); if(m) m.remove(); };
+    const chips = h('div', { class:'ob-chips fhad-ways', id:'fhadWays', role:'group', 'aria-label':'How would you like it?' });
+    const drawChips = () => { chips.innerHTML = ''; WAYS.forEach(w => { const on = picked.indexOf(w[0]) >= 0;
+      chips.appendChild(h('button', { type:'button', class:'ob-chip' + (on ? ' on' : ''), 'aria-pressed':on ? 'true' : 'false', 'data-way':w[0], text:w[1],
+        onClick:() => { if(on) picked.splice(picked.indexOf(w[0]), 1); else if(picked.length < 3) picked.push(w[0]); else return; drawChips(); } })); }); };
+    drawChips();
+    const ta = h('textarea', { class:'fhe-in fhad-text', id:'fhadText', rows:'2', maxlength:'300', 'aria-label':'Anything else?',
+      placeholder:'Anything else? e.g. no mushrooms, or for a 3.5 litre slow cooker' });
+    let asked = 'Your version';
+    const status = h('div', { class:'fhad-status', id:'fhadStatus', role:'status' });
+    const results = h('div', { class:'fhad-results', id:'fhadResults' });
+    const go = h('button', { type:'button', class:'btn', id:'fhadGo', text:'✨ Adapt it' });
+    const form = h('div', { class:'fhad-form' }, h('p', { class:'fhe-lab', text:'How would you like it?' }), chips, ta, h('div', { class:'fhe-actions' }, go));
+    const show = (a) => {
+      results.innerHTML = '';
+      if(!a.ok){ status.textContent = ''; results.appendChild(h('div', { class:'fhad-problem', id:'fhadProblem', role:'note' }, h('b', { text:'That one doesn’t really work. ' }), a.problem || 'Try asking for something else.')); return; }
+      form.hidden = true; status.textContent = '';
+      const name = h('input', { class:'ob-input fhad-name', id:'fhadName', maxlength:'60', value:a.name || meal.name, 'aria-label':'Name' });
+      const before = {}; (meal.ingredients || []).forEach(i => { before[key(i)] = 1; });
+      const now = {}; a.ingredients.forEach(i => { now[key(i)] = 1; });
+      const out = (meal.ingredients || []).filter(i => !now[key(i)]);
+      results.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Name' }), name));
+      if(a.summary) results.appendChild(h('p', { class:'fhad-summary', text:a.summary }));
+      if(a.changes.length) results.appendChild(h('div', { class:'fhad-box fhad-changes', id:'fhadChanges' }, h('b', { text:'What’s different' }), h('ul', {}, a.changes.map(c => h('li', { text:c })))));
+      if(a.tips.length) results.appendChild(h('div', { class:'fhad-box fhad-tips', id:'fhadTips', role:'note' }, h('b', { text:'⚠️ Good to know' }), h('ul', {}, a.tips.map(c => h('li', { text:c })))));
+      results.appendChild(h('p', { class:'fhe-lab', text:'Ingredients · for 4' }));
+      results.appendChild(h('ul', { class:'fhad-ings' }, a.ingredients.map(i => h('li', { class:before[key(i)] ? '' : 'new' },
+        h('b', { text:qtyText(i) }), (qtyText(i) ? ' ' : '') + i.name, before[key(i)] ? null : h('span', { class:'fhad-new', text:'new' })))));
+      if(out.length) results.appendChild(h('p', { class:'fhad-out', id:'fhadOut' }, h('b', { text:'Taken out: ' }), out.map(i => i._n0 || i.name).join(', ')));
+      results.appendChild(h('p', { class:'fhe-lab', text:'Method' }));
+      results.appendChild(h('ol', { class:'fhad-steps' }, a.steps.map(s => h('li', {}, s.t, s.m ? h('span', { class:'fhbk-tchip', text:'⏱ ' + FHRecipes.fmtMin(s.m) }) : null))));
+      results.appendChild(h('div', { class:'fhe-actions' },
+        h('button', { type:'button', class:'btn secondary', id:'fhadAgain', text:'Ask again', onClick:() => { results.innerHTML = ''; form.hidden = false; } }),
+        h('button', { type:'button', class:'btn', id:'fhadSave', text:meal.isSide ? 'Save as a new side' : 'Save as a version', onClick:() => {
+          const nm = name.value.trim() || a.name || meal.name;
+          close(); try{ FHRecipes.close(); }catch(e){}
+          FHBook.edit(null, prefill(meal, a, nm, asked, date)); } })));
+      results.appendChild(h('p', { class:'fho-sub fhad-check', text:'Saving opens it in the recipe editor first, so you can change anything. ' +
+        (meal.isSide ? meal.name + ' stays as it is.' : 'It’s kept alongside ' + meal.name + ', which stays as it is: switch between them at the top of the recipe, any time, without asking again.') }));
+      // owner's trial: which model answered, and how big it was (ADAPT_MODEL)
+      if(a.model) results.appendChild(h('p', { class:'fho-sub fhad-model', id:'fhadModel', text:'Adapted by ' + a.model + (a.usage ? ' · ' + a.usage.input + ' tokens in, ' + a.usage.output + ' out' : '') }));
+    };
+    go.addEventListener('click', async () => {
+      const text = ta.value.trim();
+      if(!picked.length && text.length < 3){ status.textContent = 'Pick how you’d like it, or type it.'; return; }
+      go.disabled = true; status.textContent = 'Adapting ' + meal.name + '… this takes about half a minute.'; results.innerHTML = ''; asked = label();
+      let r = null;
+      try{ r = await FHSync.fn('send-reminders', { action:'adapt', recipe:recipeOf(meal), ask:{ ways:picked.slice(), text:text } }); }
+      catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
+      go.disabled = false;
+      if(!r || r.error || typeof r.ok !== 'boolean'){ status.textContent = (r && r.error) || 'Couldn’t adapt it. Try again.'; return; }
+      show(clean(r));
+    });
+    const m = h('div', { id:'fhadSheet', class:'fhm-back fhad-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet fhad-sheet', role:'dialog', 'aria-label':'Adapt ' + meal.name },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✨ Adapt ' + meal.name }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form fhad-body' },
+          h('p', { class:'fho-sub', text:'We’ll rewrite the whole recipe and show you before anything is saved. Your ' + meal.name + ' stays as it is.' }),
+          form, status, results,
+          h('p', { class:'fho-sub fhad-note', text:'Owner-only trial. The recipe and what you ask are sent to Claude (Anthropic) to rewrite it. Check it over before you cook: times vary between cookers.' }))));
+    document.body.appendChild(m);
+  }
+  return { available, open, recipeOf, clean, prefill, WAYS };
 })();
 
 /* ==================== Startup (setup-aware) ==================== */
