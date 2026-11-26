@@ -1883,6 +1883,11 @@ body.fhr-lock{overflow:hidden;}
 .fhr-t-main{flex:1;min-width:0;display:flex;flex-direction:column;} .fhr-t-main small{opacity:.8;font-size:12.5px;}
 .fhr-t-x,.fhr-t-min{font-family:inherit;font-size:16px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;flex:none;}
 #fhrDock.small{left:auto;align-items:flex-end;}
+#fhrDock.tab{left:auto;right:0;align-items:flex-end;}
+.fhr-dock-small{display:flex;align-items:center;gap:4px;}
+.fhr-dock-pill,.fhr-dock-tab{touch-action:none;-webkit-user-select:none;user-select:none;}
+.fhr-dock-tuck{font-family:inherit;font-size:18px;font-weight:700;width:34px;height:34px;border-radius:50%;border:none;background:#2B2236;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;flex:none;}
+.fhr-dock-tab{font-family:inherit;font-size:16px;display:flex;align-items:center;gap:2px;padding:10px 8px 10px 6px;border:none;border-radius:14px 0 0 14px;background:#2B2236;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;}
 .fhr-dock-pill{font-family:inherit;font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:20px;border:none;background:#2B2236;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;max-width:70vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
 
 @keyframes fhrPulse{50%{opacity:.78;}}
@@ -3205,6 +3210,12 @@ button.fhah-row{ cursor:pointer; }
 
 /* recipe timers bar: room under the recipe so the last steps scroll clear of it (ob_recipes.js renderDock) */
 .fhr-sheet{padding-bottom:calc(26px + var(--fhr-dock, 0px));}
+
+/* AI helpers: the agreement screen sits above Quick add, Adapt and Bring in (ob_ai.js) */
+.fhai-back{ z-index:7000; }
+.fhai-list{ margin:4px 0 10px; padding-left:20px; } .fhai-list li{ margin:4px 0; line-height:1.4; }
+.fhai-foot a{ color:inherit; text-decoration:underline; }
+.fhai-report{ font-family:inherit; font-size:12.5px; border:none; background:none; color:var(--muted, #777); text-decoration:underline; cursor:pointer; padding:4px 0; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -5208,21 +5219,64 @@ const FHRecipes = (function(){
   }
   /* the timers bar: ▾ shrinks it to a small pill (per device; Matthew 26 Nov 2026: "hides text and cannot be minimised"),
      and an alarm always opens it. Drawn again only when what's in it changes, so a tap isn't lost to the twice-a-second tick. */
-  const SKEY = 'family-hub-timers-small';
+  // how it shows, per device: '' the full bar, '1' a pill, '2' tucked into a small tab on the right edge; the pill and the
+  // tab can be dragged up and down (family-hub-timers-y, px from the top), and a swipe right on the pill tucks it away
+  const SKEY = 'family-hub-timers-small', YKEY = 'family-hub-timers-y';
   let dockSig = '';
-  function dockSmall(){ try{ return fhRawGet(SKEY) === '1'; }catch(e){ return false; } }
-  function setDockSmall(on){ try{ fhRawSet(SKEY, on ? '1' : ''); }catch(e){} dockSig = ''; renderDock(); }
+  function dockMode(){ try{ const v = fhRawGet(SKEY); return v === '2' ? 2 : v === '1' ? 1 : 0; }catch(e){ return 0; } }
+  function setDockMode(m){ try{ fhRawSet(SKEY, m ? String(m) : ''); }catch(e){} dockSig = ''; renderDock(); }
+  function setDockSmall(on){ setDockMode(on ? 1 : 0); }
+  function dockY(){ try{ const y = parseInt(fhRawGet(YKEY), 10); return isNaN(y) ? null : y; }catch(e){ return null; } }
+  function placeDock(dock){
+    const y = dockY();
+    if(y === null){ dock.style.top = ''; dock.style.bottom = ''; return; }
+    dock.style.bottom = 'auto'; dock.style.top = Math.max(8, Math.min(innerHeight - dock.offsetHeight - 8, y)) + 'px';
+  }
+  /* drag the pill or tab up and down; a swipe sideways tucks it away or brings it back. Returns true from wasDrag()
+     after a drag so the tap that ends it doesn't also count as a tap. */
+  function dragDock(dock, el, onSwipe){
+    let sx = 0, sy = 0, top = 0, moved = false, on = false;
+    el.addEventListener('pointerdown', e => { on = true; moved = false; sx = e.clientX; sy = e.clientY; top = dock.getBoundingClientRect().top; try{ el.setPointerCapture(e.pointerId); }catch(x){} });
+    el.addEventListener('pointermove', e => {
+      if(!on) return;
+      const dy = e.clientY - sy;
+      if(!moved && Math.abs(dy) < 8 && Math.abs(e.clientX - sx) < 8) return;
+      moved = true;
+      if(Math.abs(dy) > Math.abs(e.clientX - sx)){ dock.style.bottom = 'auto'; dock.style.top = Math.max(8, Math.min(innerHeight - dock.offsetHeight - 8, top + dy)) + 'px'; }
+    });
+    const end = e => {
+      if(!on) return; on = false;
+      if(!moved) return;
+      el.wasDrag = Date.now();
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){ onSwipe(dx); return; }
+      try{ fhRawSet(YKEY, String(Math.round(dock.getBoundingClientRect().top))); }catch(x){}
+    };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', () => { on = false; });
+  }
+  const justDragged = el => el.wasDrag && Date.now() - el.wasDrag < 400;
   function renderDock(){
     let dock = document.getElementById('fhrDock');
     if(!timers.length){ if(dock) dock.remove(); dockSig = ''; document.documentElement.style.removeProperty('--fhr-dock'); return; }
     if(!dock){ dock = document.createElement('div'); dock.id = 'fhrDock'; dock.setAttribute('role', 'status'); document.body.appendChild(dock); dockSig = ''; }
-    const small = dockSmall() && !timers.some(t => t.done);
-    const sig = (small ? 's' : 'f') + timers.map(t => t.id + (t.done ? 'd' : '')).join(',');
+    const mode = timers.some(t => t.done) ? 0 : dockMode(), small = mode > 0;   // an alarm always opens the full bar
+    const sig = mode + timers.map(t => t.id + (t.done ? 'd' : '')).join(',');
     const next = timers.filter(t => !t.done).sort((a, b) => a.end - b.end)[0];
     const pillText = () => '⏱ ' + mmss(next.end - Date.now()) + ' ' + next.label + (timers.length > 1 ? ' +' + (timers.length - 1) : '');
     if(sig !== dockSig){
-      dockSig = sig; dock.innerHTML = ''; dock.classList.toggle('small', small);
-      if(small) dock.appendChild(h('button', { type:'button', class:'fhr-dock-pill', id:'fhrDockPill', 'aria-label':'Show timers', text:pillText(), onClick:() => setDockSmall(false) }));
+      dockSig = sig; dock.innerHTML = ''; dock.classList.toggle('small', mode === 1); dock.classList.toggle('tab', mode === 2);
+      if(mode === 1){
+        const pill = h('button', { type:'button', class:'fhr-dock-pill', id:'fhrDockPill', 'aria-label':'Show timers (drag to move, swipe right to tuck away)', text:pillText(),
+          onClick:() => { if(!justDragged(pill)) setDockMode(0); } });
+        dock.appendChild(h('div', { class:'fhr-dock-small' }, pill,
+          h('button', { type:'button', class:'fhr-dock-tuck', id:'fhrDockTuck', 'aria-label':'Tuck the timers away to the side', text:'›', onClick:() => setDockMode(2) })));
+        dragDock(dock, pill, dx => setDockMode(dx > 0 ? 2 : 1));
+      }else if(mode === 2){
+        const tab = h('button', { type:'button', class:'fhr-dock-tab', id:'fhrDockTab', 'aria-label':'Show the timer (' + next.label + ')', onClick:() => { if(!justDragged(tab)) setDockMode(1); } },
+          h('span', { 'aria-hidden':'true', text:'‹' }), h('span', { text:'⏱' }));
+        dock.appendChild(tab);
+        dragDock(dock, tab, dx => { if(dx < 0) setDockMode(1); });
+      }
       else timers.forEach((t, i) => {
         dock.appendChild(h('div', { class:'fhr-t' + (t.done ? ' done' : ''), 'data-t':String(t.id) },
           h('div', { class:'fhr-t-main' },
@@ -5232,8 +5286,9 @@ const FHRecipes = (function(){
           h('button', { type:'button', class:'fhr-t-x', 'aria-label':'Dismiss timer', text:'✕', onClick:() => stopTimer(t.id) })));
       });
     }
-    if(small){ const p = dock.querySelector('.fhr-dock-pill'); if(p) p.textContent = pillText(); }
-    else timers.forEach(t => {
+    if(small){ const p = dock.querySelector('.fhr-dock-pill'); if(p) p.textContent = pillText(); placeDock(dock); }
+    else { dock.style.top = ''; dock.style.bottom = ''; }
+    if(!small) timers.forEach(t => {
       const el = dock.querySelector('[data-t="' + t.id + '"] .fhr-t-left');
       if(el) el.textContent = (t.meal ? t.meal + ' · ' : '') + (t.done ? 'tap ✕ to stop the alarm' : mmss(t.end - Date.now()) + ' left');
     });
@@ -17585,6 +17640,7 @@ function renderSettingsPage(){
   root.appendChild(FHPush.settingsCard(rr));
   { const hc = FHPush.houseCard(); if(hc) root.appendChild(hc); }
   root.appendChild(FHCal.card());
+  if(typeof FHAI !== 'undefined'){ const ac = FHAI.settingsCard(); if(ac) root.appendChild(ac); }
   root.appendChild(feedbackCard());
   { const oc = fhOwnerCard(); if(oc) root.appendChild(oc); }
   root.appendChild(h('div',{class:'st-card',id:'stSetup'}, h('h3',{text:'Setup'}),
@@ -17621,7 +17677,7 @@ function fhSettingsSummary(id){
 function fhSettingsGroups(root){
   const GROUPS = [
     ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stBirthdays', 'stMeals', 'stFood', 'stBins', 'stUnits']],
-    ['features', '🧩', 'Features', ['stFeatures']],
+    ['features', '🧩', 'Features', ['stFeatures', 'stAI']],
     ['remind', '🔔', 'Reminders & calendars', ['stReminders', 'stHouseRem', 'stCal']],
     ['sync', '🔄', 'Sync & sharing', ['stSync']],
     ['device', '📱', 'This device', ['stLook', 'stCalView', 'stLock']],
@@ -19631,7 +19687,107 @@ const FHPlanTools = (function(){
   return { mount, shelf, shopWeek, sheet };
 })();
 
-/* ==================== QUICK ADD (AI, owner's account only for now) ====================
+/* ==================== AI HELPERS: who sees them, and each person's agreement ====================
+   Quick add, Adapt a recipe and Bring in a recipe all go through FHAI. They show for the owner's account and for
+   grown-ups in a household the owner has turned them on for (my_household().ai, sync/supabase_ai.sql), never when
+   locked or on a child's device. The first time someone uses one, the server answers 428 until they've agreed:
+   FHAI.call shows "How the AI helpers work" and, once they agree (stored on the server, so it follows them to every
+   device), sends the request again. Settings › Features has the card to read it again or withdraw.
+   Bump VERSION (and AI_CONSENT_VERSION in send-reminders) when what is sent, or to whom, changes. */
+const FHAI = (function(){
+  const VERSION = 1;
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function available(){
+    try{
+      const s = FHSync.summary(), hh = s.household;
+      return !!(s.configured && s.mode === 'ok' && hh && (hh.ai || hh.admin)) && !locked() && !FHSync.isDevice();
+    }catch(e){ return false; }
+  }
+  const POINTS = [
+    ['What’s sent, only when you tap the button', [
+      'Quick add: what you type or say, any photo or screenshot you add, your family’s first names (and who’s a child), and today’s date and time.',
+      'Adapt a recipe: the recipe and what you ask for.',
+      'Bring in a recipe: what you describe or paste, and the names of the ingredients you already use. If you give a link, our server opens that page to read the recipe.']],
+    ['What happens to it', [
+      'It goes to Claude, an AI made by Anthropic, only to write the answer. Anthropic doesn’t use it to train its AI and deletes it within 30 days (up to 2 years if its safety checks flag something).',
+      'We don’t keep your words or pictures. We count how often each household uses the helpers, to keep a fair daily limit.',
+      'Speaking uses your phone’s own speech-to-text (Google or Apple): we only get the words.',
+      'A school letter or email can mention your children: only the dates and jobs that come out of it are kept, and only once you’ve checked them.',
+      'Nothing is added to your plans or recipes until you’ve checked it. AI can get things wrong, so look it over, especially cooking times and allergens.']]];
+  /* the agreement screen; resolves true once agreed (saved on the server), false for Not now */
+  function consentSheet(){
+    return new Promise(done => {
+      const old = document.getElementById('fhaiSheet'); if(old) old.remove();
+      const status = h('p', { class:'ob-hint', id:'fhaiStatus', role:'status' });
+      const finish = ok => { m.remove(); done(ok); };
+      const agree = h('button', { type:'button', class:'btn', id:'fhaiAgree', text:'I agree', onClick:async () => {
+        agree.disabled = true; status.textContent = 'Saving…';
+        let r = null;
+        try{ r = await FHSync.fn('send-reminders', { action:'aiconsent', agree:true, version:VERSION }); }
+        catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
+        agree.disabled = false;
+        if(r && r.agreed) finish(true); else status.textContent = (r && r.error) || 'Couldn’t save that. Try again.';
+      } });
+      const m = h('div', { id:'fhaiSheet', class:'fhm-back fhai-back', onClick:e => { if(e.target === m) finish(false); } },
+        h('div', { class:'fhm-sheet fhai-sheet', role:'dialog', 'aria-modal':'true', 'aria-label':'How the AI helpers work' },
+          h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✨ How the AI helpers work' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:() => finish(false) })),
+          h('div', { class:'fhe-form' },
+            h('p', { class:'fho-sub', text:'Quick add, Adapt a recipe and Bring in a recipe use AI to read what you give them and write it out for the app. Please read this once before you use them.' }),
+            POINTS.map(p => h('div', { class:'fhai-part' }, h('p', { class:'fhe-lab', text:p[0] }), h('ul', { class:'fhai-list' }, p[1].map(t => h('li', { text:t }))))),
+            h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn secondary', id:'fhaiNo', text:'Not now', onClick:() => finish(false) }), agree),
+            status,
+            h('p', { class:'fho-sub fhai-foot' }, 'You can withdraw any time in Settings › Features. More in our ',
+              h('a', { href:'privacy.html#ai', target:'_blank', rel:'noopener', text:'privacy policy' }), '.'))));
+      document.body.appendChild(m);
+    });
+  }
+  /* one request to an AI helper: asks for agreement first when the server says so, then sends it again */
+  async function call(action, body){
+    const send = () => FHSync.fn('send-reminders', Object.assign({ action:action }, body || {}));
+    let r;
+    try{ r = await send(); }
+    catch(e){ if(!(e && e.status === 428)) throw e; r = { needConsent:VERSION }; }
+    if(!(r && r.needConsent)) return r;
+    if(!(await consentSheet())) return { error:'Nothing was sent. Agree to how the AI helpers work to use this.', cancelled:true };
+    return send();
+  }
+  /* Settings › Features: read it again, see when you agreed, withdraw */
+  function settingsCard(){
+    if(!available()) return null;
+    const line = h('p', { class:'ob-hint', id:'stAiState', text:'Checking…' });
+    const row = h('div', { class:'ob-row' });
+    const card = h('div', { class:'st-card', id:'stAI' }, h('h3', { text:'✨ AI helpers (trial)' }),
+      h('p', { class:'ob-hint', text:'Quick add, Adapt a recipe and Bring in a recipe use Claude, an AI made by Anthropic. Each person agrees once before using them.' }),
+      line, row);
+    const draw = r => {
+      row.innerHTML = '';
+      row.appendChild(h('button', { type:'button', class:'ob-btn ghost', id:'stAiRead', text:'How they work', onClick:() => consentSheet().then(() => FHSync.fn('send-reminders', { action:'aiconsent' }).then(draw, () => {})) }));
+      if(r && r.agreed){
+        line.textContent = 'You agreed on ' + new Date(r.at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) + '.';
+        row.appendChild(h('button', { type:'button', class:'ob-btn ghost', id:'stAiWithdraw', text:'Withdraw', onClick:async () => {
+          if(!confirm('Withdraw? The AI helpers will ask you again before they send anything.')) return;
+          try{ draw(await FHSync.fn('send-reminders', { action:'aiconsent', withdraw:true })); }catch(e){ line.textContent = (e && e.message) || 'Couldn’t reach the server. Try again.'; }
+        } }));
+      }else line.textContent = r && r.error ? r.error : 'You haven’t agreed yet: you’ll be asked the first time you use one.';
+    };
+    FHSync.fn('send-reminders', { action:'aiconsent' }).then(draw, e => { line.textContent = (e && e.message) || 'Couldn’t check just now.'; });
+    return card;
+  }
+  /* under every answer: send it to us as feedback (Google Play's AI-generated content policy: report without leaving the app) */
+  function reportBtn(action, asked, answer){
+    const b = h('button', { type:'button', class:'fhai-report', text:'⚑ Report this answer', onClick:async () => {
+      if(!confirm('Send this answer to us to look at? What you typed goes with it (never a photo).')) return;
+      const msg = 'AI answer reported (' + action + ')\n\nAsked: ' + String(asked() || '(a photo)').slice(0, 600) + '\n\nAnswer:\n' + String(answer() || '').slice(0, 1300);
+      b.disabled = true;
+      try{ await FHSync.fn('send-reminders', { action:'feedback', message:msg.slice(0, 2000), meta:typeof fhFeedbackNote === 'function' ? fhFeedbackNote() : '' }); b.textContent = '✓ Sent. Thank you.'; }
+      catch(e){ b.disabled = false; b.textContent = 'Couldn’t send it: ' + ((e && e.message) || 'try again'); }
+    } });
+    return b;
+  }
+  return { VERSION, available, call, consentSheet, settingsCard, reportBtn };
+})();
+
+/* ==================== QUICK ADD (AI helper: FHAI.available, agreement through FHAI.call) ====================
    A bar at the top of Today: type anything ("Ivy dentist Tue 3:30, milk x2, MOT due 12 March, ring the school") and
    the send-reminders function asks Claude to sort it into events, tasks, shopping and paperwork (action 'quickadd',
    checked against fh_admins on the server). Nothing is saved until the parent has seen the list, unticked anything
@@ -19650,7 +19806,7 @@ const FHQuick = (function(){
   function people(){ try{ const v = JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); return Array.isArray(v) ? v.filter(p => p && p.name) : []; }catch(e){ return []; } }
   function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
   function available(){
-    try{ const s = FHSync.summary(); return !!(s.configured && s.mode === 'ok' && s.household && s.household.admin) && !locked() && !FHSync.isDevice(); }catch(e){ return false; }
+    return FHAI.available();   // the owner, or a household the owner turned them on for (ob_ai.js)
   }
   function kinds(){ try{ return FHPaper.KINDS.map(k => ({ id:k.id, name:k.name || 'Something else' })); }catch(e){ return [{ id:'other', name:'Something else' }]; } }
   function context(){
@@ -19848,7 +20004,7 @@ const FHQuick = (function(){
       if(text.length < 2 && !photo){ status.textContent = 'Type what needs adding first, or add a photo.'; ta.focus(); return; }
       go.disabled = true; status.textContent = 'Sorting it out…'; results.innerHTML = '';
       let r = null;
-      try{ r = await FHSync.fn('send-reminders', Object.assign({ action:'quickadd', text:text, ctx:context() }, photo ? { image:photo } : {})); }
+      try{ r = await FHAI.call('quickadd', Object.assign({ text:text, ctx:context() }, photo ? { image:photo } : {})); }
       catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
       go.disabled = false;
       if(!r || r.error || !Array.isArray(r.items)){ status.textContent = (r && r.error) || 'Couldn’t sort that. Try again.'; return; }
@@ -19856,6 +20012,7 @@ const FHQuick = (function(){
       drawResults(r.unsure);
       // owner's trial: which model answered, and how big the request was (QUICKADD_MODEL)
       if(r.model) results.appendChild(h('p', { class:'fho-sub fhqa-model', id:'fhqaModel', text:'Sorted by ' + r.model + (r.usage ? ' · ' + r.usage.input + ' tokens in, ' + r.usage.output + ' out' : '') }));
+      results.appendChild(FHAI.reportBtn('quickadd', () => text, () => results.innerText));
     });
     const m = h('div', { id:'fhqaSheet', class:'fhm-back', onClick:e => { if(e.target === m) close(); } },
       h('div', { class:'fhm-sheet', role:'dialog', 'aria-label':'Quick add' },
@@ -19863,7 +20020,7 @@ const FHQuick = (function(){
         h('div', { class:'fhe-form' },
           h('p', { class:'fho-sub', text:'Type, paste or say anything: appointments, things to do, shopping, birthdays, renewal dates. Or add a photo of a school letter or a screenshot of an email. We’ll sort it and show you before anything is added.' }),
           ta, thumb, file, h('div', { class:'fhe-actions fhqa-actions' }, pick, mic, go), status, results,
-          h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type and any picture you add, with your family’s first names, are sent to Claude (Anthropic) to sort it.' +
+          h('p', { class:'fho-sub fhqa-note', text:'Trial. What you type and any picture you add, with your family’s first names, are sent to Claude (Anthropic) to sort it.' +
             (mic ? ' Speaking uses your phone’s own speech-to-text (Google or Apple).' : '') }))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(ta), 50);
     // a link in the box, shared, pasted or typed: offer Bring in (a recipe page isn't plans to sort)
@@ -19963,7 +20120,7 @@ const FHAdapt = (function(){
   const UNITS = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'each', 'clove', 'tin', 'jar', 'pack', 'bunch', 'piece', 'slice', 'bag', 'pinch', 'handful'];
   function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
   function available(){
-    try{ const s = FHSync.summary(); return !!(s.configured && s.mode === 'ok' && s.household && s.household.admin) && !locked() && !FHSync.isDevice(); }catch(e){ return false; }
+    return FHAI.available();   // the owner, or a household the owner turned them on for (ob_ai.js)
   }
   function mealOf(id){ try{ return MealApp.getAllMeals().find(m => m.id === id) || (MealApp.getSides ? MealApp.getSides().find(s => s.id === id) : null) || null; }catch(e){ return null; } }
   function key(i){ try{ return fhIngKey(i); }catch(e){ return String(i && i.name || '').toLowerCase(); } }
@@ -20058,13 +20215,14 @@ const FHAdapt = (function(){
         (meal.isSide ? meal.name + ' stays as it is.' : 'It’s kept alongside ' + meal.name + ', which stays as it is: switch between them at the top of the recipe, any time, without asking again.') }));
       // owner's trial: which model answered, and how big it was (ADAPT_MODEL)
       if(a.model) results.appendChild(h('p', { class:'fho-sub fhad-model', id:'fhadModel', text:'Adapted by ' + a.model + (a.usage ? ' · ' + a.usage.input + ' tokens in, ' + a.usage.output + ' out' : '') }));
+      results.appendChild(FHAI.reportBtn('adapt', () => meal.name + ': ' + [asked, ta.value.trim()].filter(Boolean).join(' · '), () => results.innerText));
     };
     go.addEventListener('click', async () => {
       const text = ta.value.trim();
       if(!picked.length && text.length < 3){ status.textContent = 'Pick how you’d like it, or type it.'; return; }
       go.disabled = true; status.textContent = 'Adapting ' + meal.name + '… this takes about half a minute.'; results.innerHTML = ''; asked = label();
       let r = null;
-      try{ r = await FHSync.fn('send-reminders', { action:'adapt', recipe:recipeOf(meal), ask:{ ways:picked.slice(), text:text } }); }
+      try{ r = await FHAI.call('adapt', { recipe:recipeOf(meal), ask:{ ways:picked.slice(), text:text } }); }
       catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
       go.disabled = false;
       if(!r || r.error || typeof r.ok !== 'boolean'){ status.textContent = (r && r.error) || 'Couldn’t adapt it. Try again.'; return; }
@@ -20076,7 +20234,7 @@ const FHAdapt = (function(){
         h('div', { class:'fhe-form fhad-body' },
           h('p', { class:'fho-sub', text:'We’ll rewrite the whole recipe and show you before anything is saved. Your ' + meal.name + ' stays as it is.' }),
           form, status, results,
-          h('p', { class:'fho-sub fhad-note', text:'Owner-only trial. The recipe and what you ask are sent to Claude (Anthropic) to rewrite it. Check it over before you cook: times vary between cookers.' }))));
+          h('p', { class:'fho-sub fhad-note', text:'Trial. The recipe and what you ask are sent to Claude (Anthropic) to rewrite it. Check it over before you cook: times vary between cookers.' }))));
     document.body.appendChild(m);
   }
   return { available, open, recipeOf, clean, prefill, WAYS };
@@ -20149,6 +20307,7 @@ const FHBring = (function(){
       results.appendChild(check);
       drawAs();
       if(r.model) results.appendChild(h('p', { class:'fho-sub fhad-model', id:'fhbiModel', text:'Written by ' + r.model + (r.usage ? ' · ' + r.usage.input + ' tokens in, ' + r.usage.output + ' out' : '') }));
+      results.appendChild(FHAI.reportBtn('bringin', () => ta.value.trim(), () => results.innerText));
     };
     go.addEventListener('click', async () => {
       const text = ta.value.trim();
@@ -20156,7 +20315,7 @@ const FHBring = (function(){
       const link = /https?:\/\//i.test(text);
       go.disabled = true; status.textContent = link ? 'Reading that page… this takes about half a minute.' : 'Writing it out… this takes about half a minute.'; results.innerHTML = '';
       let r = null;
-      try{ r = await FHSync.fn('send-reminders', { action:'bringin', kind:kind, text:text, names:names() }); }
+      try{ r = await FHAI.call('bringin', { kind:kind, text:text, names:names() }); }
       catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
       go.disabled = false;
       if(!r || r.error || typeof r.ok !== 'boolean'){ status.textContent = (r && r.error) || 'Couldn’t bring that in. Try again.'; return; }
@@ -20171,7 +20330,7 @@ const FHBring = (function(){
         h('div', { class:'fhe-form fhad-body' },
           h('p', { class:'fho-sub', text:'Describe a dish, paste a recipe, or paste a link. We’ll write it out for your household and show you before anything is saved.' }),
           form, status, results,
-          h('p', { class:'fho-sub fhad-note', text:'Owner-only trial. What you type or paste is sent to Claude (Anthropic) to write it out; a link is opened by our server to read the recipe on that page. Nothing is searched for online.' }))));
+          h('p', { class:'fho-sub fhad-note', text:'Trial. What you type or paste is sent to Claude (Anthropic) to write it out; a link is opened by our server to read the recipe on that page. Nothing is searched for online.' }))));
     document.body.appendChild(m);
     setTimeout(() => { if(!o.text) fhFocusIfDesktop(ta); }, 50);
   }
