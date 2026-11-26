@@ -20126,15 +20126,28 @@ const FHBring = (function(){
       results.appendChild(h('ul', { class:'fhad-ings' }, a.ingredients.map(i => h('li', {}, h('b', { text:qtyText(i) }), (qtyText(i) ? ' ' : '') + i.name))));
       results.appendChild(h('p', { class:'fhe-lab', text:'Method' }));
       results.appendChild(h('ol', { class:'fhad-steps' }, a.steps.map(s => h('li', {}, s.t, s.m ? h('span', { class:'fhbk-tchip', text:'⏱ ' + FHRecipes.fmtMin(s.m) }) : null))));
-      results.appendChild(h('div', { class:'fhe-actions' },
-        h('button', { type:'button', class:'btn secondary', id:'fhbiAgain', text:'Try again', onClick:() => { results.innerHTML = ''; form.hidden = false; } }),
-        h('button', { type:'button', class:'btn', id:'fhbiAdd', text:kind === 'side' ? 'Add it to your sides' : 'Add it to your recipes', onClick:() => {
+      // a meal or a side can still be changed here, without asking again (Matthew 26 Nov 2026: a daal brought in as a main by mistake)
+      const asBox = h('div', { class:'ob-chips fhbi-as', id:'fhbiAs', role:'group', 'aria-label':'Add it as a meal or a side' });
+      const check = h('p', { class:'fho-sub fhad-check' });
+      const drawAs = () => {
+        asBox.innerHTML = '';
+        [['meal', '🍽️ A main meal'], ['side', '🥗 A side']].forEach(k => asBox.appendChild(h('button', { type:'button', class:'ob-chip' + (kind === k[0] ? ' on' : ''), 'aria-pressed':kind === k[0] ? 'true' : 'false', 'data-kind':k[0], text:k[1],
+          onClick:() => { kind = k[0]; drawAs(); drawKind(); } })));
+        add.textContent = kind === 'side' ? 'Add it to your sides' : 'Add it to your recipes';
+        check.textContent = 'Adding opens it in the recipe editor first, so you can change anything.' + (kind === 'side' ? ' Then it’s in Recipes › Sides, ready for ＋ Sides on any night.' : '');
+      };
+      const add = h('button', { type:'button', class:'btn', id:'fhbiAdd', onClick:() => {
           const ings = a.ingredients.map(i => ({ name:i.name, qty:i.qty, unit:i.unit, section:section(i.name) }));
           const pre = { name:name.value.trim() || a.name, kind:kind, ingredients:ings, steps:a.steps.map(s => ({ t:s.t, m:s.m })), link:url, cuisine:String(r.cuisine || '') };
           if(kind === 'meal'){ const c = catOf(ings); if(c) pre.cat = c; }
           close(); try{ FHRecipes.close(); }catch(e){}
-          FHBook.edit(null, pre); } })));
-      results.appendChild(h('p', { class:'fho-sub fhad-check', text:'Adding opens it in the recipe editor first, so you can change anything.' + (kind === 'side' ? ' Then it’s in Recipes › Sides, ready for ＋ Sides on any night.' : '') }));
+          FHBook.edit(null, pre); } });
+      results.appendChild(h('p', { class:'fhe-lab', text:'Add it as' }));
+      results.appendChild(asBox);
+      results.appendChild(h('div', { class:'fhe-actions' },
+        h('button', { type:'button', class:'btn secondary', id:'fhbiAgain', text:'Try again', onClick:() => { results.innerHTML = ''; form.hidden = false; } }), add));
+      results.appendChild(check);
+      drawAs();
       if(r.model) results.appendChild(h('p', { class:'fho-sub fhad-model', id:'fhbiModel', text:'Written by ' + r.model + (r.usage ? ' · ' + r.usage.input + ' tokens in, ' + r.usage.output + ' out' : '') }));
     };
     go.addEventListener('click', async () => {
