@@ -3194,6 +3194,11 @@ button.fhah-row{ cursor:pointer; }
 .fhr-ver.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
 .fhr-cookver{ font:inherit; font-size:.84rem; font-weight:800; padding:5px 12px; border-radius:10px; border:2px solid var(--accent); background:transparent; color:var(--accent); cursor:pointer; }
 .fhr-vnote{ color:var(--muted); font-size:.8rem; }
+/* bring in a recipe (ob_bringin.js) */
+.fhbk-addrow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.fhbi-text{ width:100%; box-sizing:border-box; margin-top:8px; }
+.fhbi-source{ margin:4px 0 10px; color:var(--muted); font-size:.88rem; font-style:italic; }
+.fhqa-recipe{ margin:4px 0 8px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -15480,7 +15485,9 @@ const FHBook = (function(){
     const list = all(), mine = list.filter(m => m.isCustom).length;
     root.appendChild(h('div', { class:'fhbk-top' },
       h('p', { class:'fhbk-count', text:tab === 'sides' ? plural(sideCount(), 'side', 'sides') : tab === 'homemade' ? plural(Object.keys(FH_SCRATCH).length, 'homemade recipe', 'homemade recipes') : plural(list.length, 'meal', 'meals') + (mine ? ' · ' + mine + ' of yours' : '') }),
-      locked() ? null : h('button', { type:'button', class:'btn fhbk-add', id:'fhbkAdd', text:tab === 'sides' ? '＋ Add a side' : '＋ Add a recipe', onClick:() => edit(null) })));
+      locked() ? null : h('div', { class:'fhbk-addrow' },
+        typeof FHBring !== 'undefined' && FHAdapt.available() && tab !== 'homemade' ? h('button', { type:'button', class:'btn secondary fhbk-bring', id:'fhbkBring', text:'✨ Bring in', 'aria-label':'Bring in a recipe: describe a dish, paste one or share a link', onClick:() => FHBring.open({ kind:tab === 'sides' ? 'side' : 'meal' }) }) : null,
+        h('button', { type:'button', class:'btn fhbk-add', id:'fhbkAdd', text:tab === 'sides' ? '＋ Add a side' : '＋ Add a recipe', onClick:() => edit(null) }))));
     root.appendChild(h('div', { class:'fhbk-tabs', role:'tablist', 'aria-label':'What kind' },
       [['meals', 'Meals'], ['sides', 'Sides'], ['homemade', 'Homemade']].map(t => h('button', { type:'button', role:'tab', class:'fhbk-tab' + (tab === t[0] ? ' on' : ''), 'aria-selected':tab === t[0] ? 'true' : 'false', 'data-tab':t[0], text:t[1],
         onClick:() => { tab = t[0]; render(); } }))));
@@ -15646,6 +15653,8 @@ const FHBook = (function(){
       const keepY = body.parentNode ? body.parentNode.scrollTop : 0;
       body.innerHTML = '';
       if(verOf) body.appendChild(h('p', { class:'ob-hint fhbk-version', id:'fhbkVersion', text:'Saved as a version of ' + verOf.name + ', kept alongside it. Switch between them at the top of the recipe.' }));
+      if(!meal && !verOf && !pre && typeof FHBring !== 'undefined' && FHAdapt.available()) body.appendChild(h('button', { type:'button', class:'fhbk-pastebtn fhbk-bringbtn', id:'fhbkBringBtn', onClick:() => { close(); FHBring.open({ kind:st.kind }); } },
+        h('b', { text:'✨ Bring in a recipe instead' }), h('small', { text:'describe a dish, paste one, or a link' })));
       if(!meal && !verOf) body.appendChild(h('button', { type:'button', class:'fhbk-pastebtn', id:'fhbkPasteBtn', onClick:() => { close(); paste(); } },
         h('b', { text:'📋 Paste a recipe instead' }), h('small', { text:'from a website, a note or a message' })));
       // a meal or a side: new recipes and the household's own (the app's meals stay meals)
@@ -19839,6 +19848,8 @@ const FHQuick = (function(){
     if(pre && (pre.text || pre.blob)){
       if(pre.text) ta.value = pre.text;
       status.textContent = 'Shared from another app. Add a few words if you like, then Sort it out.';
+      if(pre.text && /https?:\/\//i.test(pre.text) && typeof FHBring !== 'undefined') status.after(h('button', { type:'button', class:'btn secondary fhqa-recipe', id:'fhqaRecipe', text:'🍳 Is it a recipe? Bring it in',
+        onClick:() => { close(); FHBring.open({ text:pre.text }); } }));
       if(pre.blob) shrink(pre.blob).then(p => { photo = p; showThumb(); }).catch(() => { status.textContent = 'The shared picture couldn’t be opened. Try a screenshot instead.'; });
     }
   }
@@ -19940,9 +19951,12 @@ const FHAdapt = (function(){
     const txt = (s, n) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, n);
     const ings = (Array.isArray(r.ingredients) ? r.ingredients : []).map(i => ({ name:txt(i && i.name, 60), qty:Math.max(0, Math.round((+((i && i.qty)) || 0) * 100) / 100), unit:UNITS.indexOf(i && i.unit) >= 0 ? i.unit : 'each' }))
       .filter(i => i.name);
-    const steps = (Array.isArray(r.steps) ? r.steps : []).map(s => ({ t:txt(s && s.t, 400), m:Math.max(0, Math.min(600, parseInt(s && s.min, 10) || 0)) })).filter(s => s.t);
+    // "Low for 4 to 5 hours or High for 2 to 3": the timer is the first time given (4 hours), whatever the answer said
+    const hours = t => { const m = /\b(?:low|high)\b[^.]*?(\d+(?:\.\d+)?)(?:\s*(?:to|-|–)\s*\d+(?:\.\d+)?)?\s*hours?/i.exec(t); return m ? Math.round(+m[1] * 60) : 0; };
+    const steps = (Array.isArray(r.steps) ? r.steps : []).map(s => { const t = txt(s && s.t, 400), m = Math.max(0, Math.min(600, parseInt(s && s.min, 10) || 0));
+      return { t:t, m:/overnight/i.test(t) ? 0 : m && hours(t) ? Math.min(600, hours(t)) : m }; }).filter(s => s.t);
     const list = (a, n) => (Array.isArray(a) ? a : []).map(x => txt(x, 200)).filter(Boolean).slice(0, n);
-    return { ok:r.ok !== false && !!ings.length && !!steps.length, problem:txt(r.problem, 400), name:txt(r.name, 60), summary:txt(r.summary, 300),
+    return { ok:r.ok !== false && !!ings.length && !!steps.length, problem:txt(r.problem, 400), bring:r.bring === 'side' || r.bring === 'meal' ? r.bring : '', name:txt(r.name, 60), summary:txt(r.summary, 300),
       ingredients:ings, steps:steps, changes:list(r.changes, 12), tips:list(r.tips, 8), model:r.model || '', usage:r.usage || null };
   }
   function qtyText(i){
@@ -19984,7 +19998,12 @@ const FHAdapt = (function(){
     const form = h('div', { class:'fhad-form' }, h('p', { class:'fhe-lab', text:'How would you like it?' }), chips, ta, h('div', { class:'fhe-actions' }, go));
     const show = (a) => {
       results.innerHTML = '';
-      if(!a.ok){ status.textContent = ''; results.appendChild(h('div', { class:'fhad-problem', id:'fhadProblem', role:'note' }, h('b', { text:'That one doesn’t really work. ' }), a.problem || 'Try asking for something else.')); return; }
+      if(!a.ok){ status.textContent = '';
+        const other = a.bring === 'side' || a.bring === 'meal' ? a.bring : '', typed = ta.value.trim();
+        results.appendChild(h('div', { class:'fhad-problem', id:'fhadProblem', role:'note' }, h('b', { text:other ? 'That’s a separate recipe. ' : 'That one doesn’t really work. ' }), a.problem || 'Try asking for something else.',
+          other && typeof FHBring !== 'undefined' ? h('div', { class:'fhe-actions' }, h('button', { type:'button', class:'btn', id:'fhadBring', text:'✨ Bring it in as a ' + (other === 'side' ? 'side' : 'recipe'),
+            onClick:() => { close(); try{ FHRecipes.close(); }catch(e){} FHBring.open({ kind:other, text:typed }); } })) : null));
+        return; }
       form.hidden = true; status.textContent = '';
       const name = h('input', { class:'ob-input fhad-name', id:'fhadName', maxlength:'60', value:a.name || meal.name, 'aria-label':'Name' });
       const before = {}; (meal.ingredients || []).forEach(i => { before[key(i)] = 1; });
@@ -20032,6 +20051,89 @@ const FHAdapt = (function(){
     document.body.appendChild(m);
   }
   return { available, open, recipeOf, clean, prefill, WAYS };
+})();
+
+/* ==================== BRING IN A RECIPE (owner's account only, like Quick add and Adapt) ====================
+   "✨ Bring in a recipe": describe a dish ("Dishoom-style black daal"), paste a recipe, or paste or share a link. The
+   send-reminders function (action 'bringin', checked against fh_admins) reads a link's page itself (its recipe data, or
+   its words) and asks Claude to write it out in the app's format for 4, reusing the household's ingredient names so the
+   shopping list adds them up. The app shows it; "Add it" opens the recipe editor filled in, and only its Save adds it,
+   as the household's own meal or side. Nothing searches the web: it only uses what's given.
+   Sent: what was typed or pasted (or the link), meal or side, and the names of the ingredients the household's meals use. */
+const FHBring = (function(){
+  function names(){ try{ return MealApp.getKnownIngredients().map(i => i.name).slice(0, 400); }catch(e){ return []; } }
+  function section(name){ try{ return fhGuessSection(name); }catch(e){ return 'other'; } }
+  function catOf(ings){ try{ return obMealCat({ ingredients:ings }); }catch(e){ return ''; } }
+  function qtyText(i){ if(!i.qty) return ''; return FHRecipes.niceQty(i.qty, i.unit) + (i.unit === 'each' ? '' : ' ' + FHRecipes.plural(i.unit, i.qty)); }
+
+  function open(o){
+    o = o || {};
+    if(!FHAdapt.available() || document.getElementById('fhbiSheet')) return;
+    let kind = o.kind === 'side' ? 'side' : 'meal';
+    const close = () => { const m = document.getElementById('fhbiSheet'); if(m) m.remove(); };
+    const kindBox = h('div', {});
+    const drawKind = () => { kindBox.innerHTML = '';
+      kindBox.appendChild(h('div', { class:'ob-chips', id:'fhbiKind', role:'group', 'aria-label':'A meal or a side?' }, [['meal', '🍽️ A main meal'], ['side', '🥗 A side']].map(k =>
+        h('button', { type:'button', class:'ob-chip' + (kind === k[0] ? ' on' : ''), 'aria-pressed':kind === k[0] ? 'true' : 'false', 'data-kind':k[0], text:k[1], onClick:() => { kind = k[0]; drawKind(); } })))); };
+    drawKind();
+    const ta = h('textarea', { class:'fhe-in fhbi-text', id:'fhbiText', rows:'4', maxlength:'8000', 'aria-label':'The dish, recipe or link',
+      placeholder:'e.g. Dishoom-style black daal. Or paste a recipe, or a link to one.' });
+    if(o.text) ta.value = o.text;
+    const status = h('div', { class:'fhad-status', id:'fhbiStatus', role:'status' });
+    const results = h('div', { class:'fhad-results', id:'fhbiResults' });
+    const go = h('button', { type:'button', class:'btn', id:'fhbiGo', text:'✨ Bring it in' });
+    const form = h('div', {}, h('p', { class:'fhe-lab', text:'Is it…' }), kindBox, ta, h('div', { class:'fhe-actions' }, go));
+    const show = (a, r) => {
+      results.innerHTML = '';
+      if(!a.ok){ results.appendChild(h('div', { class:'fhad-problem', id:'fhbiProblem', role:'note' }, a.problem || 'Couldn’t find a recipe in that. Try describing the dish, or paste the recipe’s text.')); return; }
+      form.hidden = true;
+      const notes = (Array.isArray(r.notes) ? r.notes : []).map(x => String(x || '').trim().slice(0, 200)).filter(Boolean).slice(0, 8);
+      const url = /^https?:\/\//i.test(r.url || '') ? r.url : '';
+      const name = h('input', { class:'ob-input fhad-name', id:'fhbiName', maxlength:'60', value:a.name, 'aria-label':'Name' });
+      results.appendChild(h('label', { class:'fhe-field' }, h('span', { class:'fhe-lab', text:'Name' }), name));
+      if(r.source) results.appendChild(h('p', { class:'fhbi-source', id:'fhbiSource', text:String(r.source).slice(0, 160) }));
+      if(notes.length) results.appendChild(h('div', { class:'fhad-box fhad-tips', id:'fhbiNotes', role:'note' }, h('b', { text:'⚠️ Good to know' }), h('ul', {}, notes.map(c => h('li', { text:c })))));
+      results.appendChild(h('p', { class:'fhe-lab', text:'Ingredients · for 4' }));
+      results.appendChild(h('ul', { class:'fhad-ings' }, a.ingredients.map(i => h('li', {}, h('b', { text:qtyText(i) }), (qtyText(i) ? ' ' : '') + i.name))));
+      results.appendChild(h('p', { class:'fhe-lab', text:'Method' }));
+      results.appendChild(h('ol', { class:'fhad-steps' }, a.steps.map(s => h('li', {}, s.t, s.m ? h('span', { class:'fhbk-tchip', text:'⏱ ' + FHRecipes.fmtMin(s.m) }) : null))));
+      results.appendChild(h('div', { class:'fhe-actions' },
+        h('button', { type:'button', class:'btn secondary', id:'fhbiAgain', text:'Try again', onClick:() => { results.innerHTML = ''; form.hidden = false; } }),
+        h('button', { type:'button', class:'btn', id:'fhbiAdd', text:kind === 'side' ? 'Add it to your sides' : 'Add it to your recipes', onClick:() => {
+          const ings = a.ingredients.map(i => ({ name:i.name, qty:i.qty, unit:i.unit, section:section(i.name) }));
+          const pre = { name:name.value.trim() || a.name, kind:kind, ingredients:ings, steps:a.steps.map(s => ({ t:s.t, m:s.m })), link:url, cuisine:String(r.cuisine || '') };
+          if(kind === 'meal'){ const c = catOf(ings); if(c) pre.cat = c; }
+          close(); try{ FHRecipes.close(); }catch(e){}
+          FHBook.edit(null, pre); } })));
+      results.appendChild(h('p', { class:'fho-sub fhad-check', text:'Adding opens it in the recipe editor first, so you can change anything.' + (kind === 'side' ? ' Then it’s in Recipes › Sides, ready for ＋ Sides on any night.' : '') }));
+      if(r.model) results.appendChild(h('p', { class:'fho-sub fhad-model', id:'fhbiModel', text:'Written by ' + r.model + (r.usage ? ' · ' + r.usage.input + ' tokens in, ' + r.usage.output + ' out' : '') }));
+    };
+    go.addEventListener('click', async () => {
+      const text = ta.value.trim();
+      if(text.length < 3){ status.textContent = 'Describe a dish, or paste a recipe or a link.'; ta.focus(); return; }
+      const link = /https?:\/\//i.test(text);
+      go.disabled = true; status.textContent = link ? 'Reading that page… this takes about half a minute.' : 'Writing it out… this takes about half a minute.'; results.innerHTML = '';
+      let r = null;
+      try{ r = await FHSync.fn('send-reminders', { action:'bringin', kind:kind, text:text, names:names() }); }
+      catch(e){ r = { error:(e && e.message) || 'Couldn’t reach the server. Try again.' }; }
+      go.disabled = false;
+      if(!r || r.error || typeof r.ok !== 'boolean'){ status.textContent = (r && r.error) || 'Couldn’t bring that in. Try again.'; return; }
+      status.textContent = '';
+      const a = FHAdapt.clean(r);
+      a.name = String(r.name || '').trim().slice(0, 60) || 'New recipe';
+      show(a, r);
+    });
+    const m = h('div', { id:'fhbiSheet', class:'fhm-back fhad-back', onClick:e => { if(e.target === m) close(); } },
+      h('div', { class:'fhm-sheet fhad-sheet', role:'dialog', 'aria-label':'Bring in a recipe' },
+        h('div', { class:'fhm-head' }, h('div', { class:'fhm-title', text:'✨ Bring in a recipe' }), h('button', { type:'button', class:'fhm-x', 'aria-label':'Close', text:'✕', onClick:close })),
+        h('div', { class:'fhe-form fhad-body' },
+          h('p', { class:'fho-sub', text:'Describe a dish, paste a recipe, or paste a link. We’ll write it out for your household and show you before anything is saved.' }),
+          form, status, results,
+          h('p', { class:'fho-sub fhad-note', text:'Owner-only trial. What you type or paste is sent to Claude (Anthropic) to write it out; a link is opened by our server to read the recipe on that page. Nothing is searched for online.' }))));
+    document.body.appendChild(m);
+    setTimeout(() => { if(!o.text) fhFocusIfDesktop(ta); }, 50);
+  }
+  return { open };
 })();
 
 /* ==================== Startup (setup-aware) ==================== */
