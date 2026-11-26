@@ -1881,7 +1881,10 @@ body.fhr-lock{overflow:hidden;}
 .fhr-t{display:flex;align-items:center;gap:10px;background:#2B2236;color:#fff;border-radius:14px;padding:9px 12px;box-shadow:0 4px 16px rgba(0,0,0,.3);}
 .fhr-t.done{background:#B3261E;animation:fhrPulse 1s infinite;}
 .fhr-t-main{flex:1;min-width:0;display:flex;flex-direction:column;} .fhr-t-main small{opacity:.8;font-size:12.5px;}
-.fhr-t-x{font-family:inherit;font-size:16px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;flex:none;}
+.fhr-t-x,.fhr-t-min{font-family:inherit;font-size:16px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;flex:none;}
+#fhrDock.small{left:auto;align-items:flex-end;}
+.fhr-dock-pill{font-family:inherit;font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:20px;border:none;background:#2B2236;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;max-width:70vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
+
 @keyframes fhrPulse{50%{opacity:.78;}}
 .ob-mt{color:var(--muted);font-size:11.5px;font-weight:600;}
 .ob-mr{font-family:inherit;font-size:13px;border:none;background:none;padding:0 0 0 2px;cursor:pointer;}
@@ -3199,6 +3202,9 @@ button.fhah-row{ cursor:pointer; }
 .fhbi-text{ width:100%; box-sizing:border-box; margin-top:8px; }
 .fhbi-source{ margin:4px 0 10px; color:var(--muted); font-size:.88rem; font-style:italic; }
 .fhqa-recipe{ margin:4px 0 8px; }
+
+/* recipe timers bar: room under the recipe so the last steps scroll clear of it (ob_recipes.js renderDock) */
+.fhr-sheet{padding-bottom:calc(26px + var(--fhr-dock, 0px));}
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -5200,29 +5206,57 @@ const FHRecipes = (function(){
     const s = Math.max(0, Math.ceil(ms/1000)), m = Math.floor(s/60), r = s % 60;
     return (m >= 60 ? Math.floor(m/60) + ':' + String(m % 60).padStart(2, '0') : String(m)) + ':' + String(r).padStart(2, '0');
   }
+  /* the timers bar: ▾ shrinks it to a small pill (per device; Matthew 26 Nov 2026: "hides text and cannot be minimised"),
+     and an alarm always opens it. Drawn again only when what's in it changes, so a tap isn't lost to the twice-a-second tick. */
+  const SKEY = 'family-hub-timers-small';
+  let dockSig = '';
+  function dockSmall(){ try{ return fhRawGet(SKEY) === '1'; }catch(e){ return false; } }
+  function setDockSmall(on){ try{ fhRawSet(SKEY, on ? '1' : ''); }catch(e){} dockSig = ''; renderDock(); }
   function renderDock(){
     let dock = document.getElementById('fhrDock');
-    if(!timers.length){ if(dock) dock.remove(); return; }
-    if(!dock){ dock = document.createElement('div'); dock.id = 'fhrDock'; dock.setAttribute('role', 'status'); document.body.appendChild(dock); }
-    dock.innerHTML = '';
-    timers.forEach(t => {
-      const left = t.end - Date.now();
-      dock.appendChild(h('div', { class:'fhr-t' + (t.done ? ' done' : '') },
-        h('div', { class:'fhr-t-main' },
-          h('b', { text: t.done ? '⏰ ' + t.label + ' is done!' : t.label }),
-          h('small', { text: (t.meal ? t.meal + ' · ' : '') + (t.done ? 'tap ✕ to stop the alarm' : mmss(left) + ' left') })),
-        h('button', { type:'button', class:'fhr-t-x', 'aria-label':'Dismiss timer', text:'✕', onClick:() => stopTimer(t.id) })));
+    if(!timers.length){ if(dock) dock.remove(); dockSig = ''; document.documentElement.style.removeProperty('--fhr-dock'); return; }
+    if(!dock){ dock = document.createElement('div'); dock.id = 'fhrDock'; dock.setAttribute('role', 'status'); document.body.appendChild(dock); dockSig = ''; }
+    const small = dockSmall() && !timers.some(t => t.done);
+    const sig = (small ? 's' : 'f') + timers.map(t => t.id + (t.done ? 'd' : '')).join(',');
+    const next = timers.filter(t => !t.done).sort((a, b) => a.end - b.end)[0];
+    const pillText = () => '⏱ ' + mmss(next.end - Date.now()) + ' ' + next.label + (timers.length > 1 ? ' +' + (timers.length - 1) : '');
+    if(sig !== dockSig){
+      dockSig = sig; dock.innerHTML = ''; dock.classList.toggle('small', small);
+      if(small) dock.appendChild(h('button', { type:'button', class:'fhr-dock-pill', id:'fhrDockPill', 'aria-label':'Show timers', text:pillText(), onClick:() => setDockSmall(false) }));
+      else timers.forEach((t, i) => {
+        dock.appendChild(h('div', { class:'fhr-t' + (t.done ? ' done' : ''), 'data-t':String(t.id) },
+          h('div', { class:'fhr-t-main' },
+            h('b', { text: t.done ? '⏰ ' + t.label + ' is done!' : t.label }),
+            h('small', { class:'fhr-t-left' })),
+          i === 0 && !timers.some(x => x.done) ? h('button', { type:'button', class:'fhr-t-min', id:'fhrDockMin', 'aria-label':'Make the timers small', text:'▾', onClick:() => setDockSmall(true) }) : null,
+          h('button', { type:'button', class:'fhr-t-x', 'aria-label':'Dismiss timer', text:'✕', onClick:() => stopTimer(t.id) })));
+      });
+    }
+    if(small){ const p = dock.querySelector('.fhr-dock-pill'); if(p) p.textContent = pillText(); }
+    else timers.forEach(t => {
+      const el = dock.querySelector('[data-t="' + t.id + '"] .fhr-t-left');
+      if(el) el.textContent = (t.meal ? t.meal + ' · ' : '') + (t.done ? 'tap ✕ to stop the alarm' : mmss(t.end - Date.now()) + ' left');
     });
+    // room under the recipe so its last steps can scroll clear of the bar
+    document.documentElement.style.setProperty('--fhr-dock', (small ? 0 : Math.max(0, Math.round(innerHeight - dock.getBoundingClientRect().top) + 12)) + 'px');
   }
-  function updateButtons(){
-    document.querySelectorAll('[data-fhr-timer]').forEach(btn => {
-      const key = btn.getAttribute('data-fhr-timer');
-      const t = timers.find(x => x.meal + '|' + x.label === key);
-      const secs = parseInt(btn.getAttribute('data-secs'), 10);
-      if(t && !t.done){ btn.textContent = '⏱ ' + mmss(t.end - Date.now()) + ' · tap to cancel'; btn.classList.add('running'); }
-      else if(t && t.done){ btn.textContent = '⏰ Done! Tap to clear'; btn.classList.add('running'); }
-      else { btn.textContent = '▶ Start ' + fmtMin(Math.round(secs/60)) + ' timer'; btn.classList.remove('running'); }
-    });
+  function paintBtn(btn){
+    const key = btn.getAttribute('data-fhr-timer');
+    const t = timers.find(x => x.meal + '|' + x.label === key);
+    const secs = parseInt(btn.getAttribute('data-secs'), 10);
+    if(t && !t.done){ btn.textContent = '⏱ ' + mmss(t.end - Date.now()) + ' · tap to cancel'; btn.classList.add('running'); }
+    else if(t && t.done){ btn.textContent = '⏰ Done! Tap to clear'; btn.classList.add('running'); }
+    else { btn.textContent = '▶ Start ' + fmtMin(Math.round(secs/60)) + ' timer'; btn.classList.remove('running'); }
+  }
+  function updateButtons(){ document.querySelectorAll('[data-fhr-timer]').forEach(paintBtn); }
+  /* a step's timer button, labelled as it's made: one drawn before the viewer was on the page used to stay a blank pill until a timer ticked */
+  function timerBtn(label, secs, mealName){
+    const key = mealName + '|' + label;
+    const btn = h('button', { type:'button', class:'fhr-tbtn', 'data-fhr-timer':key, 'data-secs':secs, onClick:() => {
+      const ex = timers.find(x => x.meal + '|' + x.label === key);
+      if(ex) stopTimer(ex.id); else startTimer(label, secs, mealName);
+    } });
+    paintBtn(btn); return btn;
   }
   async function requestWake(){
     try{ if('wakeLock' in navigator && !wake){ wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } }catch(e){}
@@ -5285,13 +5319,7 @@ const FHRecipes = (function(){
       }else{
         r.long.forEach((s, i) => {
           const li = h('li', { class:'fhr-step' }, h('div', { class:'fhr-sh', text:say('h' + i, s.h) }), h('div', { class:'fhr-st', text:say('l' + i, s.t) }));
-          if(s.s){
-            const key = meal.name + '|' + (s.l || s.h);
-            li.appendChild(h('button', { type:'button', class:'fhr-tbtn', 'data-fhr-timer':key, 'data-secs':s.s, text:'', onClick:() => {
-              const ex = timers.find(x => x.meal + '|' + x.label === key);
-              if(ex) stopTimer(ex.id); else startTimer(s.l || s.h, s.s, meal.name);
-            } }));
-          }
+          if(s.s) li.appendChild(timerBtn(s.l || s.h, s.s, meal.name));
           steps.appendChild(li);
         });
       }
@@ -5329,13 +5357,7 @@ const FHRecipes = (function(){
       FHAddOns.ownSides(meal, date).forEach(l => { if(l._side !== side){ side = l._side; ingList.appendChild(h('li', { class:'fha-group', text:side })); } addLine(l); });
     };
     const addHosts = { pick:h('div', { class:'fha-host' }), top:h('div', { class:'fha-host' }), bottom:h('div', { class:'fha-host' }) };
-    const timerFor = (label, secs) => {
-      const key = meal.name + '|' + label;
-      return h('button', { type:'button', class:'fhr-tbtn', 'data-fhr-timer':key, 'data-secs':secs, text:'', onClick:() => {
-        const ex = timers.find(x => x.meal + '|' + x.label === key);
-        if(ex) stopTimer(ex.id); else startTimer(label, secs, meal.name);
-      } });
-    };
+    const timerFor = (label, secs) => timerBtn(label, secs, meal.name);
     const renderAddOns = () => { renderIngs(); renderTags(); if(!meal.isSide) FHAddOns.paint(addHosts, meal, date, !locked(), renderAddOns, timerFor); updateButtons(); };
     renderIngs(); renderTags();
     if(!r.own) left.appendChild(h('div', { class:'fhr-chips' },
@@ -19844,12 +19866,19 @@ const FHQuick = (function(){
           h('p', { class:'fho-sub fhqa-note', text:'Owner-only trial. What you type and any picture you add, with your family’s first names, are sent to Claude (Anthropic) to sort it.' +
             (mic ? ' Speaking uses your phone’s own speech-to-text (Google or Apple).' : '') }))));
     document.body.appendChild(m); setTimeout(() => fhFocusIfDesktop(ta), 50);
+    // a link in the box, shared, pasted or typed: offer Bring in (a recipe page isn't plans to sort)
+    if(typeof FHBring !== 'undefined'){
+      const rb = h('button', { type:'button', class:'btn secondary fhqa-recipe', id:'fhqaRecipe', text:'🍳 Is it a recipe? Bring it in', hidden:true,
+        onClick:() => { const t = ta.value.trim(); close(); FHBring.open({ text:t }); } });
+      status.after(rb);
+      const showRb = () => { rb.hidden = !/https?:\/\/\S/i.test(ta.value); };
+      ta.addEventListener('input', showRb); rb.showRb = showRb;
+    }
     // shared from another app: the words in the box, the picture shrunk and shown
     if(pre && (pre.text || pre.blob)){
       if(pre.text) ta.value = pre.text;
       status.textContent = 'Shared from another app. Add a few words if you like, then Sort it out.';
-      if(pre.text && /https?:\/\//i.test(pre.text) && typeof FHBring !== 'undefined') status.after(h('button', { type:'button', class:'btn secondary fhqa-recipe', id:'fhqaRecipe', text:'🍳 Is it a recipe? Bring it in',
-        onClick:() => { close(); FHBring.open({ text:pre.text }); } }));
+      const rb = document.getElementById('fhqaRecipe'); if(rb && rb.showRb) rb.showRb();
       if(pre.blob) shrink(pre.blob).then(p => { photo = p; showThumb(); }).catch(() => { status.textContent = 'The shared picture couldn’t be opened. Try a screenshot instead.'; });
     }
   }
