@@ -3217,6 +3217,52 @@ button.fhah-row{ cursor:pointer; }
 .fhai-foot a{ color:inherit; text-decoration:underline; }
 .fhai-report{ font-family:inherit; font-size:12.5px; border:none; background:none; color:var(--muted, #777); text-decoration:underline; cursor:pointer; padding:4px 0; }
 
+/* Bao pet (ob_pet.js): the child's own pet on Today and its page; the grown-ups' card in Settings */
+.fhpet-card .fhd-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.fhpet-chip{ font-size:12.5px; font-weight:700; color:#7a4a10; background:#fbefd9; border-radius:999px; padding:3px 10px; white-space:nowrap; }
+.fhpet-stage{ display:flex; align-items:flex-end; justify-content:center; width:100%; border:0; border-radius:18px; padding:0; margin:8px 0 4px; cursor:pointer;
+  background:linear-gradient(#fdf8ee, #f3ead8); min-height:150px; }
+.fhpet-stage.fhpet-night{ background:linear-gradient(#2e2a4a, #45406a); }
+.fhpet-art{ line-height:0; display:inline-block; }
+.fhpet-art svg{ display:block; max-width:100%; height:auto; }
+.fhpet-wiggle{ animation:fhpetWiggle .5s ease-in-out; }
+@keyframes fhpetWiggle{ 0%,100%{ transform:rotate(0); } 25%{ transform:rotate(-4deg); } 75%{ transform:rotate(4deg); } }
+.fhpet-waking .fhpet-art{ animation:fhpetStretch 2.8s ease-in-out; }
+@keyframes fhpetStretch{ 0%{ transform:scale(1, .92); } 35%{ transform:scale(.96, 1.08); } 70%{ transform:scale(1.02, .98); } 100%{ transform:scale(1); } }
+@media (prefers-reduced-motion: reduce){ .fhpet-wiggle, .fhpet-waking .fhpet-art{ animation:none; } }
+.fhpet-status{ margin:4px 0; text-align:center; font-weight:600; color:var(--ink); }
+.fhpet-bar{ height:10px; border-radius:999px; background:var(--panel-line); overflow:hidden; margin-top:6px; }
+.fhpet-bar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, #f2c552, #e2a052); }
+.fhpet-prog{ margin:4px 0 8px; font-size:13px; color:var(--muted); }
+.fhpet-name{ display:flex; flex-direction:column; gap:6px; margin:8px 0; }
+.fhpet-name label{ font-weight:700; }
+.fhpet-name-row{ display:flex; gap:8px; }
+.fhpet-name-row input{ flex:1 1 auto; min-width:0; min-height:44px; box-sizing:border-box; border:1.5px solid var(--panel-line); border-radius:12px; padding:0 12px; font:inherit; font-size:16px; background:var(--white); color:var(--ink); }
+.fhpet-go{ min-height:44px; padding:0 18px; border:0; border-radius:12px; background:var(--accent); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+.fhpet-page{ max-width:560px; margin:0 auto; }
+.fhpet-pagehead{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.fhpet-link{ border:0; background:none; color:var(--accent-dark); font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; min-height:36px; }
+.fhpet-page .fhpet-stage{ min-height:250px; }
+.fhpet-steps{ margin-top:14px; background:var(--panel); border:1px solid var(--panel-line); border-radius:16px; padding:12px 14px; }
+.fhpet-steps h3{ margin:0 0 6px; font-size:16px; }
+.fhpet-step{ display:flex; align-items:flex-start; gap:10px; padding:6px 0; }
+.fhpet-step > span:last-child{ display:flex; flex-direction:column; }
+.fhpet-step small{ color:var(--muted); }
+.fhpet-tick{ flex:none; width:24px; height:24px; border-radius:50%; border:2px solid var(--panel-line); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+.fhpet-step.done .fhpet-tick{ background:var(--good); border-color:var(--good); color:#fff; }
+.fhpet-foot{ margin-top:12px; }
+.fhpet-kid{ border-top:1px solid var(--panel-line); padding:10px 0; display:flex; flex-direction:column; gap:8px; }
+.fhpet-kidrow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.fhpet-kidname{ display:flex; flex-direction:column; }
+.fhpet-kidname small{ color:var(--muted); }
+.fhpet-switch{ flex:none; width:52px; height:32px; border:0; border-radius:999px; background:var(--panel-line); padding:3px; display:flex; justify-content:flex-start; cursor:pointer; }
+.fhpet-switch span{ width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+.fhpet-switch.on{ background:var(--good); justify-content:flex-end; }
+.fhpet-switch:disabled{ opacity:.5; cursor:default; }
+.fhpet-sleep{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; color:var(--muted); font-size:14px; }
+.fhpet-sleep > span:first-child{ flex-basis:100%; }
+.fhpet-sel{ min-height:40px; border:1.5px solid var(--panel-line); border-radius:10px; padding:0 6px; font:inherit; background:var(--white); color:var(--ink); }
+
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
 /* Runs in <head> so the right colours are in place before the first paint. */
@@ -3293,6 +3339,7 @@ var FHTheme = (function(){
     <button class="nav-item" data-page="chores"><span class="nav-icon">🧹</span><span class="nav-label">Chores</span></button>
     <button class="nav-item" data-page="routines"><span class="nav-icon">🌅</span><span class="nav-label">Routines</span></button>
     <button class="nav-item" data-page="rewards"><span class="nav-icon">🏆</span><span class="nav-label">Rewards</span></button>
+    <button class="nav-item" data-page="pet"><span class="nav-icon">🥟</span><span class="nav-label">Your pet</span></button>
     <div class="nav-label-grp">Home</div>
     <button class="nav-item" data-page="tasks"><span class="nav-icon">☑️</span><span class="nav-label">Tasks</span></button>
     <button class="nav-item" data-page="occasions"><span class="nav-icon">🎂</span><span class="nav-label">Occasions</span></button>
@@ -3643,6 +3690,10 @@ var FHTheme = (function(){
 
     <section class="page" id="page-ahead">
       <div class="app"><div id="aheadContent"></div></div>
+    </section>
+
+    <section class="page" id="page-pet">
+      <div class="app"><div id="petContent"></div></div>
     </section>
 
     <section class="page" id="page-paperwork">
@@ -12154,6 +12205,8 @@ const __ready = init();
     prizeProgress: fhrwProgress,
     prizeHint: fhrwHint,
     starsBetween: fhrwStars,
+    starsAvg: fhrwAvg,
+    starsMax: fhrwMax,
     canBoost: fhrwCanBoost,
     rewardWord: fhrwW,
     boost: fhrwBoost,
@@ -14135,6 +14188,8 @@ function fhDashFaces(date, nodes, d){
     if(FHLayout.isOn('today', 'routines')) F.routines = FHRoutines.todayFace(date, only);
     if(FHLayout.isOn('today', 'habits')) F.habits = FHRoutines.habitsFace(date, only);
   }
+  // the child's own pet (ob_pet.js), on their device only
+  if(today && typeof FHPet !== 'undefined' && FHLayout.isOn('today', 'pet')){ const pf = FHPet.todayFace(date); if(pf) F.pet = pf; }
   if(nodes.tomorrow){ const t = nodes.tomorrow.querySelector('.fhd-next-m b'); F.tomorrow = { node:nodes.tomorrow, title:nodes.tomorrow.querySelector('.fhd-title').textContent, value:t ? t.textContent : '', sub:'' }; }
   return F;
 }
@@ -15324,6 +15379,351 @@ const FHRoutines = (function(){
     events, pushItems, kitLines, render, editor, breakEditor, kitEditor, startAt };
 })();
 
+/* ==================== BAO PET (specs/bao-pet.md) ====================
+   A pet each child raises from the rewards they already earn. Stage 1: the bao, how it grows, sleep and wake, a Today
+   block and a page on the child's own device, and the grown-ups' card in Settings › Your household. The purse, shop,
+   games, kitchen display, seasons and other pets come in later stages.
+   Synced chore-chart-pets-v1: { settings:{ sleep:{ pid:{ bed, wake } } }, kids:{ pid:{ on, out, pets:{ id:{ kind, col,
+   name, from, day, steps:{ hatch, baby, toddler, s1..s6, wk }, outs:[[from, to|'']] } } } } }.
+   Growth reads ChoreApp.starsBetween (the same totals as prizes); nothing is spent. Steps are stored once reached and
+   never taken back. The pet sends no notifications. */
+
+/* the bao drawn from the reward pictures' squishy (fhBaoSvg), as a pet: stages, moods, nappy and dummy, the steamer */
+function fhPetBaoSvg(o){
+  o = o || {};
+  const COLS = {
+    classic: ['#fffaf0', '#f3e0bd', '#6b4423', '#e4c995', '#f6a5a5'], golden: ['#fff0b8', '#f2c552', '#7a5212', '#e5b23c', '#f49f78'],
+    blue: ['#e3f2ff', '#a7d0f4', '#1f4a73', '#8dbfeb', '#efa6c2'], pink: ['#ffe6ee', '#f4adc3', '#7a2945', '#ec97b0', '#ee8ea8'],
+    purple: ['#f1e8fc', '#c6aeea', '#4a2c74', '#b097df', '#f0a2c6'], green: ['#e8f5da', '#b5d996', '#2f5a1e', '#95c674', '#e8a68a'],
+    galaxy: ['#74747e', '#26262c', '#111114', '#55555d', '#e4899a'] };
+  const stage = o.stage || 'baby', grow = Math.max(1, Math.min(6, +o.grow || 1)), mood = o.mood || 'happy';
+  const c = COLS[o.col] || COLS.golden, L = c[2];
+  const shell = stage === 'egg' || stage === 'hatch', baby = stage === 'baby', little = stage === 'hatch' || baby;
+  const wear = {}; if(!shell) String(o.wear || '').split(',').forEach(function(w){ if(w.trim()) wear[w.trim()] = 1; });
+  const gid = 'fhpetg' + (fhPetBaoSvg.n = (fhPetBaoSvg.n || 0) + 1);
+  let s = baby ? 0.95 : 0.9; if(stage === 'toddler') s = 1.05; if(stage === 'grown') s = 1.05 + grow * 0.0833;
+  let cx = 60, ty;
+  if(stage === 'hatch') ty = 90 - 54 * s; else if(baby){ cx = 46; ty = 106 - 54 * s; } else if(stage === 'egg') ty = 92 - 54 * s; else ty = 106 - 54 * s;
+  const tx = cx - 32 * s, by = ty + 54 * s, sq = mood === 'pat' ? [1.1, 0.88] : [1, 1];
+  const bob = { pat:['0 0;0 -8;0 0', '0.45s'], yum:['0 0;0 -3;0 0', '0.5s'], yawn:['0 0;0 -3.5;0 -3.5;0 0', '1.8s'], sleepy:['0 0;0 0.8;0 0', '3.6s'], peckish:['0 0;0 0.8;0 0', '3.6s'] }[mood] || ['0 0;0 -1.6;0 0', '2.4s'];
+  const erx = little ? 2.8 : 2.2, ery = little ? 3.4 : 2.7;
+  const limbs = stage === 'toddler' || stage === 'grown';
+  const dummy = little && (mood === 'happy' || mood === 'sleepy' || mood === 'peckish');
+  const anim = function(vals, dur, extra){ return '<animateTransform attributeName="transform" type="translate" values="' + vals + '" dur="' + dur + '" repeatCount="indefinite"' + (extra || '') + '/>'; };
+  const steam = function(x, y, b){ return '<path d="M' + x + ' ' + y + 'c-4-4 4-8 0-12s4-8 0-12"><animate attributeName="opacity" values="0;0.95;0" dur="2.6s" begin="' + b + 's" repeatCount="indefinite"/>'
+    + '<animateTransform attributeName="transform" type="translate" values="0 6;0 -7" dur="2.6s" begin="' + b + 's" repeatCount="indefinite"/></path>'; };
+  const star = function(x, y, r){ return '<path d="M' + x + ' ' + (y - r) + 'Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + 'Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + 'z" fill="#fff"/>'; };
+  const lid = '<rect x="51" y="51" width="18" height="9" rx="4.5" fill="#d9a85a" stroke="#6b4423" stroke-width="2"/>'
+    + '<path d="M13 84 A47 8 0 0 0 107 84 L105 73 C102 62 86 58 60 58 C34 58 18 62 15 73 Z" fill="#e8c27c" stroke="#6b4423" stroke-width="2.2" stroke-linejoin="round"/>'
+    + '<path d="M14.2 77.5 A46 7.5 0 0 0 105.8 77.5" fill="none" stroke="#c99a4c" stroke-width="1.6"/>';
+  const back = '<ellipse cx="60" cy="108.5" rx="46" ry="4" fill="#2b2236" opacity="0.1"/><ellipse cx="60" cy="84" rx="44" ry="8" fill="#9a6a2e"/><ellipse cx="60" cy="85.5" rx="39" ry="5.6" fill="#7a5020"/>'
+    + '<path d="M16 84 A44 8 0 0 1 104 84" fill="none" stroke="#6b4423" stroke-width="2.2"/>';
+  const front = '<path d="M16 84 A44 8 0 0 0 104 84 L104 101 A44 9 0 0 1 16 101 Z" fill="#e3b96f" stroke="#6b4423" stroke-width="2.2" stroke-linejoin="round"/>'
+    + '<g stroke="#c99a4c" stroke-width="1.3" stroke-linecap="round"><path d="M28 90.5V106"/><path d="M44 92.5V108.4"/><path d="M60 93V109"/><path d="M76 92.5V108.4"/><path d="M92 90.5V106"/></g>'
+    + '<path d="M16.4 92.5 A44 8.5 0 0 0 103.6 92.5" fill="none" stroke="#b8873f" stroke-width="1.8"/>';
+  const label = { egg:'in its steamer', hatch:'hatching', baby:'a baby', toddler:'a toddler', grown:grow >= 6 ? 'a Big bao' : 'size ' + grow }[stage];
+  let out = '<svg viewBox="0 0 120 120" width="' + (o.size || 200) + '" height="' + (o.size || 200) + '" role="img" aria-label="' + (o.name ? fhPetEsc(o.name) + ', ' : '') + 'a bao bun pet, ' + label + '">'
+    + '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>';
+  if(!shell) out += '<ellipse cx="' + cx + '" cy="107" rx="' + Math.round(27 * s) + '" ry="3.5" fill="#2b2236" opacity="0.09"/>';
+  if(baby) out += '<g transform="translate(50 30) scale(0.62)">' + back + front + '<path d="M30 84 C40 76 58 74 74 80 C66 86 44 88 30 84 Z" fill="#a7d0f4" stroke="#1f4a73" stroke-width="1.6"/></g>';
+  if(shell) out += back;
+  if(stage === 'egg' || baby) out += '<g' + (baby ? ' transform="translate(48 30) scale(0.6)"' : '') + ' fill="none" stroke="#c3cfdc" stroke-width="3.6" stroke-linecap="round">' + steam(44, 50, 0) + steam(60, 46, 0.9) + steam(76, 50, 1.7) + '</g>';
+  if(stage !== 'egg'){
+    out += '<g>' + anim(bob[0], bob[1]) + '<g transform="translate(' + cx + ' ' + by + ') scale(' + sq[0] + ' ' + sq[1] + ') translate(' + (-cx) + ' ' + (-by) + ') translate(' + tx + ' ' + ty + ') scale(' + s + ')">';
+    out += '<g fill="' + c[1] + '" stroke="' + L + '" stroke-width="2">';
+    if(limbs) out += mood === 'yawn'
+      ? '<ellipse cx="9" cy="33" rx="3.6" ry="5.4" transform="rotate(-30 9 33)"/><ellipse cx="55" cy="33" rx="3.6" ry="5.4" transform="rotate(30 55 33)"/>'
+      : '<ellipse cx="7" cy="44" rx="3.6" ry="4.8" transform="rotate(24 7 44)"/><ellipse cx="57" cy="44" rx="3.6" ry="4.8" transform="rotate(-24 57 44)"/>';
+    if(limbs || baby) out += '<ellipse cx="22.5" cy="54.5" rx="' + (baby ? 4.4 : 5.6) + '" ry="3.4"/><ellipse cx="41.5" cy="54.5" rx="' + (baby ? 4.4 : 5.6) + '" ry="3.4"/>';
+    out += '</g>';
+    const bun = 'M6.5 46.5C6.5 31 18 21.5 32 21.5S57.5 31 57.5 46.5c0 5.5-6 7.5-25.5 7.5S6.5 52 6.5 46.5z';
+    out += '<path d="' + bun + '" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>'
+      + '<path d="M27.6 25c0-4 1.8-7.4 4.4-7.4s4.4 3.4 4.4 7.4z" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>'
+      + '<path d="' + bun + '" fill="url(#' + gid + ')" stroke="' + L + '" stroke-width="2.4" stroke-linejoin="round"/>'
+      + '<path d="M27.4 25.5c0-4.3 2-7.9 4.6-7.9s4.6 3.6 4.6 7.9z" fill="' + c[0] + '"/>'
+      + '<path d="M26.6 22.6c.6-3.2 2.8-5 5.4-5s4.8 1.8 5.4 5" fill="none" stroke="' + L + '" stroke-width="2.2" stroke-linecap="round"/>'
+      + '<path d="M30 23.5c-3 2-7 3.2-12 3.6M30.8 24c-1.8 2.4-3.8 3.9-6.3 5.1M32 24.2v5.6M33.2 24c1.8 2.4 3.8 3.9 6.3 5.1M34 23.5c3 2 7 3.2 12 3.6" fill="none" stroke="' + c[3] + '" stroke-width="1.7" stroke-linecap="round"/>'
+      + '<ellipse cx="16.5" cy="33" rx="5" ry="2.4" transform="rotate(-24 16.5 33)" fill="#fff" opacity=".5"/><circle cx="13.6" cy="37" r="1.2" fill="#fff" opacity=".55"/>'
+      + star(47, 31, 2.4) + star(51.5, 44, 1.8) + star(14.5, 45, 1.6)
+      + '<g fill="#fff" opacity=".85"><circle cx="13" cy="41" r=".7"/><circle cx="45" cy="28" r=".7"/><circle cx="51" cy="47" r=".7"/><circle cx="21" cy="51" r=".7"/></g>';
+    if(mood === 'happy' || mood === 'peckish'){
+      const blink = ery + ';' + ery + ';0.3;' + ery;
+      out += [25, 39].map(function(x){ return '<ellipse cx="' + x + '" cy="39.5" rx="' + erx + '" ry="' + ery + '" fill="' + L + '"><animate attributeName="ry" values="' + blink + '" keyTimes="0;0.9;0.95;1" dur="4.2s" repeatCount="indefinite"/></ellipse>'
+        + '<circle cx="' + (x + 0.9) + '" cy="38.4" r="' + (little ? 1.1 : 0.8) + '" fill="#fff"/>'; }).join('');
+    } else if(mood === 'pat' || mood === 'yum'){
+      out += '<g fill="none" stroke="' + L + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22.4 41 l2.6 -2.8 l2.6 2.8"/><path d="M36.4 41 l2.6 -2.8 l2.6 2.8"/></g>';
+    } else {
+      out += '<g fill="none" stroke="' + L + '" stroke-width="1.9" stroke-linecap="round"><path d="M22.2 39.6 q2.8 2.2 5.6 0"/><path d="M36.2 39.6 q2.8 2.2 5.6 0"/></g>';
+    }
+    if(mood === 'sleepy') out += '<g font-family="Quicksand, sans-serif" font-weight="700" fill="#8a80a0"><text x="49" y="20" font-size="7">z<animate attributeName="opacity" values="0;1;0" dur="2.4s" repeatCount="indefinite"/></text>'
+      + '<text x="54" y="13" font-size="5">z<animate attributeName="opacity" values="0;1;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></text></g>';
+    if(!dummy){
+      if(mood === 'yawn') out += '<ellipse cx="32" cy="45.6" rx="2.8" ry="3.6" fill="' + L + '"/><ellipse cx="32" cy="47.6" rx="1.6" ry="1" fill="#ff8597"/>';
+      else if(mood === 'peckish') out += '<path d="M28.4 45.6 q1.2 -1.4 2.4 0 t2.4 0 t2.4 0" fill="none" stroke="' + L + '" stroke-width="1.6" stroke-linecap="round"/>';
+      else if(mood === 'sleepy') out += '<ellipse cx="32" cy="45.4" rx="1.7" ry="1.4" fill="' + L + '"/>';
+      else out += '<path d="M28.6 43.4h6.8c-.6 3.4-2 5-3.4 5s-2.8-1.6-3.4-5z" fill="' + L + '"/><ellipse cx="32" cy="46.8" rx="1.8" ry="1.1" fill="#ff8597"/>';
+    }
+    out += '<g fill="' + c[4] + '" opacity=".8"><ellipse cx="19" cy="44.5" rx="3.8" ry="2.1"/><ellipse cx="45" cy="44.5" rx="3.8" ry="2.1"/></g>';
+    if(little) out += '<path d="M12.6 49.2 C22 52 42 52 51.4 49.2 C51.6 52.6 49.6 54.8 45 55.6 C38 56.8 26 56.8 19 55.6 C14.4 54.8 12.4 52.6 12.6 49.2 Z" fill="#fff" stroke="' + L + '" stroke-width="1.6" stroke-linejoin="round"/>'
+      + '<rect x="14.6" y="49.8" width="5" height="3" rx="1.2" fill="#a7d0f4"/><rect x="44.4" y="49.8" width="5" height="3" rx="1.2" fill="#a7d0f4"/>';
+    if(dummy) out += '<path d="M29.2 48 a2.8 2.8 0 1 0 5.6 0" fill="none" stroke="#5b8fd9" stroke-width="1.5" stroke-linecap="round"/>'
+      + '<ellipse cx="32" cy="45.2" rx="5.4" ry="3.3" fill="#a7d0f4" stroke="' + L + '" stroke-width="1.4"/><circle cx="32" cy="45.2" r="1.5" fill="#fff"/>';
+    if(wear.chef) out += '<g fill="#fff" stroke="' + L + '" stroke-width="1.8" stroke-linejoin="round"><path d="M24.5 13.5 C19 13 18.5 5 24.5 5.5 C25 0 32 -1.5 33.5 3 C36 -1 43.5 1 41.5 6 C46.5 6.5 45.5 13.5 39.5 13.5 Z"/><rect x="23.5" y="12.5" width="17" height="7" rx="2"/></g>';
+    out += '</g></g>';
+  }
+  if(shell) out += front;
+  if(stage === 'egg') out += '<g><animateTransform attributeName="transform" type="rotate" values="0 60 86;-2.5 60 86;2.5 60 86;0 60 86;0 60 86" keyTimes="0;0.12;0.24;0.36;1" dur="2.8s" repeatCount="indefinite"/>' + lid + '</g>';
+  if(stage === 'hatch') out += '<g transform="translate(6 -31) rotate(-16 107 84)">' + anim('0 0;0 -2;0 0', '1.1s', ' additive="sum"') + lid + '</g>'
+    + '<g stroke="#f2c552" stroke-width="2.4" stroke-linecap="round"><path d="M10 74 l-6 -3"/><path d="M12 66 l-5 -6"/><path d="M110 82 l6 -1"/></g>';
+  return out + '</svg>';
+}
+function fhPetEsc(s){ return String(s || '').replace(/[&<>"]/g, function(ch){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]; }); }
+
+const FHPet = (function(){
+  const KEY = 'chore-chart-pets-v1', WOKE = 'family-hub-pet-woke';
+  const SLEEP = { bed:'19:30', wake:'07:00' };
+  const TIMES_BED = ['18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
+  const TIMES_WAKE = ['06:30', '07:00', '07:30', '08:00', '08:30'];
+
+  function data(){
+    let v = null; try{ v = JSON.parse(fhRawGet(KEY) || 'null'); }catch(e){}
+    v = v && typeof v === 'object' ? v : {};
+    v.settings = v.settings && typeof v.settings === 'object' ? v.settings : {};
+    v.settings.sleep = v.settings.sleep && typeof v.settings.sleep === 'object' ? v.settings.sleep : {};
+    v.kids = v.kids && typeof v.kids === 'object' ? v.kids : {};
+    return v;
+  }
+  function save(v){ fhSaveJSON(KEY, v); }
+  const pad = function(n){ return (n < 10 ? '0' : '') + n; };
+  function iso(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function day(s){ const p = String(s || '').split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function today(now){ now = now || new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  function monday(d){ return addDays(d, -((d.getDay() + 6) % 7)); }
+  function on(){ try{ return Feature.on('chores') && Feature.on('rewards'); }catch(e){ return false; } }
+  function locked(){ try{ return FHLock.isLocked(); }catch(e){ return false; } }
+  function people(){ try{ return ChoreApp.people(); }catch(e){ try{ return JSON.parse(fhRawGet('chore-chart-people-v1') || '[]'); }catch(x){ return []; } } }
+  function person(id){ return people().find(function(p){ return p.id === id; }) || null; }
+  function children(){ return people().filter(function(p){ return p.role === 'child' && p.name; }); }
+  function earned(pid, a, b){ if(b < a) return 0; try{ return +ChoreApp.starsBetween(pid, a, b) || 0; }catch(e){ return 0; } }
+
+  /* a day's worth: their average a day over the last 4 weeks, or for someone new what their own jobs, routines and
+     habits offer in a day; never less than 3. Worked out once, when the pet arrives. */
+  function dayWorth(pid){
+    let n = null; try{ n = ChoreApp.starsAvg(pid, 'day'); }catch(e){}
+    if(!(n > 0)){ try{ const t = today(); n = ChoreApp.starsMax(pid, t, t); }catch(e){} }
+    return Math.max(3, Math.round(+n || 0));
+  }
+  /* rewards earned while this pet was out, between a and b (dates, inclusive) */
+  function earnedFor(pid, pet, a, b){
+    const outs = Array.isArray(pet.outs) && pet.outs.length ? pet.outs : [[pet.from, '']];
+    return outs.reduce(function(sum, r){
+      let x = day(r[0]), y = r[1] ? day(r[1]) : b;
+      if(x < a) x = a; if(y > b) y = b;
+      return sum + earned(pid, x, y);
+    }, 0);
+  }
+  function petOf(v, pid){ const k = v.kids[pid]; return k && k.on && k.pets ? k.pets[k.out] || null : null; }
+  function sizeOf(st){ let n = 0; for(let i = 1; i <= 6; i++) if(st['s' + i]) n = i; return n; }
+  /* brings the stored steps up to date (each one dated when first reached, never taken back); true if anything changed */
+  function grow(pid, pet, now){
+    const t = today(now), st = pet.steps = pet.steps || {}, d = pet.day || 3;
+    let changed = false;
+    const mark = function(k, when){ if(!st[k]){ st[k] = when || iso(t); changed = true; } };
+    const total = earnedFor(pid, pet, day(pet.from), t);
+    if(total >= Math.ceil(d * 2 / 3)) mark('hatch');
+    if(total >= d){ mark('hatch'); mark('baby'); }
+    if(total >= d * 8){ mark('hatch'); mark('baby'); mark('toddler'); }
+    if(st.toddler){
+      // each Monday-to-Sunday week after the one it became a toddler in: half a week's worth grows a size
+      const good = Math.ceil(d * 3.5);
+      let mon = st.wk ? addDays(day(st.wk), 7) : addDays(monday(day(st.toddler)), 7);
+      while(sizeOf(st) < 6 && addDays(mon, 6) < t){
+        if(earnedFor(pid, pet, mon, addDays(mon, 6)) >= good) mark('s' + (sizeOf(st) + 1), iso(addDays(mon, 6)));
+        st.wk = iso(mon); changed = true; mon = addDays(mon, 7);
+      }
+    }
+    return changed;
+  }
+  function stageOf(st){ const n = sizeOf(st); return n ? 'grown' : st.toddler ? 'toddler' : st.baby ? 'baby' : st.hatch ? 'hatch' : 'egg'; }
+  function sleepOf(v, pid){ return Object.assign({}, SLEEP, v.settings.sleep[pid] || {}); }
+  function mins(hhmm){ const p = String(hhmm || '').split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+  function asleepAt(sl, now){
+    now = now || new Date();
+    const m = now.getHours() * 60 + now.getMinutes(), b = mins(sl.bed), w = mins(sl.wake);
+    return b > w ? (m >= b || m < w) : (m >= b && m < w);
+  }
+
+  /* everything a screen needs about a child's pet, or null */
+  function view(pid, now){
+    if(!on()) return null;
+    const v = data(), pet = petOf(v, pid); if(!pet) return null;
+    if(grow(pid, pet, now)) save(v);
+    now = now || new Date();
+    const t = today(now), st = pet.steps, d = pet.day || 3, stage = stageOf(st), size = sizeOf(st);
+    const name = pet.name || '', nm = name || 'Your bao', sl = sleepOf(v, pid), asleep = asleepAt(sl, now);
+    const total = earnedFor(pid, pet, day(pet.from), t), good = Math.ceil(d * 3.5);
+    const week = earnedFor(pid, pet, monday(t), t);
+    const quiet = stage !== 'egg' && day(pet.from) <= addDays(t, -3) && earnedFor(pid, pet, addDays(t, -3), t) === 0;
+    let progress, bar;
+    if(stage === 'egg' || stage === 'hatch'){ progress = Math.min(total, d) + ' of ' + d + ' rewards to hatch'; bar = total / d; }
+    else if(stage === 'baby'){ progress = Math.min(total - d, d * 7) + ' of ' + (d * 7) + ' rewards to toddler'; bar = (total - d) / (d * 7); }
+    else if(size < 6){ progress = Math.min(week, good) + ' of ' + good + ' rewards this week to grow'; bar = week / good; }
+    else { progress = week + ' rewards this week'; bar = 1; }
+    const stageName = { egg:'In the steamer', hatch:'Hatching', baby:'Baby', toddler:'Toddler', grown:size >= 6 ? 'Big bao' : 'Size ' + size }[stage];
+    let status;
+    if(asleep) status = (name || 'Your bao') + ' is asleep in its steamer. Back at ' + sl.wake + '.';
+    else if(stage === 'egg') status = 'Something’s warm in the steamer. Every job you do helps it hatch.';
+    else if(stage === 'hatch') status = 'The lid’s lifting! Nearly there.';
+    else if(quiet) status = nm + ' is a bit sleepy. A reward will wake it up.';
+    else if(stage === 'baby') status = nm + ' is a baby. Every job you do helps it grow.';
+    else if(stage === 'toddler') status = nm + ' is a toddler. A good week makes it grow.';
+    else status = size >= 6 ? nm + ' is a Big bao!' : nm + ' is size ' + size + ' of 6. A good week makes it grow.';
+    return { pid:pid, pet:pet, name:name, title:stage === 'egg' || stage === 'hatch' ? 'Your bao' : nm, stage:stage, size:size, stageName:stageName,
+      status:status, progress:progress, bar:Math.max(0, Math.min(1, bar || 0)), asleep:asleep, sleep:sl, quiet:quiet, day:d, total:total, week:week, good:good,
+      needsName:!name && (stage === 'baby' || stage === 'toddler' || stage === 'grown'),
+      mood:asleep || quiet ? 'sleepy' : 'happy', wear:size >= 6 ? 'chef' : '', col:pet.col };
+  }
+  /* this device's child, when it's a child's own device with a pet */
+  function mine(){ if(!fhChildDevice()) return ''; let pid = ''; try{ pid = FHPush.prefs().person; }catch(e){} return pid && view(pid) ? pid : ''; }
+  function art(vw, mood, size){ return fhPetBaoSvg({ stage:vw.stage, grow:vw.size, col:vw.col, mood:mood || vw.mood, wear:vw.wear, name:vw.name, size:size }); }
+
+  /* the wake-up: the first time this child opens the app after their wake time, once a day, on their own device */
+  function wakeDue(vw, now){
+    now = now || new Date();
+    if(vw.asleep || vw.stage === 'egg' || !fhChildDevice()) return false;
+    if(now.getHours() * 60 + now.getMinutes() < mins(vw.sleep.wake)) return false;
+    return fhRawGet(WOKE) !== iso(today(now)) + '|' + vw.pid;
+  }
+  /* the pet itself: tap to pat; plays the wake-up when it's due */
+  function stageEl(vw, size, onStatus){
+    const holder = h('span', { class:'fhpet-art', html:art(vw, null, size) });
+    let timer = 0;
+    const paint = function(mood, ms, after){ holder.innerHTML = art(vw, mood, size); clearTimeout(timer); if(ms) timer = setTimeout(function(){ holder.innerHTML = art(vw, null, size); if(after) after(); }, ms); };
+    const btn = h('button', { type:'button', class:'fhpet-stage' + (vw.asleep ? ' fhpet-night' : ''), 'aria-label':vw.asleep ? (vw.name || 'Your bao') + ' is asleep' : 'Pat ' + (vw.name || 'your bao'),
+      onClick:function(){
+        if(vw.asleep){ if(onStatus) onStatus('Shh… ' + (vw.name || 'your bao') + ' is asleep until ' + vw.sleep.wake + '.'); return; }
+        if(vw.stage === 'egg'){ holder.classList.remove('fhpet-wiggle'); void holder.offsetWidth; holder.classList.add('fhpet-wiggle'); return; }
+        paint('pat', 650);
+      } }, holder);
+    if(wakeDue(vw)){
+      fhRawSet(WOKE, iso(today()) + '|' + vw.pid);
+      btn.classList.add('fhpet-waking');
+      paint('yawn', 2800, function(){ btn.classList.remove('fhpet-waking'); });
+      if(onStatus) onStatus('Good morning! ' + (vw.name || 'Your bao') + ' is awake.');
+    }
+    return btn;
+  }
+  function nameForm(vw, done){
+    const inp = h('input', { type:'text', id:'fhpetName', maxlength:'16', placeholder:'Bun-bun', value:vw.name || '', 'aria-label':'Its name' });
+    const saveIt = function(){ setName(vw.pid, inp.value); if(done) done(); };
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') saveIt(); });
+    return h('div', { class:'fhpet-name' }, h('label', { for:'fhpetName', text:vw.needsName ? 'It hatched! What will you call it?' : 'Its name' }),
+      h('div', { class:'fhpet-name-row' }, inp, h('button', { type:'button', class:'fhpet-go', id:'fhpetNameSave', text:'Done', onClick:saveIt })));
+  }
+  function setName(pid, name){
+    const v = data(), pet = petOf(v, pid); if(!pet) return;
+    pet.name = String(name || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16);
+    save(v); try{ refreshCurrentPage(); }catch(e){}
+  }
+  function barEl(vw){ return h('div', { class:'fhpet-bar', role:'progressbar', 'aria-valuemin':'0', 'aria-valuemax':'100', 'aria-valuenow':String(Math.round(vw.bar * 100)), 'aria-label':vw.progress }, h('i', { style:'width:' + Math.round(vw.bar * 100) + '%' })); }
+
+  /* Today, on the child's own device */
+  function todayNode(vw){
+    const status = h('p', { class:'fhpet-status', role:'status', text:vw.status });
+    const sec = h('section', { class:'fhd-sec fhpet-card', id:'fhpetToday' },
+      h('div', { class:'fhd-head' }, h('span', { class:'fhd-title', text:vw.title }), h('span', { class:'fhpet-chip', text:vw.stageName })),
+      stageEl(vw, 170, function(t){ status.textContent = t; }), status,
+      vw.asleep ? null : barEl(vw), vw.asleep ? null : h('p', { class:'fhpet-prog', text:vw.progress }),
+      vw.needsName && !vw.asleep ? nameForm(vw) : null,
+      h('button', { type:'button', class:'fhe-add', id:'fhpetOpen', text:'Open ' + (vw.name || 'your bao'), onClick:function(){ showPage('pet'); } }));
+    return sec;
+  }
+  function todayFace(date){
+    if(date && iso(today(date)) !== iso(today())) return null;
+    const pid = mine(); if(!pid) return null;
+    const vw = view(pid); if(!vw) return null;
+    return { node:todayNode(vw), title:vw.title, value:vw.stageName, sub:vw.asleep ? 'Asleep until ' + vw.sleep.wake : vw.progress, bar:vw.asleep ? null : vw.bar };
+  }
+
+  /* the pet page (child's own device) */
+  let renaming = false;
+  function render(root){
+    if(!root) return;
+    root.innerHTML = '';
+    const pid = mine(), vw = pid ? view(pid) : null;
+    root.appendChild(h('h2', { class:'dash-heading', text:vw ? vw.title : 'Your pet' }));
+    if(!vw){ root.appendChild(h('p', { class:'ob-hint', text:'No pet here yet. A grown-up can give you one in Settings › Your household › Bao pets.' })); return; }
+    const status = h('p', { class:'fhpet-status', role:'status', text:vw.status });
+    const head = h('div', { class:'fhpet-pagehead' }, h('span', { class:'fhpet-chip', text:vw.stageName }),
+      vw.stage === 'egg' || vw.stage === 'hatch' || vw.needsName ? null : h('button', { type:'button', class:'fhpet-link', id:'fhpetRename', text:renaming ? 'Cancel' : 'Rename', onClick:function(){ renaming = !renaming; render(root); } }));
+    root.appendChild(h('div', { class:'fhpet-page' }, head, stageEl(vw, 260, function(t){ status.textContent = t; }), status,
+      (vw.needsName || renaming) && !vw.asleep ? nameForm(vw, function(){ renaming = false; render(root); }) : null,
+      vw.asleep ? null : barEl(vw), vw.asleep ? null : h('p', { class:'fhpet-prog', text:vw.progress }),
+      stepsEl(vw),
+      h('p', { class:'ob-hint fhpet-foot', text:'Every reward from your jobs, routines and habits helps it grow. Nothing is spent: your prizes still count everything.' })));
+  }
+  function stepsEl(vw){
+    const st = vw.pet.steps || {}, size = vw.size;
+    const rows = [['hatch', 'Hatch', 'a day’s worth of rewards (' + vw.day + ')'], ['baby', 'Baby', 'a dummy, a nappy and a name'],
+      ['toddler', 'Toddler', 'a week’s worth more (' + vw.day * 7 + ')'], ['grow', 'Grow', 'a size for each good week (' + vw.good + ' in a week)'], ['big', 'Big bao', 'size 6, and a chef’s hat']];
+    return h('div', { class:'fhpet-steps' }, h('h3', { text:'How it grows' }), rows.map(function(r){
+      const done = r[0] === 'grow' ? size > 0 : r[0] === 'big' ? size >= 6 : !!st[r[0]];
+      return h('div', { class:'fhpet-step' + (done ? ' done' : '') }, h('span', { class:'fhpet-tick', 'aria-hidden':'true', text:done ? '✓' : '' }),
+        h('span', {}, h('b', { text:r[1] + (r[0] === 'grow' && size ? ' · size ' + Math.min(size, 6) + ' of 6' : '') }), h('small', { text:r[2] })));
+    }));
+  }
+
+  /* Settings › Your household › Bao pets (grown-ups only) */
+  function settingsCard(rerender){
+    if(!on() || fhChildDevice() || locked()) return null;
+    try{ if(FHSync.isDevice()) return null; }catch(e){}
+    const kids = children(); if(!kids.length) return null;
+    const v = data();
+    const card = h('div', { class:'st-card', id:'stPets' }, h('h3', { text:'Bao pets' }),
+      h('p', { class:'ob-hint', text:'A pet each child raises from the rewards they earn, on their own device. It hatches after a day’s worth of rewards and grows with each good week. Nothing is spent: prizes still count everything.' }));
+    kids.forEach(function(p){
+      const k = v.kids[p.id] || {}, isOn = !!k.on, vw = isOn ? view(p.id) : null, sl = sleepOf(v, p.id), collects = !p.noStars;
+      const sel = function(list, val, label, key){
+        return h('select', { 'aria-label':label, class:'fhpet-sel', onChange:function(e){ setSleep(p.id, key, e.target.value); if(rerender) rerender(); } },
+          list.map(function(t){ return h('option', { value:t, text:t, selected:t === val }); }));
+      };
+      card.appendChild(h('div', { class:'fhpet-kid' },
+        h('div', { class:'fhpet-kidrow' },
+          h('span', { class:'fhpet-kidname' }, h('b', { text:p.name }), h('small', { text:!collects ? 'Not collecting rewards' : vw ? (vw.name ? vw.name + ' · ' : '') + vw.stageName : isOn ? '' : 'No pet' })),
+          h('button', { type:'button', role:'switch', class:'fhpet-switch' + (isOn ? ' on' : ''), 'aria-checked':isOn ? 'true' : 'false', 'aria-label':'Bao pet for ' + p.name,
+            disabled:!collects, 'data-pid':p.id, onClick:function(){ setOn(p.id, !isOn); if(rerender) rerender(); } }, h('span', {}))),
+        isOn ? h('div', { class:'fhpet-sleep' }, h('span', { text:'Asleep in its steamer' }),
+          sel(TIMES_BED.indexOf(sl.bed) >= 0 ? TIMES_BED : TIMES_BED.concat([sl.bed]), sl.bed, p.name + '’s pet goes to sleep at', 'bed'), h('span', { text:'to' }),
+          sel(TIMES_WAKE.indexOf(sl.wake) >= 0 ? TIMES_WAKE : TIMES_WAKE.concat([sl.wake]), sl.wake, p.name + '’s pet wakes up at', 'wake')) : null));
+    });
+    card.appendChild(h('p', { class:'ob-hint', text:'Nothing to do while it sleeps, so it never keeps anyone up. The pets never send notifications.' }));
+    return card;
+  }
+  function setOn(pid, yes){
+    const v = data(), k = v.kids[pid] = v.kids[pid] || {};
+    k.on = !!yes;
+    if(yes && !(k.pets && k.pets[k.out])){
+      const p = person(pid) || {}, rw = p.reward || {};
+      const id = 'bao1', t = iso(today());
+      k.pets = k.pets || {};
+      k.pets[id] = { kind:'bao', col:rw.pic === 'bao' && rw.col ? rw.col : 'golden', name:'', from:t, day:dayWorth(pid), steps:{}, outs:[[t, '']] };
+      k.out = id;
+    }
+    save(v); try{ applyFeatureGating(); }catch(e){}
+  }
+  function setSleep(pid, key, val){ const v = data(); v.settings.sleep[pid] = Object.assign({}, SLEEP, v.settings.sleep[pid] || {}, { [key]:val }); save(v); }
+
+  // a block on Today; the Children layout has it first
+  try{
+    FHLayout.register('today', ['pet', '🥟', 'Your pet', 'The pet you raise from your rewards (children’s own devices)', 'notile']);
+    FHLayout.presetAdd('today', 'kids', ['pet', 'big'], 'filter');
+  }catch(e){}
+
+  return { KEY:KEY, data:data, view:view, mine:mine, todayFace:todayFace, render:render, settingsCard:settingsCard, setOn:setOn, setSleep:setSleep, setName:setName,
+    dayWorth:dayWorth, asleepAt:asleepAt, grow:grow, svg:fhPetBaoSvg };
+})();
+
 /* ==================== SHOP TAGS on the shopping list (FHShopTags) ==================== */
 /* specs/shopping-lists.md part 3: one list, but any item can say where it's bought ("Aldi"). Remembered per item
    (fhIngKey of the app's own name), so it sticks week after week. Synced family-hub-shop-tags-v1:
@@ -16191,7 +16591,7 @@ document.getElementById('calTodayBtn').addEventListener('click', ()=>{
 });
 
 /* ==================== Nav / sidebar / drawer ==================== */
-const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Rewards', ahead:'Coming up', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
+const PAGE_TITLES = { today:'Today', tomorrow:'Tomorrow', mealplan:'Meal Plan', shopping:'Shopping List', chores:'Chores', tasklists:'Upcoming chores', tasks:'Tasks', calendar:'Calendar', occasions:'Occasions', paperwork:'Paperwork', routines:'Routines & habits', rewards:'Rewards', ahead:'Coming up', pet:'Your pet', recipes:'Recipes', essentials:'Essentials', settings:'Settings' };
 let currentPage = 'today';
 
 function refreshPage(pageId){
@@ -16202,6 +16602,7 @@ function refreshPage(pageId){
   else if(pageId==='chores') ChoreApp.renderPage();
   else if(pageId==='rewards') ChoreApp.renderRewards(document.getElementById('rewardsContent'));
   else if(pageId==='ahead') FHAhead.render(document.getElementById('aheadContent'));
+  else if(pageId==='pet') FHPet.render(document.getElementById('petContent'));
   else if(pageId==='tasklists') ChoreApp.renderFrequencyPage(document.getElementById('taskListsContent'));
   else if(pageId==='shopping') MealApp.renderShoppingListPage(document.getElementById('shoppingListContent'));
   else if(pageId==='essentials') FHEss.render(document.getElementById('essentialsContent'));
@@ -17536,6 +17937,8 @@ function applyFeatureGating(){
   document.body.classList.toggle('fh-kid', kid);
   ['occasions', 'paperwork', 'routines'].forEach(function(pg){ const b = document.querySelector('.nav-item[data-page="' + pg + '"]'); if(b) b.classList.toggle('kid-hidden', kid); if(kid) hidden[pg] = true; });
   { const kb = document.getElementById('navKitchen'); if(kb) kb.classList.toggle('kid-hidden', kid); }
+  // Your pet: only on a child's own device that has one (ob_pet.js)
+  { const pb = document.querySelector('.nav-item[data-page="pet"]'), mine = typeof FHPet !== 'undefined' && !!FHPet.mine(); if(pb) pb.style.display = mine ? '' : 'none'; if(!mine) hidden.pet = true; }
   // hide a menu heading when everything under it is hidden
   document.querySelectorAll('#sidebar .nav-label-grp').forEach(function(lab){
     let any = false, n = lab.nextElementSibling;
@@ -17618,6 +18021,7 @@ function renderSettingsPage(){
     fc.appendChild(nc); root.appendChild(fc);
   }
   root.appendChild(FHPeople.settingsCard(rr));
+  if(typeof FHPet !== 'undefined'){ const pc = FHPet.settingsCard(rr); if(pc) root.appendChild(pc); }
   root.appendChild(FHLock.settingsCard(rr));
   const lp = FHLocale.get();
   const setLoc = p=>{ FHLocale.set(p); try{ MealApp.relocalise(); FHLocale.applyRecipes(); }catch(e){} renderSettingsPage(); try{ MealApp.render(); }catch(e){} try{ refreshCurrentPage(); }catch(e){} };
@@ -17676,7 +18080,7 @@ function fhSettingsSummary(id){
 }
 function fhSettingsGroups(root){
   const GROUPS = [
-    ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stBirthdays', 'stMeals', 'stFood', 'stBins', 'stUnits']],
+    ['house', '👨‍👩‍👧', 'Your household', ['stHousehold', 'stBirthdays', 'stPets', 'stMeals', 'stFood', 'stBins', 'stUnits']],
     ['features', '🧩', 'Features', ['stFeatures', 'stAI']],
     ['remind', '🔔', 'Reminders & calendars', ['stReminders', 'stHouseRem', 'stCal']],
     ['sync', '🔄', 'Sync & sharing', ['stSync']],
@@ -20142,6 +20546,15 @@ const FHAdapt = (function(){
     const steps = (Array.isArray(r.steps) ? r.steps : []).map(s => { const t = txt(s && s.t, 400), m = Math.max(0, Math.min(600, parseInt(s && s.min, 10) || 0));
       return { t:t, m:/overnight/i.test(t) ? 0 : m && hours(t) ? Math.min(600, hours(t)) : m }; }).filter(s => s.t);
     const list = (a, n) => (Array.isArray(a) ? a : []).map(x => txt(x, 200)).filter(Boolean).slice(0, n);
+    // water, salt and pepper never go on the shopping list (Haiku listed "500 ml Water" now and then); a water amount the
+    // method doesn't give yet goes into the first step that uses water
+    const basic = /^(?:(?:cold|warm|hot|boiling|fresh) )?water$|^(?:sea |table )?salt$|^(?:black |ground black |white )?pepper$|^salt (?:and|&) (?:black )?pepper$/i;
+    ings.filter(i => /water$/i.test(i.name) && basic.test(i.name) && i.qty && (i.unit === 'ml' || i.unit === 'l')).forEach(w => {
+      if(steps.some(s => /\d\s*(?:ml|l|litres?)\b[^.]*water/i.test(s.t))) return;
+      const s = steps.find(x => /\bwater\b/i.test(x.t));
+      if(s) s.t = s.t.replace(/\b(?:the )?water\b/i, w.qty + ' ' + w.unit + ' water').slice(0, 420);
+    });
+    for(let k = ings.length - 1; k >= 0; k--) if(basic.test(ings[k].name)) ings.splice(k, 1);
     return { ok:r.ok !== false && !!ings.length && !!steps.length, problem:txt(r.problem, 400), bring:r.bring === 'side' || r.bring === 'meal' ? r.bring : '', name:txt(r.name, 60), summary:txt(r.summary, 300),
       ingredients:ings, steps:steps, changes:list(r.changes, 12), tips:list(r.tips, 8), model:r.model || '', usage:r.usage || null };
   }
