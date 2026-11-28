@@ -3282,6 +3282,30 @@ button.fhah-row{ cursor:pointer; }
 .fhpet-col{ display:flex; flex-direction:column; align-items:center; gap:2px; min-height:88px; padding:4px; border:2px solid var(--panel-line); border-radius:16px; background:var(--white); color:var(--ink); font:inherit; cursor:pointer; }
 .fhpet-col.on{ border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-tint); }
 .fhpet-col small{ font-weight:700; }
+/* games */
+.fhpet-game{ margin-top:8px; }
+.fhpet-ghead{ display:flex; justify-content:space-between; font-weight:700; color:var(--muted); font-size:14px; }
+.fhpet-gtitle{ text-align:center; font-weight:700; margin:6px 0; min-height:1.4em; }
+.fhpet-garea{ position:relative; height:290px; border-radius:18px; overflow:hidden; background:linear-gradient(#e8f3ff, #fdf3e1); touch-action:none; user-select:none; -webkit-user-select:none; }
+.fhpet-g-hide{ height:150px; background:linear-gradient(#fdf8ee, #f3ead8); }
+.fhpet-gend{ display:flex; align-items:flex-end; justify-content:center; height:190px; touch-action:auto; }
+.fhpet-steamer{ position:absolute; bottom:6px; width:33.333%; height:130px; border:0; background:none; padding:0; display:flex; align-items:flex-end; justify-content:center; cursor:pointer; transition:left .38s ease-in-out; line-height:0; }
+.fhpet-steamer:disabled{ cursor:default; }
+.fhpet-spet{ position:absolute; left:50%; bottom:40px; transform:translateX(-50%); line-height:0; animation:fhpetPop .3s ease-out; }
+@keyframes fhpetPop{ from{ transform:translate(-50%, 24px); opacity:0; } to{ transform:translate(-50%, 0); opacity:1; } }
+.fhpet-basket{ position:absolute; bottom:4px; left:0; line-height:0; pointer-events:none; }
+.fhpet-drop{ position:absolute; left:0; top:0; line-height:0; pointer-events:none; }
+.fhpet-bubble{ position:absolute; left:0; top:0; border-radius:50%; border:2px solid #7fb4e2; padding:0; cursor:pointer;
+  background:radial-gradient(circle at 32% 30%, #fff 0 14%, rgba(227,242,255,.9) 15%, rgba(167,208,244,.55) 100%); }
+.fhpet-bubble.pop{ transform-origin:center; opacity:0; transition:opacity .18s; }
+.fhpet-gfoot{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.fhpet-gpad{ display:flex; gap:8px; flex:1 1 auto; }
+.fhpet-gpad .fhpet-tab{ font-size:20px; }
+.fhpet-goes{ display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid var(--panel-line); padding-top:10px; }
+.fhpet-stepper{ display:flex; align-items:center; gap:6px; flex:none; }
+.fhpet-stepper b{ min-width:26px; text-align:center; font-size:18px; }
+.fhpet-stepbtn{ width:44px; height:44px; border:1.5px solid var(--panel-line); border-radius:12px; background:var(--white); color:var(--ink); font:inherit; font-size:20px; font-weight:700; cursor:pointer; }
+.fhpet-stepbtn:disabled{ opacity:.4; cursor:default; }
 .fhpet-shop{ margin-top:6px; }
 .fhpet-tabs{ display:flex; flex-wrap:wrap; gap:6px; }
 .fhpet-tab{ flex:1 1 auto; min-height:44px; padding:0 14px; border-radius:14px; border:1.5px solid var(--panel-line); background:var(--white); color:var(--ink); font:inherit; font-weight:700; cursor:pointer; }
@@ -3303,6 +3327,15 @@ button.fhah-row{ cursor:pointer; }
 .fhpet-price input{ margin-top:3px; accent-color:var(--accent); }
 .fhpet-price span{ display:flex; flex-direction:column; }
 .fhpet-price small{ color:var(--muted); }
+/* Bao pets on the kitchen display (FHPet.kitchenNode): a tile per child, or today's turn */
+.fhpet-krow{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+.fhpet-ktile{ min-width:0; text-align:center; }
+.fhpet-k .fhpet-stage{ min-height:0; height:150px; margin:0 0 6px; }
+.fhpet-k .fhpet-stage .fhpet-art{ margin-bottom:6px; }
+.fhpet-kname{ display:flex; flex-direction:column; line-height:1.25; }
+.fhpet-kname b{ font-size:1em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fhpet-kname small{ font-size:.75em; color:var(--muted); }
+.fhpet-kline{ margin:4px 0 0; font-size:.75em; color:var(--muted); }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -15554,6 +15587,14 @@ function fhPetItemSvg(id, size){
     cocoa:'<path d="M18 9c-2-3 2-4 0-7M24 9c-2-3 2-4 0-7" fill="none" stroke="#c3cfdc" stroke-width="2" stroke-linecap="round"/><path d="M33 20C41 20 41 34 33 34" fill="none" stroke="#4a4458" stroke-width="2.6"/><rect x="8.5" y="14" width="25" height="27" rx="5" fill="#ef7b63" stroke="#4a4458" stroke-width="2"/><ellipse cx="21" cy="16" rx="10.5" ry="2.6" fill="#7a4a2a"/><rect x="15" y="12" width="5" height="5" rx="1.4" fill="#ffe6ee" stroke="#4a4458"/><rect x="22" y="11" width="5" height="5" rx="1.4" fill="#fff" stroke="#4a4458"/>',
     bubbletea:'<path d="M27 11L32 1.5" stroke="#ef7b63" stroke-width="3.4" stroke-linecap="round"/><path d="M12 14H36L33 43H15Z" fill="#f3dfc6" stroke="#4a4458" stroke-width="2" stroke-linejoin="round"/><rect x="10" y="10" width="28" height="5" rx="2" fill="#fff" stroke="#4a4458" stroke-width="2"/><g fill="#3b2a28"><circle cx="19" cy="38" r="2.2"/><circle cx="24" cy="39" r="2.2"/><circle cx="29" cy="38" r="2.2"/><circle cx="21.5" cy="34" r="2.2"/><circle cx="26.5" cy="34" r="2.2"/></g>',
     duck:fhPetDuck().replace('stroke-width="3.6"', 'stroke-width="1.8"'),
+    steamer:'<ellipse cx="24" cy="44" rx="19" ry="2" fill="#2b2236" opacity=".1"/><path d="M6 30A18 4 0 0 0 42 30L42 38A18 4.5 0 0 1 6 38Z" fill="#e3b96f" stroke="#6b4423" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<rect x="20" y="13" width="8" height="5" rx="2.5" fill="#d9a85a" stroke="#6b4423" stroke-width="1.6"/><path d="M5 30A19 4 0 0 0 43 30L42 25C40.5 19 34 17 24 17S7.5 19 6 25Z" fill="#e8c27c" stroke="#6b4423" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<path d="M6 34A18 4 0 0 0 42 34" fill="none" stroke="#b8873f" stroke-width="1.3"/>',
+    steamerOpen:'<ellipse cx="24" cy="44" rx="19" ry="2" fill="#2b2236" opacity=".1"/><path d="M6 30A18 4 0 0 0 42 30L42 38A18 4.5 0 0 1 6 38Z" fill="#e3b96f" stroke="#6b4423" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<ellipse cx="24" cy="30" rx="18" ry="4" fill="#7a5020" stroke="#6b4423" stroke-width="1.6"/><path d="M6 34A18 4 0 0 0 42 34" fill="none" stroke="#b8873f" stroke-width="1.3"/>',
+    dumpling:'<path d="M7 31C7 19 14 12 24 12S41 19 41 31C41 36 34 37.5 24 37.5S7 36 7 31Z" fill="#fff0b8" stroke="#7a5212" stroke-width="2"/><path d="M24 12.5V19M24 13C20 15 16 16.5 12 17M24 13C28 15 32 16.5 36 17" fill="none" stroke="#e5b23c" stroke-width="1.6" stroke-linecap="round"/>'
+      + '<circle cx="19" cy="27" r="1.6" fill="#7a5212"/><circle cx="29" cy="27" r="1.6" fill="#7a5212"/><path d="M22 31Q24 33 26 31" fill="none" stroke="#7a5212" stroke-width="1.4" stroke-linecap="round"/>',
+    bubbles:'<g fill="#e3f2ff" stroke="#4a86c0" stroke-width="1.8"><circle cx="16" cy="30" r="10"/><circle cx="33" cy="17" r="8"/><circle cx="35" cy="37" r="5.5"/></g><path d="M11 26a5 5 0 0 1 4-3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
     bath:'<g fill="#fff" stroke="#9ec3e6" stroke-width="1.4"><circle cx="10" cy="20" r="5"/><circle cx="18" cy="17" r="6"/><circle cx="28" cy="18" r="5.5"/><circle cx="37" cy="19" r="5"/></g><path d="M3 22H45L42 37C41 41.5 37 43.5 32 43.5H16C11 43.5 7 41.5 6 37Z" fill="#fff" stroke="#4a86c0" stroke-width="2" stroke-linejoin="round"/><path d="M10 46L12 42.5M38 46L36 42.5" stroke="#4a86c0" stroke-width="2.2" stroke-linecap="round"/>',
     shower:'<path d="M6 2V8C6 10 8 11 10 11H18" fill="none" stroke="#8a93a6" stroke-width="2.6" stroke-linecap="round"/><path d="M16 8H32L30 14H18Z" fill="#c3cfdc" stroke="#5d6678" stroke-width="1.6" stroke-linejoin="round"/><g stroke="#4a86c0" stroke-width="2" stroke-linecap="round">'
       + [['M19 19L18 24', '1;0.2;1'], ['M24 18V24', '0.2;1;0.2'], ['M29 19L30 24', '1;0.2;1'], ['M21 28L20 33', '0.2;1;0.2'], ['M27 28L28 33', '1;0.2;1']].map(function(d){ return '<path d="' + d[0] + '"><animate attributeName="opacity" values="' + d[1] + '" dur="0.6s" repeatCount="indefinite"/></path>'; }).join('') + '</g>'
@@ -15599,9 +15640,10 @@ const FHPet = (function(){
     drinks:[['water', 'Water', 0], ['milk', 'Milk', 1], ['juice', 'Orange juice', 1], ['cocoa', 'Hot chocolate', 2], ['bubbletea', 'Bubble tea', 3]],
     wash:[['bath', 'Bubble bath', 0], ['shower', 'Shower', 0], ['duck', 'Rubber duck', 3]],
     dress:[['leaf', 'Leaf hat', 4, 'head'], ['bandana', 'Bandana', 6, 'neck'], ['bow', 'Bow', 6, 'head'], ['glasses', 'Sunglasses', 8, 'face'], ['crown', 'Crown', 12, 'head'], ['chef', 'Chef’s hat', -1, 'head']],
-    places:[['kitchen', 'Kitchen', 0], ['garden', 'Bamboo garden', 6], ['beach', 'Beach', 8], ['space', 'Space', 10]]
+    places:[['kitchen', 'Kitchen', 0], ['garden', 'Bamboo garden', 6], ['beach', 'Beach', 8], ['space', 'Space', 10]],
+    games:[['hide', 'Which steamer?', 2], ['catch', 'Catch the dumplings', 2], ['bubbles', 'Steam bubbles', 2]]
   };
-  const TABS = [['food', 'Food'], ['drinks', 'Drinks'], ['wash', 'Wash'], ['dress', 'Dress up'], ['places', 'Places']];
+  const TABS = [['food', 'Food'], ['drinks', 'Drinks'], ['wash', 'Wash'], ['dress', 'Dress up'], ['places', 'Places'], ['games', 'Games']];
 
   function data(){
     let v = null; try{ v = JSON.parse(fhRawGet(KEY) || 'null'); }catch(e){}
@@ -15757,7 +15799,7 @@ const FHPet = (function(){
     return fhRawGet(WOKE) !== iso(today(now)) + '|' + vw.pid;
   }
   /* the pet in its place: tap to pat; plays the wake-up when it's due, and whatever just happened in the shop */
-  function stageEl(vw, size, onStatus, act){
+  function stageEl(vw, size, onStatus, act, kitchen){
     const holder = h('span', { class:'fhpet-art', html:art(vw, null, size) });
     const extra = h('span', { class:'fhpet-extra' });
     let timer = 0;
@@ -15775,7 +15817,7 @@ const FHPet = (function(){
     else if(act && act.bath) paint('yum', 4000, { bath:true });
     else if(act && act.shower){ extra.innerHTML = fhPetItemSvg('shower', Math.round(size * 0.55)); extra.classList.add('fhpet-extra-top'); paint('yum', 2400); }
     else if(act && act.happy) paint('pat', 650);
-    else if(wakeDue(vw)){
+    else if(!kitchen && wakeDue(vw)){
       fhRawSet(WOKE, iso(today()) + '|' + vw.pid);
       btn.classList.add('fhpet-waking');
       paint('yawn', 2800, null, function(){ btn.classList.remove('fhpet-waking'); });
@@ -15832,6 +15874,14 @@ const FHPet = (function(){
     if(vw.asleep) return { msg:'Shh… ' + nm + ' is asleep until ' + vw.sleep.wake + '.' };
     if(!vw.hatched) return { msg:'Saving up while it hatches.' };
     k.owned = k.owned || {}; k.wear = k.wear || {};
+    if(tab === 'games'){
+      const gs = goesOf(v, pid, now), max = goesMax(v);
+      if(gs.n >= max) return { msg:'That’s all the games for today. Come back tomorrow!' };
+      const cost = gs.n === 0 ? 0 : priceOf(v, pid, it[2]), purse = purseOf(v, pid);
+      if(cost > purse) return { msg:'Save up ' + (cost - purse) + ' more for another go.' };
+      k.spent = (+k.spent || 0) + cost; k.goes = { d:gs.d, n:gs.n + 1 }; save(v);
+      return { msg:'', act:{ game:id } };
+    }
     // already theirs: wear it or take it off, or go there (free)
     if(owned && (tab === 'dress' || tab === 'places')){
       if(tab === 'places'){ k.place = id; save(v); return { msg:id === 'kitchen' ? 'Home sweet home.' : 'Off to the ' + it[1].toLowerCase() + '!', act:{ happy:1 } }; }
@@ -15871,9 +15921,11 @@ const FHPet = (function(){
       if(id === 'chef') tag = has ? (using ? 'Wearing' : 'Wear it') : 'At Big bao';
       else if(has && (tab === 'dress' || tab === 'places')) tag = using ? (tab === 'places' ? 'Here now' : 'Wearing') : (tab === 'places' ? 'Go there' : 'Wear it');
       else if(has && id === 'duck') tag = 'In the bath';
-      const can = has || (price >= 0 && price <= vw.purse);
+      let can = has || (price >= 0 && price <= vw.purse);
+      if(tab === 'games'){ const gs = goesOf(v, vw.pid), max = goesMax(v), cost = gs.n === 0 ? 0 : price;
+        tag = gs.n >= max ? 'Done today' : gs.n === 0 ? 'Free go' : String(cost); can = gs.n < max && cost <= vw.purse; }
       const pic = tab === 'dress' ? fhPetBaoSvg({ stage:'toddler', col:vw.col, wear:id, size:58, vb:'24 42 72 66' })
-        : tab === 'places' ? '<span class="fhpet-thumb">' + fhPetPlaceSvg(id) + '</span>' : fhPetItemSvg(id, 42);
+        : tab === 'places' ? '<span class="fhpet-thumb">' + fhPetPlaceSvg(id) + '</span>' : fhPetItemSvg(tab === 'games' ? { hide:'steamer', catch:'dumpling', bubbles:'bubbles' }[id] : id, 42);
       return h('button', { type:'button', class:'fhpet-item' + (using ? ' using' : '') + (can ? '' : ' dim'), 'data-id':id, 'aria-label':it[1] + ', ' + tag,
         onClick:function(){ onUse(use(vw.pid, tab, id)); } },
         h('span', { class:'fhpet-pic', html:pic }), h('b', { text:it[1] }), h('small', { text:tag }));
@@ -15882,9 +15934,155 @@ const FHPet = (function(){
   }
 
   /* the pet page (child's own device) */
+
+  /* ---- games (stage 3): the first go each pet day is free, then a go costs 2 (or what's fair); goes a day set by
+     the grown-ups (3 to start); never while it sleeps; games never earn rewards. Best scores are kept. ---- */
+  function goesOf(v, pid, now){ const k = v.kids[pid] || {}, d = petDay(sleepOf(v, pid), now); return k.goes && k.goes.d === d ? { d:d, n:+k.goes.n || 0 } : { d:d, n:0 }; }
+  function goesMax(v){ const n = +v.settings.goes; return n >= 1 && n <= 6 ? n : 3; }
+  function setGoes(n){ const v = data(); v.settings.goes = Math.max(1, Math.min(6, Math.round(+n) || 3)); save(v); }
+  function bestOf(pid, id){ const k = data().kids[pid] || {}; return (k.best && +k.best[id]) || 0; }
+  function saveBest(pid, id, n){ const v = data(), k = v.kids[pid]; if(!k) return false; k.best = k.best || {}; if(n > (+k.best[id] || 0)){ k.best[id] = n; save(v); return true; } return false; }
+  let game = null;
+  const TEST = { speed:1, dur:30000 };
+  function stopGame(){ if(game){ try{ game.stop(); }catch(e){} game = null; } }
+  function gameEl(vw, id, root){
+    stopGame();
+    const nm = vw.name || 'your bao';
+    const score = h('span', { class:'fhpet-gscore' }), timer = h('span', { class:'fhpet-gtime' });
+    const title = h('p', { class:'fhpet-gtitle', role:'status' });
+    const area = h('div', { class:'fhpet-garea fhpet-g-' + id });
+    const foot = h('div', { class:'fhpet-gfoot' });
+    const box = h('div', { class:'fhpet-game', id:'fhpetGame', 'data-game':id }, h('div', { class:'fhpet-ghead' }, score, timer), title, area, foot);
+    const g = game = { id:id, el:box, stop:function(){} };
+    const back = function(){ stopGame(); tab = 'games'; render(root, null, true); };
+    const end = function(n, outOf){
+      g.stop(); g.stop = function(){};
+      const best = saveBest(vw.pid, id, n);
+      area.innerHTML = ''; area.className = 'fhpet-garea fhpet-gend';
+      area.appendChild(h('span', { class:'fhpet-art', html:art(vw, 'pat', 150) }));
+      title.textContent = id === 'hide' ? 'You found ' + nm + ' ' + n + (n === 1 ? ' time' : ' times') + ' out of ' + outOf + '!'
+        : id === 'catch' ? 'You caught ' + n + (n === 1 ? ' dumpling' : ' dumplings') + '!' : 'You popped ' + n + (n === 1 ? ' bubble' : ' bubbles') + '!';
+      timer.textContent = ''; score.textContent = best ? 'New best!' : 'Best: ' + bestOf(vw.pid, id);
+      const v = data(), gs = goesOf(v, vw.pid), max = goesMax(v);
+      foot.innerHTML = '';
+      foot.appendChild(h('button', { type:'button', class:'fhpet-go', id:'fhpetAgain', disabled:gs.n >= max,
+        text:gs.n >= max ? 'No more goes today' : 'Play again (' + (gs.n === 0 ? 'free' : priceOf(v, vw.pid, 2)) + ')',
+        onClick:function(){ const r = use(vw.pid, 'games', id); if(r.act) render(root, r, true); else title.textContent = r.msg; } }));
+      foot.appendChild(h('button', { type:'button', class:'fhpet-link', id:'fhpetBack', text:'Back', onClick:back }));
+    };
+    foot.appendChild(h('button', { type:'button', class:'fhpet-link', id:'fhpetBack', text:'Stop', onClick:back }));
+    if(id === 'hide') hideGame(g, vw, area, title, score, end);
+    else if(id === 'catch') catchGame(g, area, title, score, timer, foot, end);
+    else bubbleGame(g, area, title, score, timer, end);
+    return box;
+  }
+  /* Which steamer? It hides in one, the steamers shuffle (more each round), pick one. Five rounds. */
+  function hideGame(g, vw, area, title, score, end){
+    const nm = vw.name || 'your bao', ROUNDS = 5, pos = [0, 1, 2];
+    let round = 0, found = 0, at = 0, timers = [];
+    const later = function(fn, ms){ timers.push(setTimeout(fn, ms * TEST.speed)); };
+    g.stop = function(){ timers.forEach(clearTimeout); timers = []; };
+    const petArt = fhPetBaoSvg({ stage:vw.stage === 'egg' || vw.stage === 'hatch' ? 'toddler' : vw.stage, grow:vw.size, col:vw.col, wear:vw.wear, mood:'pat', size:74, vb:'10 28 100 84' });
+    const paint = function(i, what){ steamers[i].innerHTML = what === 'pet' ? fhPetItemSvg('steamerOpen', 88) + '<span class="fhpet-spet">' + petArt + '</span>' : fhPetItemSvg(what === 'open' ? 'steamerOpen' : 'steamer', 88); };
+    const place = function(){ steamers.forEach(function(b, i){ b.style.left = (pos[i] * 33.333) + '%'; }); };
+    const pick = function(i){
+      steamers.forEach(function(b){ b.disabled = true; });
+      paint(at, 'pet');
+      if(i === at){ found++; title.textContent = 'Found ' + nm + '!'; }
+      else { paint(i, 'open'); title.textContent = 'Not that one! ' + nm.charAt(0).toUpperCase() + nm.slice(1) + ' was over here.'; }
+      score.textContent = 'Round ' + round + ' of ' + ROUNDS + ' · found ' + found;
+      later(next, 1300);
+    };
+    const steamers = [0, 1, 2].map(function(i){ const b = h('button', { type:'button', class:'fhpet-steamer', 'aria-label':'Steamer ' + (i + 1), disabled:true, onClick:function(){ pick(i); } }); area.appendChild(b); return b; });
+    const shuffle = function(n, cb){
+      if(!n) return cb();
+      const a = Math.floor(Math.random() * 3), c = (a + 1 + Math.floor(Math.random() * 2)) % 3, i = pos.indexOf(a), j = pos.indexOf(c);
+      pos[i] = c; pos[j] = a; place(); later(function(){ shuffle(n - 1, cb); }, 430);
+    };
+    const next = function(){
+      round++; if(round > ROUNDS) return end(found, ROUNDS);
+      score.textContent = 'Round ' + round + ' of ' + ROUNDS + ' · found ' + found;
+      at = Math.floor(Math.random() * 3); g.at = at;
+      steamers.forEach(function(b, i){ b.disabled = true; paint(i, i === at ? 'pet' : 'shut'); });
+      title.textContent = 'Watch ' + nm + ' hide…';
+      later(function(){ steamers.forEach(function(b, i){ paint(i, 'shut'); }); shuffle(1 + round, function(){ title.textContent = 'Which steamer is ' + nm + ' in?'; steamers.forEach(function(b){ b.disabled = false; }); g.ready = true; }); }, 1000);
+    };
+    place(); next();
+  }
+  /* a 30-second game drawn each animation frame */
+  function loop(g, timer, step, done){
+    let t0 = 0, last = 0, raf = 0, stopped = false;
+    const frame = function(ts){
+      if(stopped) return;
+      if(!t0){ t0 = ts; last = ts; }
+      const dt = Math.min(0.05, (ts - last) / 1000), el = ts - t0; last = ts;
+      timer.textContent = Math.max(0, Math.ceil((TEST.dur - el) / 1000)) + 's';
+      if(el >= TEST.dur){ stopped = true; return done(); }
+      step(dt, el); raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    g.stop = function(){ stopped = true; cancelAnimationFrame(raf); };
+    g.finish = function(){ if(!stopped){ stopped = true; cancelAnimationFrame(raf); done(); } };
+  }
+  /* Catch the dumplings: drag the steamer (or ◀ ▶) under the falling dumplings */
+  function catchGame(g, area, title, score, timer, foot, end){
+    let caught = 0, nextAt = 0, bx = 0.5, items = [];
+    title.textContent = 'Catch the dumplings in the steamer!'; score.textContent = 'Caught 0';
+    const basket = h('span', { class:'fhpet-basket', html:fhPetItemSvg('steamerOpen', 76) });
+    area.appendChild(basket);
+    const W = function(){ return area.clientWidth || 300; }, H = function(){ return area.clientHeight || 280; };
+    const move = function(x){ bx = Math.max(0, Math.min(1, x)); basket.style.left = (bx * (W() - 76)) + 'px'; };
+    const toX = function(e){ const r = area.getBoundingClientRect(); move((e.clientX - r.left - 38) / Math.max(1, W() - 76)); };
+    area.addEventListener('pointerdown', function(e){ try{ area.setPointerCapture(e.pointerId); }catch(x){} toX(e); });
+    area.addEventListener('pointermove', function(e){ if(e.buttons || e.pointerType === 'touch') toX(e); });
+    foot.insertBefore(h('div', { class:'fhpet-gpad' },
+      h('button', { type:'button', class:'fhpet-tab', 'aria-label':'Move left', text:'◀', onClick:function(){ move(bx - 0.18); } }),
+      h('button', { type:'button', class:'fhpet-tab', 'aria-label':'Move right', text:'▶', onClick:function(){ move(bx + 0.18); } })), foot.firstChild);
+    move(0.5);
+    loop(g, timer, function(dt, el){
+      if(el >= nextAt){
+        const it = { x:Math.random() * (W() - 34), y:-34, v:110 + Math.random() * 70 + el / 300, el:h('span', { class:'fhpet-drop', html:fhPetItemSvg('dumpling', 34) }) };
+        area.appendChild(it.el); items.push(it); nextAt = el + Math.max(420, 950 - el / 50);
+      }
+      const top = H() - 52, left = bx * (W() - 76);
+      items = items.filter(function(it){
+        it.y += it.v * dt; it.el.style.transform = 'translate(' + Math.round(it.x) + 'px,' + Math.round(it.y) + 'px)';
+        if(it.y + 30 >= top && it.y < top + 18 && it.x + 28 > left && it.x + 6 < left + 76){ caught++; score.textContent = 'Caught ' + caught; it.el.remove(); return false; }
+        if(it.y > H()){ it.el.remove(); return false; }
+        return true;
+      });
+    }, function(){ end(caught); });
+    g.caught = function(){ return caught; };
+  }
+  /* Steam bubbles: pop them before they float away */
+  function bubbleGame(g, area, title, score, timer, end){
+    let popped = 0, nextAt = 0, items = [];
+    title.textContent = 'Pop the steam bubbles before they float away!'; score.textContent = 'Popped 0';
+    const W = function(){ return area.clientWidth || 300; }, H = function(){ return area.clientHeight || 280; };
+    loop(g, timer, function(dt, el){
+      if(el >= nextAt){
+        const d = 42 + Math.random() * 24;
+        const it = { x0:Math.random() * (W() - d), y:H(), v:50 + Math.random() * 50, d:d, ph:Math.random() * 6 };
+        it.el = h('button', { type:'button', class:'fhpet-bubble', 'aria-label':'Pop the bubble', style:'width:' + d + 'px;height:' + d + 'px',
+          onClick:function(){ if(it.gone) return; it.gone = true; popped++; score.textContent = 'Popped ' + popped; it.el.classList.add('pop'); setTimeout(function(){ it.el.remove(); }, 180); } });
+        area.appendChild(it.el); items.push(it); nextAt = el + Math.max(380, 800 - el / 60);
+      }
+      items = items.filter(function(it){
+        if(it.gone) return false;
+        it.y -= it.v * dt; it.ph += dt * 2;
+        it.el.style.transform = 'translate(' + Math.round(it.x0 + Math.sin(it.ph) * 10) + 'px,' + Math.round(it.y) + 'px)';
+        if(it.y < -it.d){ it.el.remove(); return false; }
+        return true;
+      });
+    }, function(){ end(popped); });
+  }
+
   let renaming = false, tab = 'food';
-  function render(root, done){
+  function render(root, done, force){
     if(!root) return;
+    // a game in play isn't cut short by the page refreshing behind it (a sync, a tick on another screen)
+    if(game && !done && !force && document.body.contains(game.el)) return;
+    stopGame();
     root.innerHTML = '';
     const pid = mine();
     if(pid && state(pid) === 'start') return chooser(root, pid);
@@ -15896,6 +16094,7 @@ const FHPet = (function(){
     const status = h('p', { class:'fhpet-status', role:'status', text:done && done.msg ? done.msg : vw.status });
     if(done && done.msg) status.classList.add('fhpet-msg');
     const again = function(r){ render(root, r); };
+    if(done && done.act && done.act.game){ root.appendChild(h('div', { class:'fhpet-page' }, gameEl(vw, done.act.game, root))); return; }
     const head = h('div', { class:'fhpet-pagehead' }, h('span', { class:'fhpet-chip', text:vw.stageName }),
       !vw.hatched || vw.needsName ? null : h('button', { type:'button', class:'fhpet-link', id:'fhpetRename', text:renaming ? 'Cancel' : 'Rename', onClick:function(){ renaming = !renaming; render(root); } }));
     root.appendChild(h('div', { class:'fhpet-page' }, head, stageEl(vw, 240, function(t){ status.textContent = t; }, done && done.act), status,
@@ -15949,6 +16148,13 @@ const FHPet = (function(){
           sel(TIMES_BED.indexOf(sl.bed) >= 0 ? TIMES_BED : TIMES_BED.concat([sl.bed]), sl.bed, p.name + '’s pet goes to sleep at', 'bed'), h('span', { text:'to' }),
           sel(TIMES_WAKE.indexOf(sl.wake) >= 0 ? TIMES_WAKE : TIMES_WAKE.concat([sl.wake]), sl.wake, p.name + '’s pet wakes up at', 'wake')) : null));
     });
+    const goes = goesMax(v);
+    card.appendChild(h('div', { class:'fhpet-goes' }, h('span', { class:'fhpet-kidname' }, h('b', { text:'Games a day' }),
+        h('small', { text:'The first go each day is free; after that a go costs 2 (or a third of a day’s worth with fair prices). None while it sleeps.' })),
+      h('div', { class:'fhpet-stepper' },
+        h('button', { type:'button', class:'fhpet-stepbtn', id:'fhpetGoesLess', 'aria-label':'Fewer games a day', text:'−', disabled:goes <= 1, onClick:function(){ setGoes(goes - 1); if(rerender) rerender(); } }),
+        h('b', { id:'fhpetGoes', 'aria-live':'polite', text:String(goes) }),
+        h('button', { type:'button', class:'fhpet-stepbtn', id:'fhpetGoesMore', 'aria-label':'More games a day', text:'+', disabled:goes >= 6, onClick:function(){ setGoes(goes + 1); if(rerender) rerender(); } }))));
     const fair = v.settings.prices !== 'same';
     const opt = function(val, label, sub){ const chosen = (val === 'fair') === fair;
       return h('label', { class:'fhpet-price' + (chosen ? ' on' : '') }, h('input', { type:'radio', name:'fhpetPrices', value:val, checked:chosen, onChange:function(){ setPrices(val); if(rerender) rerender(); } }),
@@ -15967,14 +16173,79 @@ const FHPet = (function(){
   function setSleep(pid, key, val){ const v = data(); v.settings.sleep[pid] = Object.assign({}, SLEEP, v.settings.sleep[pid] || {}, { [key]:val }); save(v); }
   function setPrices(val){ const v = data(); v.settings.prices = val === 'same' ? 'same' : 'fair'; save(v); }
 
-  // a block on Today; the Children layout has it first
+  /* ---- the kitchen display: Off | Take turns (one child's pet a day) | Together. Per screen, never synced:
+     Off is the block switched off in this screen's layout; the way it shows is family-hub-pets-kitchen. ---- */
+  const KITCHEN = 'family-hub-pets-kitchen', LAYOUT_K = 'family-hub-layout-kitchen';
+  function kitchenSetting(){
+    let shown = false; try{ shown = FHLayout.isOn('kitchen', 'pets'); }catch(e){}
+    return !shown ? 'off' : fhRawGet(KITCHEN) === 'turns' ? 'turns' : 'together';
+  }
+  function setKitchen(mode){
+    mode = mode === 'off' || mode === 'turns' ? mode : 'together';
+    if(mode !== 'off') fhRawSet(KITCHEN, mode);
+    try{
+      const v = FHLayout.load('kitchen'), x = v.list.find(function(i){ return i[0] === 'pets'; }), want = mode === 'off' ? 0 : 1;
+      if(x && x[1] !== want){ x[1] = want; v.preset = ''; fhRawSet(LAYOUT_K, JSON.stringify(v)); }
+    }catch(e){}
+  }
+  function withPets(){ return on() ? children().filter(function(p){ return state(p.id) === 'pet'; }).map(function(p){ return p.id; }) : []; }
+  function kitchenPids(now){
+    const ids = withPets(); if(ids.length < 2 || kitchenSetting() !== 'turns') return ids;
+    const n = Math.round((today(now) - new Date(2024, 0, 1)) / 86400000);
+    return [ids[((n % ids.length) + ids.length) % ids.length]];
+  }
+  function kitchenLine(vw){
+    if(vw.asleep) return 'Asleep until ' + vw.sleep.wake;
+    if(vw.stage === 'egg') return 'In the steamer: ' + vw.progress;
+    if(vw.stage === 'hatch') return 'Hatching!';
+    if(vw.quiet) return 'A bit sleepy';
+    if(vw.peckish) return 'Peckish';
+    if(vw.messy) return 'A bit messy';
+    return vw.progress;
+  }
+  function kitchenNode(now){
+    now = now || new Date();
+    const ids = kitchenPids(now); if(!ids.length) return null;
+    const turns = kitchenSetting() === 'turns' && withPets().length > 1;
+    const one = ids.length === 1 ? person(ids[0]) : null;
+    const row = h('div', { class:'fhpet-krow' });
+    ids.forEach(function(pid){
+      const vw = view(pid, now), p = person(pid); if(!vw || !p) return;
+      const line = h('p', { class:'fhpet-kline', role:'status', text:kitchenLine(vw) });
+      row.appendChild(h('div', { class:'fhpet-ktile', 'data-pid':pid },
+        stageEl(vw, 116, function(t){ line.textContent = t; }, null, true),
+        h('div', { class:'fhpet-kname' }, h('b', { text:vw.name || p.name + '’s bao' }), h('small', { text:(vw.name ? p.name + ' · ' : '') + vw.stageName })),
+        line));
+    });
+    if(!row.children.length) return null;
+    // a pat plays out here: the kitchen display redraws itself after other taps
+    return h('div', { class:'fhk-card fhpet-k', id:'fhpetKitchen', onClick:function(e){ e.stopPropagation(); } },
+      h('div', { class:'fhk-label', text:one ? one.name + '’s bao' + (turns ? ' · today’s turn' : '') : 'Our bao pets' }), row);
+  }
+  /* Settings › This device: how the pets show on this screen's kitchen display */
+  function kitchenCard(rerender){
+    if(!on() || fhChildDevice() || locked() || !withPets().length) return null;
+    const cur = kitchenSetting();
+    const opts = [['off', 'Off'], ['turns', 'Take turns'], ['together', 'Together']];
+    return h('div', { class:'st-card', id:'stPetsK' }, h('h3', { text:'Bao pets on the kitchen display' }),
+      h('div', { class:'ob-chips', role:'group', 'aria-label':'Bao pets on the kitchen display' }, opts.map(function(o){
+        return h('button', { type:'button', class:'ob-chip' + (cur === o[0] ? ' on' : ''), 'data-pk':o[0], 'aria-pressed':cur === o[0] ? 'true' : 'false', text:o[1],
+          onClick:function(){ setKitchen(o[0]); if(rerender) rerender(); } }); })),
+      h('p', { class:'ob-hint', text:'Take turns shows one child’s pet each day; Together shows them side by side. Anyone can pat them there; spending stays on each child’s own device. Saved on this device only.' }));
+  }
+
+  // a block on Today; the Children layout has it first. On the kitchen display, a block of the children's pets.
   try{
     FHLayout.register('today', ['pet', '🥟', 'Your pet', 'The pet you raise from your rewards (children’s own devices)', 'notile']);
     FHLayout.presetAdd('today', 'kids', ['pet', 'big'], 'filter');
+    FHLayout.register('kitchen', ['pets', '🥟', 'Bao pets', 'The children’s pets, side by side or one a day']);
+    FHLayout.presetAdd('kitchen', 'standard', ['pets', 'h'], 'chores');
+    FHLayout.presetAdd('kitchen', 'glance', ['pets', 'h'], 'chores');
+    FHLayout.presetAdd('kitchen', 'kids', ['pets', 'f'], 'chores');
   }catch(e){}
 
   return { KEY:KEY, SHOP:SHOP, data:data, view:view, mine:mine, state:state, start:start, suggestedCol:suggestedCol, todayFace:todayFace, render:render, settingsCard:settingsCard, setOn:setOn, setSleep:setSleep, setName:setName,
-    setPrices:setPrices, use:use, priceOf:priceOf, purseOf:purseOf, petDay:petDay, dayWorth:dayWorth, asleepAt:asleepAt, grow:grow, svg:fhPetBaoSvg };
+    setPrices:setPrices, setGoes:setGoes, kitchenNode:kitchenNode, kitchenCard:kitchenCard, kitchenSetting:kitchenSetting, setKitchen:setKitchen, goesOf:goesOf, bestOf:bestOf, _test:{ opts:TEST, game:function(){ return game; } }, use:use, priceOf:priceOf, purseOf:purseOf, petDay:petDay, dayWorth:dayWorth, asleepAt:asleepAt, grow:grow, svg:fhPetBaoSvg };
 })();
 
 /* ==================== SHOP TAGS on the shopping list (FHShopTags) ==================== */
@@ -18265,6 +18536,7 @@ function renderSettingsPage(){
     h('p',{class:'ob-label',text:'Mode'}),
     h('div',{class:'ob-chips'}, modeChip('Light','light'), modeChip('Dark','dark'), modeChip('Auto (follow device)','auto'))));
   root.appendChild(fhCalViewCard(rr));
+  if(typeof FHPet !== 'undefined'){ const pk = FHPet.kitchenCard(rr); if(pk) root.appendChild(pk); }
   root.appendChild(FHBins.settingsCard(rr));
   // one Food card: what the household doesn't eat, then each person's allergies and needs
   if(Feature.on('meals')){
@@ -18337,7 +18609,7 @@ function fhSettingsGroups(root){
     ['features', '🧩', 'Features', ['stFeatures', 'stAI']],
     ['remind', '🔔', 'Reminders & calendars', ['stReminders', 'stHouseRem', 'stCal']],
     ['sync', '🔄', 'Sync & sharing', ['stSync']],
-    ['device', '📱', 'This device', ['stLook', 'stCalView', 'stLock']],
+    ['device', '📱', 'This device', ['stLook', 'stCalView', 'stPetsK', 'stLock']],
     ['backup', '💾', 'Backup & setup', ['stBackup', 'stSetup']],
     ['help', '💬', 'Help & feedback', ['stFeedbackCard', 'stOwner']]
   ];
@@ -18642,7 +18914,7 @@ const FHKitchen = (function(){
     tickClock();
     const wrap = el.querySelector('.fhk-main'); wrap.innerHTML = '';
     // the screen's blocks, in this device's order and widths (FHLayout, "✏️ Edit" in the top bar turns the screen into the editor)
-    const nodes = { routines:(typeof FHRoutines !== 'undefined' && Feature.on('routines') ? FHRoutines.kitchenNode(now) : null), shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now) };
+    const nodes = { routines:(typeof FHRoutines !== 'undefined' && Feature.on('routines') ? FHRoutines.kitchenNode(now) : null), shopping:shopCard(now), plans:FHEvents.kitchenCard(now), tasks:FHTasks.kitchenCard(now), upcoming:FHTasks.kitchenUpcoming(now), pets:(typeof FHPet !== 'undefined' ? FHPet.kitchenNode(now) : null) };
     if(Feature.on('meals')){
       nodes.dinner = mealCard(now);
       const tm = shAddDays(now, 1); let ti = null; try{ ti = MealApp.getDayDisplay(tm); }catch(e){}
