@@ -3336,6 +3336,12 @@ button.fhah-row{ cursor:pointer; }
 .fhpet-kname b{ font-size:1em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .fhpet-kname small{ font-size:.75em; color:var(--muted); }
 .fhpet-kline{ margin:4px 0 0; font-size:.75em; color:var(--muted); }
+/* Bao pet seasons (stage 5): a corner badge on what's in season, decorations over the place, the grown-ups' hemisphere choice */
+.fhpet-item{ position:relative; }
+.fhpet-badge{ position:absolute; top:4px; right:5px; font-size:15px; line-height:1; }
+.fhpet-stage .fhpet-deco{ pointer-events:none; }
+.fhpet-hemi{ align-items:center; margin:2px 0 10px; }
+.fhpet-hemi .fhpet-ph{ font-size:13.5px; margin-right:4px; }
 
 </style>
 <script>/* ==================== THEME: colour palettes + light / dark / auto ==================== */
@@ -12808,7 +12814,9 @@ const FHOcc = (function(){
     { id:'fathers', emoji:'👔', name:'Father’s Day', date:y => nthWeekday(y, 5, 0, 3), remind:[['Buy a card and present', 7]], per:true },
     { id:'valentines', emoji:'💌', name:'Valentine’s Day', date:y => new Date(y, 1, 14), remind:[['Buy a card', 7]] },
     { id:'halloween', emoji:'🎃', name:'Halloween', date:y => new Date(y, 9, 31), remind:[['Sort costumes', 14]] },
-    { id:'thanksgiving', emoji:'🦃', name:'Thanksgiving', usOnly:true, date:y => nthWeekday(y, 10, 4, 4), remind:[['Plan the meal', 14]] }
+    { id:'thanksgiving', emoji:'🦃', name:'Thanksgiving', usOnly:true, date:y => nthWeekday(y, 10, 4, 4), remind:[['Plan the meal', 14]] },
+    { id:'july4', emoji:'🎆', name:'Fourth of July', usOnly:true, date:y => new Date(y, 6, 4), remind:[['Plan the cookout', 7]] },
+    { id:'bonfire', emoji:'🎇', name:'Bonfire Night', ukOnly:true, date:y => new Date(y, 10, 5), remind:[['Find a fireworks display', 7]] }
   ];
   function fest(id){ return FESTIVALS.find(f => f.id === id); }
   function festDate(f, y){
@@ -12912,7 +12920,7 @@ const FHOcc = (function(){
 
   /* ---- choosing celebrations ---- */
   function chosenFest(){ const m = {}; load().forEach(o => { if(o.kind === 'festival') m[o.fid] = o; }); return m; }
-  function festOffer(){ return FESTIVALS.filter(f => !f.usOnly || us()); }
+  function festOffer(){ return FESTIVALS.filter(f => (!f.usOnly || us()) && (!f.ukOnly || !us())); }
   function setFest(id, on){
     let list = load(); const have = list.find(o => o.kind === 'festival' && o.fid === id);
     if(on && !have){ const f = fest(id);
@@ -15569,6 +15577,28 @@ function fhPetWearSvg(w, L, bath){
   if(w.bow) s += '<g stroke="' + L + '" stroke-width="1.5" stroke-linejoin="round"><path d="M47 26.5 L41 22 L41.6 30.6 Z" fill="#ff8fb1"/><path d="M47 26.5 L53.2 21.6 L53 31 Z" fill="#ff8fb1"/><circle cx="47" cy="26.5" r="2.1" fill="#ff6f98"/></g>';
   if(w.crown) s += '<path d="M22.5 19.5 L23.2 9.5 L28 14 L32 7 L36 14 L40.8 9.5 L41.5 19.5 Z" fill="#f7cf4a" stroke="' + L + '" stroke-width="1.7" stroke-linejoin="round"/><circle cx="32" cy="15.6" r="1.5" fill="#ef7b63"/>';
   if(w.chef) s += '<g fill="#fff" stroke="' + L + '" stroke-width="1.8" stroke-linejoin="round"><path d="M24.5 13.5 C19 13 18.5 5 24.5 5.5 C25 0 32 -1.5 33.5 3 C36 -1 43.5 1 41.5 6 C46.5 6.5 45.5 13.5 39.5 13.5 Z"/><rect x="23.5" y="12.5" width="17" height="7" rx="2"/></g>';
+  // seasonal (ported from the canvas): woolly, santa, bunny, pumpkin, sunhat, flowers; hearts and stars on the face; a bobble scarf
+  const heart = function(x){ return '<path transform="translate(' + x + ' 39.6) scale(1.45)" d="M0 4 C-6 0 -4.5 -4.5 -2 -4.3 C-1 -4.2 -0.3 -3.5 0 -2.7 C0.3 -3.5 1 -4.2 2 -4.3 C4.5 -4.5 6 0 0 4 Z"/>'; };
+  const star5 = function(cx, cy, R, r){ let d = ''; for(let i = 0; i < 10; i++){ const a = Math.PI / 5 * i - Math.PI / 2, q = i % 2 ? r : R; d += (i ? 'L' : 'M') + (cx + q * Math.cos(a)).toFixed(2) + ' ' + (cy + q * Math.sin(a)).toFixed(2); } return '<path d="' + d + 'Z"/>'; };
+  if(w.hearts) s += '<g fill="#ef5f7a" stroke="' + L + '" stroke-width="0.8" stroke-linejoin="round">' + heart(25) + heart(39) + '</g><path d="M30.4 38.6h3.2" fill="none" stroke="#ef5f7a" stroke-width="1.4"/>';
+  if(w.stars) s += '<g fill="#5b8fd9" stroke="' + L + '" stroke-width="0.9" stroke-linejoin="round">' + star5(25, 39.8, 6.4, 3) + star5(39, 39.8, 6.4, 3) + '</g><path d="M30.6 38.8h2.8" fill="none" stroke="#e5484d" stroke-width="1.5"/>'
+    + '<g fill="#fff"><circle cx="23.6" cy="38.4" r=".9"/><circle cx="37.6" cy="38.4" r=".9"/></g>';
+  if(w.scarf && !bath) s += '<g stroke="' + L + '" stroke-width="1.5" stroke-linejoin="round"><path d="M38 51.5 L44.5 52 L43.4 61 L37.8 60.4 Z" fill="#e5484d"/><path d="M18.5 48.4 Q32 53 45.5 48.4 L45.5 52.6 Q32 57.2 18.5 52.6 Z" fill="#e5484d"/></g>'
+    + '<g stroke="#fff" stroke-width="1.6"><path d="M25 50.6 L25 55.2M32 51.4 L32 56M39 50.6 L39 55.2"/><path d="M38.2 56.2 L44 56.8"/></g><g fill="#fff" stroke="' + L + '" stroke-width=".8"><circle cx="39.2" cy="62" r="1.3"/><circle cx="42.4" cy="62.3" r="1.3"/></g>';
+  if(w.woolly) s += '<g stroke="' + L + '" stroke-width="1.7" stroke-linejoin="round"><path d="M18.5 22 C18.5 11.5 24.5 6.5 32 6.5 C39.5 6.5 45.5 11.5 45.5 22 Z" fill="#5b8fd9"/><path d="M24 10 L24 21 M29 7.5 L29 21 M35 7.5 L35 21 M40 10 L40 21" stroke="#3f6fb5" stroke-width="1.3"/>'
+    + '<rect x="16.5" y="19" width="31" height="6.5" rx="3" fill="#fff"/><circle cx="32" cy="5" r="3.6" fill="#fff"/></g>';
+  if(w.santa) s += '<g stroke="' + L + '" stroke-width="1.7" stroke-linejoin="round"><path d="M18.5 22 C20 10.5 29 5 39 6 C45.5 6.8 50 11.5 52 18.5 L47.2 19.6 C45.6 15.6 42.6 13.4 38.6 13.2 C42.2 15.8 44.8 18.8 45.6 22 Z" fill="#e5484d"/>'
+    + '<rect x="16.5" y="19" width="31" height="6.5" rx="3" fill="#fff"/><circle cx="51.6" cy="19.6" r="3.4" fill="#fff"/></g>';
+  if(w.bunny) s += '<g stroke="' + L + '" stroke-width="1.6"><path d="M17.5 25 Q32 14.5 46.5 25" fill="none" stroke="#f4adc3" stroke-width="2.6" stroke-linecap="round"/>'
+    + '<ellipse cx="24.5" cy="9" rx="4.4" ry="11.5" transform="rotate(-14 24.5 9)" fill="#fff"/><ellipse cx="24.5" cy="9.5" rx="2" ry="7.6" transform="rotate(-14 24.5 9.5)" fill="#f4adc3" stroke="none"/>'
+    + '<ellipse cx="39.5" cy="9" rx="4.4" ry="11.5" transform="rotate(14 39.5 9)" fill="#fff"/><ellipse cx="39.5" cy="9.5" rx="2" ry="7.6" transform="rotate(14 39.5 9.5)" fill="#f4adc3" stroke="none"/></g>';
+  if(w.pumpkin) s += '<g stroke="' + L + '" stroke-width="1.6" stroke-linejoin="round"><path d="M32 8 C31.4 5 32.6 2.6 35 2" fill="none" stroke="#2f5a1e" stroke-width="2" stroke-linecap="round"/><ellipse cx="32" cy="15.5" rx="11.5" ry="7.6" fill="#f08a3c"/>'
+    + '<path d="M27 8.6 C24.4 12 24.4 19 27 22.6 M37 8.6 C39.6 12 39.6 19 37 22.6 M32 8 V23" fill="none" stroke="#c4621e" stroke-width="1.3"/><path d="M35 6 C38 3 42 3.6 43 5.4 C40 7.4 37 7.6 35 6 Z" fill="#8fd07a" stroke="#2f5a1e" stroke-width="1.2"/></g>';
+  if(w.sunhat) s += '<g stroke="' + L + '" stroke-width="1.6" stroke-linejoin="round"><ellipse cx="32" cy="21.5" rx="19.5" ry="4.6" fill="#f2d58a"/><path d="M23.5 21.5 C23.5 12.5 27 10 32 10 C37 10 40.5 12.5 40.5 21.5 Z" fill="#f2d58a"/>'
+    + '<rect x="23.7" y="16.6" width="16.6" height="3.6" fill="#ef7b63" stroke="none"/></g>';
+  if(w.flowers) s += '<path d="M17 25.5 Q32 15.5 47 25.5" fill="none" stroke="#5f9a4a" stroke-width="2" stroke-linecap="round"/><g stroke="' + L + '" stroke-width="0.9">'
+    + '<circle cx="19" cy="24.6" r="3.1" fill="#f4adc3"/><circle cx="25.6" cy="20.6" r="3.1" fill="#fff0b8"/><circle cx="32" cy="19" r="3.3" fill="#f4adc3"/><circle cx="38.4" cy="20.6" r="3.1" fill="#c6aeea"/><circle cx="45" cy="24.6" r="3.1" fill="#fff0b8"/></g>'
+    + '<g fill="#f2c552"><circle cx="19" cy="24.6" r="1"/><circle cx="25.6" cy="20.6" r="1"/><circle cx="32" cy="19" r="1.1"/><circle cx="38.4" cy="20.6" r="1"/><circle cx="45" cy="24.6" r="1"/></g>';
   return s;
 }
 function fhPetDuck(){
@@ -15595,6 +15625,26 @@ function fhPetItemSvg(id, size){
     dumpling:'<path d="M7 31C7 19 14 12 24 12S41 19 41 31C41 36 34 37.5 24 37.5S7 36 7 31Z" fill="#fff0b8" stroke="#7a5212" stroke-width="2"/><path d="M24 12.5V19M24 13C20 15 16 16.5 12 17M24 13C28 15 32 16.5 36 17" fill="none" stroke="#e5b23c" stroke-width="1.6" stroke-linecap="round"/>'
       + '<circle cx="19" cy="27" r="1.6" fill="#7a5212"/><circle cx="29" cy="27" r="1.6" fill="#7a5212"/><path d="M22 31Q24 33 26 31" fill="none" stroke="#7a5212" stroke-width="1.4" stroke-linecap="round"/>',
     bubbles:'<g fill="#e3f2ff" stroke="#4a86c0" stroke-width="1.8"><circle cx="16" cy="30" r="10"/><circle cx="33" cy="17" r="8"/><circle cx="35" cy="37" r="5.5"/></g><path d="M11 26a5 5 0 0 1 4-3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+    // seasonal food and the birthday cake
+    cake:'<path d="M24 4C26.5 7 26.5 9.5 24 10.5C21.5 9.5 21.5 7 24 4Z" fill="#f7b733" stroke="#a4561a" stroke-width="1.2"/><rect x="22" y="11" width="4" height="12" rx="1.2" fill="#5b8fd9" stroke="#1f4a73" stroke-width="1.2"/>'
+      + '<rect x="7" y="22" width="34" height="19" rx="4" fill="#fff0b8" stroke="#7a2945" stroke-width="2"/><path d="M7 27C10 31 13 31 15 27C17 31 21 31 23 27C25 31 29 31 31 27C33 31 37 31 41 27V26C41 23.8 39.2 22 37 22H11C8.8 22 7 23.8 7 26Z" fill="#f4adc3" stroke="#7a2945" stroke-width="1.6" stroke-linejoin="round"/>'
+      + '<g fill="#5b8fd9"><circle cx="13" cy="35" r="1.3"/><circle cx="24" cy="36" r="1.3"/><circle cx="35" cy="35" r="1.3"/></g>',
+    mincepie:'<path d="M5 28H43L39.5 39C38.8 41 37 42 35 42H13C11 42 9.2 41 8.5 39Z" fill="#e8b46a" stroke="#7a4a1a" stroke-width="2" stroke-linejoin="round"/><path d="M5 28C5 20 13 16 24 16S43 20 43 28Z" fill="#f2c98a" stroke="#7a4a1a" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M24 18.5L25.6 22.4L29.8 22.6L26.6 25.2L27.6 29.2L24 27L20.4 29.2L21.4 25.2L18.2 22.6L22.4 22.4Z" fill="#fff6e4" stroke="#7a4a1a" stroke-width="1.1" stroke-linejoin="round"/><g fill="#fff" opacity=".85"><circle cx="12" cy="22" r=".9"/><circle cx="35" cy="21" r=".9"/><circle cx="31" cy="26" r=".7"/></g>',
+    pie:'<path d="M4 30L24 9L44 30Z" fill="#f08a3c" stroke="#8a3e12" stroke-width="2" stroke-linejoin="round"/><path d="M4 30H44V36C44 37.5 43 38.5 41.5 38.5H6.5C5 38.5 4 37.5 4 36Z" fill="#e8b46a" stroke="#8a3e12" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M18 14C21 11 27 11 30 14C28 17 20 17 18 14Z" fill="#fff" stroke="#c9b9a4" stroke-width="1.2"/><path d="M8 34h32" stroke="#c98a42" stroke-width="1.3" stroke-dasharray="3 3"/>',
+    biscuit:'<path d="M24 42C8 31 5 21 9 14C13 7.5 21 8 24 14.5C27 8 35 7.5 39 14C43 21 40 31 24 42Z" fill="#e8b46a" stroke="#8a5212" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M24 36C13 28.5 11 22 13.6 17.5C16 13.6 21 14.4 24 19C27 14.4 32 13.6 34.4 17.5C37 22 35 28.5 24 36Z" fill="#f4adc3" stroke="#d97a99" stroke-width="1.2"/><g fill="#fff"><circle cx="18" cy="21" r="1"/><circle cx="29" cy="20" r="1"/><circle cx="24" cy="27" r="1"/></g>',
+    strawberry:'<path d="M24 43C14 38 8 28 10 20C11.5 15 17 13.5 24 13.5S36.5 15 38 20C40 28 34 38 24 43Z" fill="#ef5f6a" stroke="#8a1e2a" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M14 15L18 8L22 13L24 6L26 13L30 8L34 15C30 18 18 18 14 15Z" fill="#8fd07a" stroke="#2f5a1e" stroke-width="1.6" stroke-linejoin="round"/><g fill="#fff3b0"><ellipse cx="18" cy="24" rx=".9" ry="1.3"/><ellipse cx="26" cy="22" rx=".9" ry="1.3"/><ellipse cx="31" cy="28" rx=".9" ry="1.3"/><ellipse cx="21" cy="31" rx=".9" ry="1.3"/><ellipse cx="27" cy="35" rx=".9" ry="1.3"/><ellipse cx="16" cy="29" rx=".9" ry="1.3"/></g>',
+    egg:'<path d="M24 5C33 5 39 18 39 28C39 37 32 43 24 43S9 37 9 28C9 18 15 5 24 5Z" fill="#8a5232" stroke="#4a2a14" stroke-width="2"/><path d="M10.5 24C15 21 19 27 24 24S33 21 37.5 24" fill="none" stroke="#f4adc3" stroke-width="3" stroke-linecap="round"/>'
+      + '<g fill="#fff0b8"><circle cx="17" cy="33" r="1.5"/><circle cx="24" cy="35" r="1.5"/><circle cx="31" cy="33" r="1.5"/></g><ellipse cx="18" cy="14" rx="2.4" ry="4" transform="rotate(20 18 14)" fill="#fff" opacity=".35"/>',
+    lolly:'<path d="M24 32V45" stroke="#c9a46a" stroke-width="3.4" stroke-linecap="round"/><path d="M14 33V13C14 7 18.5 3.5 24 3.5S34 7 34 13V33C34 34.5 33 35.5 31.5 35.5H16.5C15 35.5 14 34.5 14 33Z" fill="#ffb347" stroke="#8a4a12" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M14 18H34V13C34 7 29.5 3.5 24 3.5S14 7 14 13Z" fill="#ef5f7a" stroke="#8a4a12" stroke-width="2" stroke-linejoin="round"/><path d="M14 26H34" stroke="#fff0b8" stroke-width="4"/><path d="M18 9V30" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>',
+    apple:'<path d="M24 14C19 10 9 11 9 23C9 34 16 43 21 43C22.5 43 23 42 24 42S25.5 43 27 43C32 43 39 34 39 23C39 11 29 10 24 14Z" fill="#ef5f5f" stroke="#7a1e1e" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M24 14C24 10 25 7 27 5" fill="none" stroke="#6b4423" stroke-width="2.2" stroke-linecap="round"/><path d="M27 9C30 5 35 5 37 6.5C34.5 10 30.5 10.5 27 9Z" fill="#8fd07a" stroke="#2f5a1e" stroke-width="1.4"/><ellipse cx="16" cy="22" rx="2.4" ry="4" transform="rotate(20 16 22)" fill="#fff" opacity=".45"/>',
+    toffee:'<path d="M24 22V3" stroke="#c9a46a" stroke-width="3" stroke-linecap="round"/><path d="M24 20C19 16 9 17 9 28C9 37 16 44 21 44C22.5 44 23 43 24 43S25.5 44 27 44C32 44 39 37 39 28C39 17 29 16 24 20Z" fill="#b8321e" stroke="#5a1408" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M11.5 36C16 41 32 41 36.5 36C38 39 34 44 27 44C25.5 44 25 43 24 43S22.5 44 21 44C14 44 10 39 11.5 36Z" fill="#7a1e0e" opacity=".55"/><ellipse cx="16" cy="27" rx="2.4" ry="4.2" transform="rotate(20 16 27)" fill="#fff" opacity=".6"/>',
     bath:'<g fill="#fff" stroke="#9ec3e6" stroke-width="1.4"><circle cx="10" cy="20" r="5"/><circle cx="18" cy="17" r="6"/><circle cx="28" cy="18" r="5.5"/><circle cx="37" cy="19" r="5"/></g><path d="M3 22H45L42 37C41 41.5 37 43.5 32 43.5H16C11 43.5 7 41.5 6 37Z" fill="#fff" stroke="#4a86c0" stroke-width="2" stroke-linejoin="round"/><path d="M10 46L12 42.5M38 46L36 42.5" stroke="#4a86c0" stroke-width="2.2" stroke-linecap="round"/>',
     shower:'<path d="M6 2V8C6 10 8 11 10 11H18" fill="none" stroke="#8a93a6" stroke-width="2.6" stroke-linecap="round"/><path d="M16 8H32L30 14H18Z" fill="#c3cfdc" stroke="#5d6678" stroke-width="1.6" stroke-linejoin="round"/><g stroke="#4a86c0" stroke-width="2" stroke-linecap="round">'
       + [['M19 19L18 24', '1;0.2;1'], ['M24 18V24', '0.2;1;0.2'], ['M29 19L30 24', '1;0.2;1'], ['M21 28L20 33', '0.2;1;0.2'], ['M27 28L28 33', '1;0.2;1']].map(function(d){ return '<path d="' + d[0] + '"><animate attributeName="opacity" values="' + d[1] + '" dur="0.6s" repeatCount="indefinite"/></path>'; }).join('') + '</g>'
@@ -15613,9 +15663,49 @@ function fhPetPlaceSvg(id){
       + '<path d="M0 150C90 142 270 142 360 150V200H0Z" fill="#f6dfaa"/><g transform="translate(300 128)"><path d="M0 34V0" stroke="#b8873f" stroke-width="3"/><path d="M-22 4C-10 -12 10 -12 22 4Z" fill="#ef7b63"/></g>',
     space:'<rect width="360" height="200" fill="#23213a"/><g fill="#fff"><circle cx="30" cy="30" r="1.4"/><circle cx="90" cy="60" r="1"/><circle cx="150" cy="22" r="1.6"/><circle cx="210" cy="70" r="1"/><circle cx="250" cy="30" r="1.3"/><circle cx="330" cy="90" r="1.2"/><circle cx="60" cy="110" r="1"/></g>'
       + '<circle cx="300" cy="46" r="22" fill="#c6aeea"/><ellipse cx="300" cy="46" rx="36" ry="7" fill="none" stroke="#f4adc3" stroke-width="3"/><path d="M0 156C90 146 270 146 360 156V200H0Z" fill="#8a8899"/>',
-    snow:'<rect width="360" height="200" fill="#e8eef8"/><g fill="#5f8f6a"><path d="M40 150L58 100L76 150Z"/><path d="M290 150L310 92L330 150Z"/></g><path d="M0 152C70 138 150 146 200 150C260 144 320 140 360 150V200H0Z" fill="#fff"/>'
+    snow:'<rect width="360" height="200" fill="#e8eef8"/><g fill="#5f8f6a"><path d="M40 150L58 100L76 150Z"/><path d="M290 150L310 92L330 150Z"/></g><path d="M0 152C70 138 150 146 200 150C260 144 320 140 360 150V200H0Z" fill="#fff"/>',
+    // seasonal places
+    blossom:'<rect width="360" height="200" fill="#e9f4ff"/><circle cx="300" cy="40" r="18" fill="#fff0b8"/>'
+      + [[70, 64], [290, 74]].map(function(t){ const x = t[0], y = t[1];
+        return '<path d="M' + x + ' 152V' + (y + 20) + '" stroke="#8a5a3a" stroke-width="8" stroke-linecap="round"/><path d="M' + x + ' ' + (y + 36) + 'L' + (x - 18) + ' ' + (y + 14) + 'M' + x + ' ' + (y + 30) + 'L' + (x + 20) + ' ' + (y + 10) + '" stroke="#8a5a3a" stroke-width="4" stroke-linecap="round"/>'
+        + '<g fill="#f8c4d4"><circle cx="' + x + '" cy="' + y + '" r="30"/><circle cx="' + (x - 26) + '" cy="' + (y + 12) + '" r="20"/><circle cx="' + (x + 26) + '" cy="' + (y + 10) + '" r="22"/></g>'
+        + '<g fill="#fff"><circle cx="' + (x - 10) + '" cy="' + (y - 8) + '" r="3"/><circle cx="' + (x + 14) + '" cy="' + (y + 4) + '" r="3"/><circle cx="' + (x - 24) + '" cy="' + (y + 16) + '" r="2.5"/></g>'; }).join('')
+      + '<g fill="#f8c4d4"><ellipse cx="140" cy="60" rx="3" ry="2" transform="rotate(30 140 60)"/><ellipse cx="190" cy="100" rx="3" ry="2"/><ellipse cx="230" cy="40" rx="3" ry="2" transform="rotate(-20 230 40)"/></g>'
+      + '<path d="M0 154C80 144 280 144 360 154V200H0Z" fill="#b5d996"/><g fill="#fff"><circle cx="120" cy="170" r="3"/><circle cx="250" cy="176" r="3"/><circle cx="40" cy="180" r="3"/></g><g fill="#f2c552"><circle cx="120" cy="170" r="1.2"/><circle cx="250" cy="176" r="1.2"/><circle cx="40" cy="180" r="1.2"/></g>',
+    autumn:'<rect width="360" height="200" fill="#fdecd6"/><circle cx="66" cy="40" r="18" fill="#fff0b8"/>'
+      + '<path d="M300 152V60" stroke="#7a4a2a" stroke-width="9" stroke-linecap="round"/><path d="M300 100L276 80M300 90L322 70" stroke="#7a4a2a" stroke-width="4" stroke-linecap="round"/>'
+      + '<g fill="#e8862e"><circle cx="300" cy="56" r="28"/><circle cx="274" cy="72" r="18"/></g><g fill="#d9542e"><circle cx="324" cy="70" r="20"/><circle cx="296" cy="40" r="14"/></g>'
+      + '<g fill="#e8862e"><ellipse cx="150" cy="70" rx="4" ry="2.4" transform="rotate(30 150 70)"/><ellipse cx="210" cy="110" rx="4" ry="2.4" transform="rotate(-30 210 110)"/></g><ellipse cx="240" cy="40" rx="4" ry="2.4" fill="#d9542e"/>'
+      + '<path d="M0 154C80 146 280 146 360 154V200H0Z" fill="#d9b77a"/><path d="M30 160C40 136 100 134 112 160Z" fill="#e8862e"/><path d="M44 160C52 144 86 142 96 160Z" fill="#d9542e"/><path d="M58 158C62 148 76 148 80 158Z" fill="#f2c552"/>',
+    spooky:'<rect width="360" height="200" fill="#3a3358"/><circle cx="296" cy="44" r="22" fill="#fff6d0"/><circle cx="304" cy="38" r="20" fill="#3a3358"/>'
+      + '<g fill="#fff" opacity=".8"><circle cx="40" cy="30" r="1.2"/><circle cx="120" cy="20" r="1"/><circle cx="200" cy="44" r="1.2"/></g>'
+      + '<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -6;0 0" dur="3s" repeatCount="indefinite"/><path d="M150 112C150 92 160 84 170 84S190 92 190 112V124L184 119L177 124L170 119L163 124L156 119L150 124Z" fill="#fff" stroke="#c8c0e0" stroke-width="2"/>'
+      + '<circle cx="164" cy="100" r="2.4" fill="#3a3358"/><circle cx="176" cy="100" r="2.4" fill="#3a3358"/><path d="M166 108Q170 111 174 108" fill="none" stroke="#3a3358" stroke-width="1.6" stroke-linecap="round"/></g>'
+      + '<path d="M0 154C80 144 280 144 360 154V200H0Z" fill="#5a4a7a"/><g transform="translate(40 132)"><ellipse cx="18" cy="14" rx="20" ry="14" fill="#f08a3c"/><path d="M18 0V-6" stroke="#2f5a1e" stroke-width="3"/><path d="M8 10L12 6L16 10ZM20 10L24 6L28 10Z" fill="#fff0b8"/><path d="M8 18Q18 24 28 18" fill="none" stroke="#fff0b8" stroke-width="2.4"/></g>'
+      + '<g transform="translate(284 136)"><ellipse cx="14" cy="11" rx="15" ry="11" fill="#f08a3c"/><path d="M14 0V-5" stroke="#2f5a1e" stroke-width="3"/><circle cx="9" cy="9" r="2" fill="#fff0b8"/><circle cx="19" cy="9" r="2" fill="#fff0b8"/></g>',
   };
   return '<svg class="fhpet-place" viewBox="0 0 360 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' + (P[id] || P.kitchen) + '</svg>';
+}
+/* decorations across the top of any place: twinkly lights (Christmas) and bunting with balloons (birthday month) */
+function fhPetDecoSvg(kind){
+  let s = '';
+  const sag = function(x){ return Math.abs(Math.sin(x / 90 * Math.PI)) * 9; };
+  if(kind === 'lights'){
+    const cols = ['#ef5f5f', '#f7cf4a', '#5b8fd9', '#8fd07a', '#f4adc3'];
+    s += '<path d="M0 10Q45 28 90 10T180 10T270 10T360 10" fill="none" stroke="#4a5a3a" stroke-width="1.6"/>';
+    for(let i = 0; i < 16; i++){ const x = 11 + i * 22.5, y = 10 + sag(x);
+      s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + (y + 5).toFixed(1) + '" rx="3.2" ry="4.6" fill="' + cols[i % 5] + '"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="' + ((i % 4) * 0.4).toFixed(1) + 's" repeatCount="indefinite"/></ellipse>'; }
+  }
+  if(kind === 'bunting'){
+    const cols = ['#ef7b63', '#f7cf4a', '#5b8fd9', '#8fd07a', '#c6aeea'];
+    s += '<path d="M0 8Q45 26 90 8T180 8T270 8T360 8" fill="none" stroke="#7a5212" stroke-width="1.4"/>';
+    for(let i = 0; i < 12; i++){ const x = 15 + i * 30, y = 8 + sag(x);
+      s += '<path d="M' + (x - 9) + ' ' + y.toFixed(1) + 'L' + (x + 9) + ' ' + y.toFixed(1) + 'L' + x + ' ' + (y + 16).toFixed(1) + 'Z" fill="' + cols[i % 5] + '"/>'; }
+    [[78, 64, '#ef5f7a'], [97, 56, '#5b8fd9'], [284, 62, '#f7cf4a']].forEach(function(b, i){
+      s += '<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="' + (2.4 + i * 0.5) + 's" repeatCount="indefinite"/><path d="M' + b[0] + ' ' + (b[1] + 14) + 'Q' + (b[0] - 3) + ' ' + (b[1] + 32) + ' ' + b[0] + ' ' + (b[1] + 46) + '" fill="none" stroke="#8a80a0" stroke-width="1"/>'
+        + '<ellipse cx="' + b[0] + '" cy="' + b[1] + '" rx="11" ry="14" fill="' + b[2] + '"/><ellipse cx="' + (b[0] - 4) + '" cy="' + (b[1] - 5) + '" rx="2.4" ry="4" fill="#fff" opacity=".45"/></g>'; });
+  }
+  return s ? '<svg class="fhpet-place fhpet-deco" viewBox="0 0 360 200" preserveAspectRatio="xMidYMin slice" aria-hidden="true">' + s + '</svg>' : '';
 }
 
 /* ==================== BAO PET (specs/bao-pet.md) ====================
@@ -15634,15 +15724,29 @@ const FHPet = (function(){
   const SLEEP = { bed:'19:30', wake:'07:00' };
   const TIMES_BED = ['18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
   const TIMES_WAKE = ['06:30', '07:00', '07:30', '08:00', '08:30'];
-  /* the shop: [id, name, price for everyone (a day's worth of 6 = these prices when fair), slot] */
+  /* the shop: [id, name, price for everyone (a day's worth of 6 = these prices when fair), slot, when]. `when` = a season
+     (bought only then), a celebration switched on in Occasions (from a few days before), or the child's birth month. */
   const SHOP = {
-    food:[['bokchoy', 'Bok choy', 1], ['onigiri', 'Rice ball', 1], ['noodles', 'Noodles', 2], ['mango', 'Mango', 2]],
+    food:[['bokchoy', 'Bok choy', 1], ['onigiri', 'Rice ball', 1], ['noodles', 'Noodles', 2], ['mango', 'Mango', 2],
+      ['cake', 'Birthday cake', 0, '', 'birthday'], ['mincepie', 'Mince pie', 2, '', 'christmas'], ['pie', 'Pumpkin pie', 2, '', 'thanksgiving'], ['biscuit', 'Heart biscuit', 1, '', 'valentines'],
+      ['egg', 'Chocolate egg', 2, '', 'easter'], ['toffee', 'Toffee apple', 2, '', 'bonfire'],
+      ['strawberry', 'Strawberries', 1, '', 'spring'], ['lolly', 'Ice lolly', 1, '', 'summer'], ['apple', 'Crunchy apple', 1, '', 'autumn']],
     drinks:[['water', 'Water', 0], ['milk', 'Milk', 1], ['juice', 'Orange juice', 1], ['cocoa', 'Hot chocolate', 2], ['bubbletea', 'Bubble tea', 3]],
     wash:[['bath', 'Bubble bath', 0], ['shower', 'Shower', 0], ['duck', 'Rubber duck', 3]],
-    dress:[['leaf', 'Leaf hat', 4, 'head'], ['bandana', 'Bandana', 6, 'neck'], ['bow', 'Bow', 6, 'head'], ['glasses', 'Sunglasses', 8, 'face'], ['crown', 'Crown', 12, 'head'], ['chef', 'Chef’s hat', -1, 'head']],
-    places:[['kitchen', 'Kitchen', 0], ['garden', 'Bamboo garden', 6], ['beach', 'Beach', 8], ['space', 'Space', 10]],
+    dress:[['leaf', 'Leaf hat', 4, 'head'], ['bandana', 'Bandana', 6, 'neck'], ['bow', 'Bow', 6, 'head'], ['glasses', 'Sunglasses', 8, 'face'], ['crown', 'Crown', 12, 'head'], ['chef', 'Chef’s hat', -1, 'head'],
+      ['santa', 'Santa hat', 6, 'head', 'christmas'], ['hearts', 'Heart glasses', 6, 'face', 'valentines'], ['bunny', 'Bunny ears', 6, 'head', 'easter'], ['stars', 'Star glasses', 6, 'face', 'july4'],
+      ['pumpkin', 'Pumpkin hat', 6, 'head', 'halloween'], ['scarf', 'Bobble scarf', 6, 'neck', 'bonfire'],
+      ['woolly', 'Woolly hat', 6, 'head', 'winter'], ['flowers', 'Flower crown', 6, 'head', 'spring'], ['sunhat', 'Sun hat', 6, 'head', 'summer']],
+    places:[['kitchen', 'Kitchen', 0], ['garden', 'Bamboo garden', 6], ['beach', 'Beach', 8], ['space', 'Space', 10],
+      ['spooky', 'Spooky garden', 8, '', 'halloween'], ['snow', 'Snowy garden', 8, '', 'winter'], ['blossom', 'Blossom garden', 8, '', 'spring'], ['autumn', 'Autumn park', 8, '', 'autumn']],
     games:[['hide', 'Which steamer?', 2], ['catch', 'Catch the dumplings', 2], ['bubbles', 'Steam bubbles', 2]]
   };
+  const US_NAMES = { biscuit:'Heart cookie', lolly:'Ice pop', autumn:'Fall park' };
+  const WHEN = { winter:['❄️', 'Winter'], spring:['🌸', 'Spring'], summer:['☀️', 'Summer'], autumn:['🍂', 'Autumn'], christmas:['🎄', 'Christmas'], valentines:['💌', 'Valentine’s'],
+    easter:['🐣', 'Easter'], thanksgiving:['🦃', 'Thanksgiving'], july4:['🎆', 'Fourth of July'], halloween:['🎃', 'Halloween'], bonfire:['🎇', 'Bonfire Night'], birthday:['🎂', 'Birthday month'] };
+  // a celebration's things are in the shop from [days before, days after] it (Occasions works out the date)
+  const CELEB = { christmas:[24, 1], valentines:[13, 0], easter:[14, 1], thanksgiving:[14, 0], july4:[10, 0], halloween:[14, 0], bonfire:[7, 0] };
+  const SEASON_MONTHS = { winter:[12, 1, 2], spring:[3, 4, 5], summer:[6, 7, 8], autumn:[9, 10, 11] };
   const TABS = [['food', 'Food'], ['drinks', 'Drinks'], ['wash', 'Wash'], ['dress', 'Dress up'], ['places', 'Places'], ['games', 'Games']];
 
   function data(){
@@ -15749,6 +15853,45 @@ const FHPet = (function(){
     return Math.max(1, Math.round(base * d / 6));
   }
   function item(tab, id){ return (SHOP[tab] || []).find(function(x){ return x[0] === id; }) || null; }
+  function us(){ try{ return FHLocale.us(); }catch(e){ return false; } }
+  function nameOf(it){ return (us() && US_NAMES[it[0]]) || it[1]; }
+  function lc(n){ return /^Santa/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1); }
+
+  /* ---- seasons, celebrations and the birthday month (stage 5) ---- */
+  // seasons follow the household's half of the world: a grown-up's choice, or this device's time zone
+  function guessSouth(){
+    let tz = ''; try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){}
+    return /^Australia\/|^Antarctica\/|^Pacific\/(Auckland|Chatham|Fiji|Tongatapu|Apia|Noumea|Efate)|^America\/(Sao_Paulo|Argentina|Buenos_Aires|Santiago|Montevideo|Asuncion|Punta_Arenas)|^Africa\/(Johannesburg|Maputo|Harare|Lusaka|Windhoek|Gaborone|Maseru|Mbabane|Blantyre)|^Indian\/(Mauritius|Reunion|Antananarivo)/.test(tz);
+  }
+  function south(v){ const s = v.settings.hemi; return s === 's' ? true : s === 'n' ? false : guessSouth(); }
+  function seasonsOn(v){ return v.settings.seasons !== false; }
+  function birthdayOn(v){ return v.settings.birthday !== false; }
+  function seasonNow(v, now){
+    let m = (now || new Date()).getMonth() + 1; if(south(v)) m = (m + 5) % 12 + 1;
+    return Object.keys(SEASON_MONTHS).find(function(k){ return SEASON_MONTHS[k].indexOf(m) >= 0; });
+  }
+  let celebMemo = { k:'', out:null };
+  function celebsNow(now){
+    const t = today(now), mk = iso(t) + '|' + (fhRawGet('family-hub-occasions-v1') || '');
+    if(celebMemo.k === mk) return celebMemo.out;
+    const out = {}; let list = []; try{ list = FHOcc.load(); }catch(e){}
+    celebMemo = { k:mk, out:out };
+    list.forEach(function(o){
+      const w = o.kind === 'festival' && CELEB[o.fid]; if(!w) return;
+      let d = null; try{ d = FHOcc.next(o, addDays(t, -w[1])); }catch(e){}
+      if(d && Math.round((today(d) - t) / 86400000) <= w[0]) out[o.fid] = 1;
+    });
+    return out;
+  }
+  function birthMonth(pid, now){ const p = person(pid), m = p && /^\d{4}-(\d{2})$/.exec(p.born || ''); return !!m && +m[1] === (now || new Date()).getMonth() + 1; }
+  function inSeason(v, pid, when, now){
+    if(!when) return true;
+    if(when === 'birthday') return birthdayOn(v) && birthMonth(pid, now);
+    if(!seasonsOn(v)) return false;
+    return SEASON_MONTHS[when] ? seasonNow(v, now) === when : !!celebsNow(now)[when];
+  }
+  // across the top of every place: bunting in the birth month, twinkly lights at Christmas
+  function decoOf(v, pid, now){ return birthdayOn(v) && birthMonth(pid, now) ? 'bunting' : seasonsOn(v) && celebsNow(now).christmas ? 'lights' : ''; }
 
   /* everything a screen needs about a child's pet, or null */
   function view(pid, now){
@@ -15785,7 +15928,7 @@ const FHPet = (function(){
       status:status, progress:progress, bar:Math.max(0, Math.min(1, bar || 0)), asleep:asleep, sleep:sl, quiet:quiet, peckish:peckish, messy:messy,
       day:d, total:total, week:week, good:good, purse:purseOf(v, pid), place:k.place || 'kitchen',
       needsName:!name && hatched, mood:asleep || quiet ? 'sleepy' : peckish ? 'peckish' : 'happy',
-      wear:[head, w.face, w.neck].filter(Boolean).join(','), col:pet.col, duck:!!(k.owned && k.owned.duck) };
+      wear:[head, w.face, w.neck].filter(Boolean).join(','), col:pet.col, duck:!!(k.owned && k.owned.duck), deco:decoOf(v, pid, now) };
   }
   /* this device's child, when it's a child's own device with a pet */
   function mine(){ if(!fhChildDevice()) return ''; let pid = ''; try{ pid = FHPush.prefs().person; }catch(e){} return pid && state(pid) !== 'off' ? pid : ''; }
@@ -15806,7 +15949,7 @@ const FHPet = (function(){
     const paint = function(mood, ms, x, after){ holder.innerHTML = art(vw, mood, size, x); clearTimeout(timer);
       if(ms) timer = setTimeout(function(){ holder.innerHTML = art(vw, null, size); extra.innerHTML = ''; if(after) after(); }, ms); };
     const btn = h('button', { type:'button', class:'fhpet-stage' + (vw.asleep ? ' fhpet-night' : ''), 'aria-label':vw.asleep ? (vw.name || 'Your bao') + ' is asleep' : 'Pat ' + (vw.name || 'your bao'),
-      html:fhPetPlaceSvg(vw.place),
+      html:fhPetPlaceSvg(vw.place) + fhPetDecoSvg(vw.deco),
       onClick:function(){
         if(vw.asleep){ if(onStatus) onStatus('Shh… ' + (vw.name || 'your bao') + ' is asleep until ' + vw.sleep.wake + '.'); return; }
         if(vw.stage === 'egg'){ holder.classList.remove('fhpet-wiggle'); void holder.offsetWidth; holder.classList.add('fhpet-wiggle'); return; }
@@ -15884,25 +16027,32 @@ const FHPet = (function(){
     }
     // already theirs: wear it or take it off, or go there (free)
     if(owned && (tab === 'dress' || tab === 'places')){
-      if(tab === 'places'){ k.place = id; save(v); return { msg:id === 'kitchen' ? 'Home sweet home.' : 'Off to the ' + it[1].toLowerCase() + '!', act:{ happy:1 } }; }
+      if(tab === 'places'){ k.place = id; save(v); return { msg:id === 'kitchen' ? 'Home sweet home.' : 'Off to the ' + lc(nameOf(it)) + '!', act:{ happy:1 } }; }
       const cur = 'head' in k.wear || slot !== 'head' ? k.wear[slot] : (vw.size >= 6 ? 'chef' : '');
       k.wear[slot] = cur === id ? '' : id; save(v);
       return { msg:cur === id ? '' : nm + ' looks great!', act:cur === id ? null : { happy:1 } };
     }
     if(id === 'chef') return { msg:'The chef’s hat is free at Big bao.' };
     if(id === 'duck' && owned) return { msg:'The duck joins every bath.' };
+    // seasonal things: bought only in their season (things to wear and places stay theirs for ever)
+    const when = it[4];
+    if(when && !inSeason(v, pid, when, now))
+      return { msg:when === 'birthday' ? 'The birthday cake comes in your birthday month.' : 'The ' + lc(nameOf(it)) + ' is only in the shop ' + (SEASON_MONTHS[when] ? 'in ' + lc(WHEN[when][1]) : 'around ' + WHEN[when][1]) + '.' };
+    const year = String(today(now).getFullYear());
+    if(id === 'cake' && k.cake === year) return { msg:nm + ' has had this year’s birthday cake. Happy birthday month!' };
     const price = priceOf(v, pid, it[2]), purse = purseOf(v, pid);
-    if(price > purse) return { msg:'Save up ' + (price - purse) + ' more for the ' + it[1].toLowerCase() + '.' };
+    if(price > purse) return { msg:'Save up ' + (price - purse) + ' more for the ' + lc(nameOf(it)) + '.' };
     k.spent = (+k.spent || 0) + price;
     let msg = '', act = null;
-    if(tab === 'food'){ k.fed = petDay(vw.sleep, now); k.snacks = (+k.snacks || 0) + 1; msg = 'Yum! ' + nm + ' loved the ' + it[1].toLowerCase() + '.'; act = { eat:id }; }
-    else if(tab === 'drinks'){ msg = 'Slurp! ' + nm + ' loved the ' + it[1].toLowerCase() + '.'; act = { eat:id }; }
+    if(id === 'cake'){ const p = person(pid); k.cake = year; k.fed = petDay(vw.sleep, now); msg = 'Happy birthday month' + (p ? ', ' + p.name : '') + '! ' + nm + ' loved the cake.'; act = { eat:id }; }
+    else if(tab === 'food'){ k.fed = petDay(vw.sleep, now); k.snacks = (+k.snacks || 0) + 1; msg = 'Yum! ' + nm + ' loved the ' + lc(nameOf(it)) + '.'; act = { eat:id }; }
+    else if(tab === 'drinks'){ msg = 'Slurp! ' + nm + ' loved the ' + lc(nameOf(it)) + '.'; act = { eat:id }; }
     else if(tab === 'wash'){
       if(id === 'duck'){ k.owned.duck = 1; msg = 'A rubber duck for bath time!'; act = { happy:1 }; }
       else { k.snacks = 0; k.washed = iso(today(now)); msg = id === 'bath' ? 'Splish splash! Squeaky clean.' : 'A quick shower. All fresh!'; act = id === 'bath' ? { bath:1 } : { shower:1 }; }
     }
-    else if(tab === 'dress'){ k.owned[id] = 1; k.wear[slot] = id; msg = 'New! ' + nm + ' loves the ' + it[1].toLowerCase() + '.'; act = { happy:1 }; }
-    else if(tab === 'places'){ k.owned[id] = 1; k.place = id; msg = 'A new place! Off to the ' + it[1].toLowerCase() + '.'; act = { happy:1 }; }
+    else if(tab === 'dress'){ k.owned[id] = 1; k.wear[slot] = id; msg = 'New! ' + nm + ' loves the ' + lc(nameOf(it)) + '.'; act = { happy:1 }; }
+    else if(tab === 'places'){ k.owned[id] = 1; k.place = id; msg = 'A new place! Off to the ' + lc(nameOf(it)) + '.'; act = { happy:1 }; }
     save(v);
     return { msg:msg, act:act };
   }
@@ -15912,23 +16062,31 @@ const FHPet = (function(){
     const tabs = h('div', { class:'fhpet-tabs', role:'group', 'aria-label':'The shop' }, TABS.map(function(t){
       return h('button', { type:'button', class:'fhpet-tab' + (tab === t[0] ? ' on' : ''), 'aria-pressed':tab === t[0] ? 'true' : 'false', 'data-tab':t[0], text:t[1], onClick:function(){ tab = t[0]; onUse(null); } });
     }));
-    const grid = h('div', { class:'fhpet-items' }, (SHOP[tab] || []).map(function(it){
+    const keep = tab === 'dress' || tab === 'places';
+    const list = (SHOP[tab] || []).filter(function(it){ return !it[4] || inSeason(v, vw.pid, it[4]) || (keep && owned[it[0]]); })
+      // what's in season first, so it's seen
+      .sort(function(a, b){ return (b[4] && inSeason(v, vw.pid, b[4]) ? 1 : 0) - (a[4] && inSeason(v, vw.pid, a[4]) ? 1 : 0); });
+    const grid = h('div', { class:'fhpet-items' }, list.map(function(it){
       const id = it[0], slot = it[3];
       const has = !!owned[id] || id === 'kitchen' || (id === 'chef' && vw.size >= 6);
+      const fresh = it[4] && inSeason(v, vw.pid, it[4]) ? WHEN[it[4]] : null;
       const using = tab === 'places' ? vw.place === id : tab === 'dress' ? (slot === 'head' ? head : w[slot]) === id : false;
       const price = priceOf(v, vw.pid, it[2]);
       let tag = price === 0 ? 'Free' : String(price);
       if(id === 'chef') tag = has ? (using ? 'Wearing' : 'Wear it') : 'At Big bao';
       else if(has && (tab === 'dress' || tab === 'places')) tag = using ? (tab === 'places' ? 'Here now' : 'Wearing') : (tab === 'places' ? 'Go there' : 'Wear it');
       else if(has && id === 'duck') tag = 'In the bath';
+      else if(id === 'cake' && k.cake === String(today().getFullYear())) tag = 'Had this year';
       let can = has || (price >= 0 && price <= vw.purse);
+      if(id === 'cake' && tag === 'Had this year') can = false;
       if(tab === 'games'){ const gs = goesOf(v, vw.pid), max = goesMax(v), cost = gs.n === 0 ? 0 : price;
         tag = gs.n >= max ? 'Done today' : gs.n === 0 ? 'Free go' : String(cost); can = gs.n < max && cost <= vw.purse; }
-      const pic = tab === 'dress' ? fhPetBaoSvg({ stage:'toddler', col:vw.col, wear:id, size:58, vb:'24 42 72 66' })
+      const pic = tab === 'dress' ? fhPetBaoSvg({ stage:'toddler', col:vw.col, wear:id, size:58, vb:id === 'bunny' ? '24 32 72 76' : '24 42 72 66' })
         : tab === 'places' ? '<span class="fhpet-thumb">' + fhPetPlaceSvg(id) + '</span>' : fhPetItemSvg(tab === 'games' ? { hide:'steamer', catch:'dumpling', bubbles:'bubbles' }[id] : id, 42);
-      return h('button', { type:'button', class:'fhpet-item' + (using ? ' using' : '') + (can ? '' : ' dim'), 'data-id':id, 'aria-label':it[1] + ', ' + tag,
+      return h('button', { type:'button', class:'fhpet-item' + (using ? ' using' : '') + (can ? '' : ' dim'), 'data-id':id, 'aria-label':nameOf(it) + ', ' + tag + (fresh ? ', ' + fresh[1] : ''),
         onClick:function(){ onUse(use(vw.pid, tab, id)); } },
-        h('span', { class:'fhpet-pic', html:pic }), h('b', { text:it[1] }), h('small', { text:tag }));
+        fresh ? h('span', { class:'fhpet-badge', title:fresh[1], 'aria-hidden':'true', text:fresh[0] }) : null,
+        h('span', { class:'fhpet-pic', html:pic }), h('b', { text:nameOf(it) }), h('small', { text:tag }));
     }));
     return h('div', { class:'fhpet-shop' }, tabs, grid);
   }
@@ -16162,6 +16320,18 @@ const FHPet = (function(){
     card.appendChild(h('div', { class:'fhpet-prices', role:'radiogroup', 'aria-label':'Prices in the pet shop' }, h('b', { class:'fhpet-ph', text:'Prices in the pet shop' }),
       opt('fair', 'Fair for each child', 'Prices follow each child’s own day of rewards, so a younger child with fewer jobs isn’t left behind.'),
       opt('same', 'The same for everyone', 'A snack 1 or 2, drinks up to 3, things to wear 4 to 12, places 6 to 10. Water, baths and showers are free.')));
+    const sw = function(id, isOn, label, sub, fn){
+      return h('div', { class:'fhpet-goes' }, h('span', { class:'fhpet-kidname' }, h('b', { text:label }), h('small', { text:sub })),
+        h('button', { type:'button', role:'switch', id:id, class:'fhpet-switch' + (isOn ? ' on' : ''), 'aria-checked':isOn ? 'true' : 'false', 'aria-label':label,
+          onClick:function(){ fn(!isOn); if(rerender) rerender(); } }, h('span', {}))); };
+    card.appendChild(sw('fhpetSeasons', seasonsOn(v), 'Seasonal things', 'Things to wear, eat and visit in each season, and for the celebrations you’ve chosen in Occasions. Bought only in their season; things to wear and places are kept.', function(x){ setSetting('seasons', x); }));
+    if(seasonsOn(v) && (guessSouth() || v.settings.hemi === 's')){
+      const s = south(v);
+      card.appendChild(h('div', { class:'ob-chips fhpet-hemi', id:'fhpetHemi', role:'group', 'aria-label':'Our seasons' }, h('span', { class:'fhpet-ph', text:'Our seasons' }),
+        [['n', 'Northern hemisphere'], ['s', 'Southern hemisphere']].map(function(o){ const chosen = (o[0] === 's') === s;
+          return h('button', { type:'button', class:'ob-chip' + (chosen ? ' on' : ''), 'data-hemi':o[0], 'aria-pressed':chosen ? 'true' : 'false', text:o[1], onClick:function(){ setSetting('hemi', o[0]); if(rerender) rerender(); } }); })));
+    }
+    card.appendChild(sw('fhpetBirthday', birthdayOn(v), 'Birthday month', 'Bunting all month and a free birthday cake, in each child’s birth month.', function(x){ setSetting('birthday', x); }));
     card.appendChild(h('p', { class:'ob-hint', text:'Nothing to do while it sleeps, so it never keeps anyone up. The pets never send notifications.' }));
     return card;
   }
@@ -16172,6 +16342,13 @@ const FHPet = (function(){
   }
   function setSleep(pid, key, val){ const v = data(); v.settings.sleep[pid] = Object.assign({}, SLEEP, v.settings.sleep[pid] || {}, { [key]:val }); save(v); }
   function setPrices(val){ const v = data(); v.settings.prices = val === 'same' ? 'same' : 'fair'; save(v); }
+  function setSetting(key, val){
+    const v = data();
+    if(key === 'seasons' || key === 'birthday') v.settings[key] = !!val;
+    else if(key === 'hemi') v.settings.hemi = val === 's' ? 's' : 'n';
+    else return;
+    save(v);
+  }
 
   /* ---- the kitchen display: Off | Take turns (one child's pet a day) | Together. Per screen, never synced:
      Off is the block switched off in this screen's layout; the way it shows is family-hub-pets-kitchen. ---- */
@@ -16245,7 +16422,7 @@ const FHPet = (function(){
   }catch(e){}
 
   return { KEY:KEY, SHOP:SHOP, data:data, view:view, mine:mine, state:state, start:start, suggestedCol:suggestedCol, todayFace:todayFace, render:render, settingsCard:settingsCard, setOn:setOn, setSleep:setSleep, setName:setName,
-    setPrices:setPrices, setGoes:setGoes, kitchenNode:kitchenNode, kitchenCard:kitchenCard, kitchenSetting:kitchenSetting, setKitchen:setKitchen, goesOf:goesOf, bestOf:bestOf, _test:{ opts:TEST, game:function(){ return game; } }, use:use, priceOf:priceOf, purseOf:purseOf, petDay:petDay, dayWorth:dayWorth, asleepAt:asleepAt, grow:grow, svg:fhPetBaoSvg };
+    setPrices:setPrices, setGoes:setGoes, setSetting:setSetting, seasonNow:function(now){ return seasonNow(data(), now); }, inSeason:function(pid, when, now){ return inSeason(data(), pid, when, now); }, kitchenNode:kitchenNode, kitchenCard:kitchenCard, kitchenSetting:kitchenSetting, setKitchen:setKitchen, goesOf:goesOf, bestOf:bestOf, _test:{ opts:TEST, game:function(){ return game; } }, use:use, priceOf:priceOf, purseOf:purseOf, petDay:petDay, dayWorth:dayWorth, asleepAt:asleepAt, grow:grow, svg:fhPetBaoSvg };
 })();
 
 /* ==================== SHOP TAGS on the shopping list (FHShopTags) ==================== */
