@@ -16196,7 +16196,7 @@ const FHPet = (function(){
   }
   function kitchenLine(vw){
     if(vw.asleep) return 'Asleep until ' + vw.sleep.wake;
-    if(vw.stage === 'egg') return 'In the steamer: ' + vw.progress;
+    if(vw.stage === 'egg') return vw.progress;
     if(vw.stage === 'hatch') return 'Hatching!';
     if(vw.quiet) return 'A bit sleepy';
     if(vw.peckish) return 'Peckish';
